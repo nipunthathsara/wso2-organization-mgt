@@ -1,0 +1,381 @@
+# Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+swagger: '2.0'
+######################################################
+# Prolog
+######################################################
+info:
+  version: "1.0.0"
+  title: "WSO2 Identity Server Organization Management Rest API"
+  description: |
+    This document specifies a **Organization Management RESTful API** for WSO2 **Identity Server** .
+    It is written with [swagger 2](http://swagger.io/).
+  contact:
+    name: "WSO2"
+    url: "http://wso2.com/products/identity-server/"
+    email: "architecture@wso2.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+######################################################
+# The fixed parts of the URLs of the API
+######################################################
+
+# The schemes supported by the API
+schemes:
+  - https
+
+# The domain of the API.
+# This is configured by the customer during deployment.
+# The given host is just an example.
+# host: apis.is.com
+
+# The base path of the API.
+# Will be prefixed to all paths.
+# if the tenant domain is carbon.super base path can be /api/identity/org-mgt/v1.0 like this too.
+
+basePath: /t/{tenant-domain}/api/identity/org-mgt/v1.0
+
+# The following media types can be passed as input in message bodies of the API.
+# The actual media type must be specified in the Content-Type header field of the request.
+# The default is json, i.e. the Content-Type header is not needed to
+# be set, but supporting it serves extensibility.
+consumes:
+  - application/json
+
+# The following media types may be passed as output in message bodies of the API.
+# The media type(s) consumable by the requester is specified in the Accept header field
+# of the corresponding request.
+# The actual media type returned will be specified in the Content-Type header field
+# of the of the response.
+# The default of the Accept header is json, i.e. there is not needed to
+# set the value, but supporting it serves extensibility.
+produces:
+  - application/json
+
+paths:
+  # Endpoint for organization metadata management
+  "/Organizations":
+    post:
+      description: |
+        This API is used to create the organization defined in the user input.
+      x-wso2-request: |
+        curl -k -X POST
+      x-wso2-curl: |
+        curl -k -X POST
+      x-wso2-response: |
+        {}
+      summary: |
+        Create an organization.
+      # post parameters:
+      parameters:
+        - name: organization
+          in: body
+          description: This represents the organization to be added.
+          required: true
+          schema:
+            $ref: '#/definitions/OrganizationAdd'
+      responses:
+        201:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/Organization'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization
+    get:
+      description: |
+        This API is used to search and retrieve organizations created for this tenant which matches the defined
+        search criteria, if any.
+      x-wso2-request: |
+        curl -k -X GET
+      x-wso2-curl: |
+        curl -k -X GET
+      x-wso2-response: |
+        {"Organizations":[]}
+      summary: |
+        Retrieve organizations created for this tenant which matches the defined search criteria, if any.
+      parameters:
+        - in: query
+          name: offset
+          type: integer
+          description: Number of items to be skipped before starting to collect the result set.
+        - in: query
+          name: limit
+          type: integer
+          description: Max number of items to be returned.
+        - in: query
+          name: sortBy
+          type: string
+          description: Criteria to sort by. (name, lastModified, created, rdn)
+        - in: query
+          name: sortOrder
+          type: string
+          description: Ascending or Descending order. (ASC, DESC)
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Organization'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization
+  "/Organizations/{organization-id}":
+    get:
+      description: |
+        This API is used to get an existing organization identified by the organization Id.
+      x-wso2-request: |
+        curl -k -X GET
+      x-wso2-curl: |
+        curl -k -X GET
+      x-wso2-response: |
+        {}
+      summary: |
+        Get an existing organization identified by the organization Id.
+      parameters:
+        - name: organization-id
+          in: path
+          description: This represents the organization to be retrieved.
+          required: true
+          type: string
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Organization'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization
+    put:
+      description: |
+        This API is used to update an existing organization, identified by the organization Id.
+      x-wso2-request: |
+        curl -k -X PUT
+      x-wso2-curl: |
+        curl -k -X PUT
+      x-wso2-response: |
+        {}
+      summary: |
+        This API is used to update an existing organization, identified by the organization Id.
+      parameters:
+        - name: organization-id
+          in: path
+          description:  This represents the organization to be updated.
+          required: true
+          type: 'string'
+        - name: attribute
+          in: body
+          description:  This represents the organization object to be updated.
+          required: true
+          schema:
+            $ref: '#/definitions/OrganizationAdd'
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/Organization'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization
+    delete:
+      description: |
+        This API is used to delete the organization identified by the organization ID.
+      x-wso2-request: |
+        curl -k -X DELETE
+      x-wso2-curl: |
+        curl -k -X DELETE
+      x-wso2-response: |
+        {}
+      summary: |
+        Delete an organization by ID.
+      parameters:
+        - name: organization-id
+          in: path
+          description: This represents the organization to be deleted.
+          required: true
+          type: string
+      responses:
+        200:
+          description: Ok
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization
+
+definitions:
+  #-----------------------------------------------------
+  # Organization Add Object
+  #-----------------------------------------------------
+  OrganizationAdd:
+    type: object
+    required:
+      - name
+      - tenantDomain
+      - parentId
+      - suspended
+      - rdn
+      - dn
+    properties:
+      name:
+        type: string
+      tenantDomain:
+        type: string
+      parentId:
+        type: string
+      suspended:
+        type: boolean
+      rdn:
+        type: string
+      alterLDAP:
+        type: boolean
+      attributes:
+        type: array
+        items:
+          $ref: '#/definitions/Attribute'
+  #-----------------------------------------------------
+  # Organization Object
+  #-----------------------------------------------------
+  Organization:
+    type: object
+    required:
+      - id
+      - name
+      - tenantDomain
+      - parentId
+      - suspended
+      - rdn
+      - dn
+      - attributes
+      - lastModified
+      - created
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      tenantDomain:
+        type: string
+      parentId:
+        type: string
+      suspended:
+        type: boolean
+      rdn:
+        type: string
+      dn:
+        type: string
+      lastModified:
+        type: string
+      created:
+        type: string
+      attributes:
+        type: array
+        items:
+          $ref: '#/definitions/Attribute'
+      children:
+        type: array
+        items:
+          type: string
+  #-----------------------------------------------------
+  # Organization Attribute Object
+  #-----------------------------------------------------
+  Attribute:
+    type: object
+    required:
+      - key
+      - value
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+  #-----------------------------------------------------
+  # The Error Response  object
+  #-----------------------------------------------------
+  Error:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+      description:
+        type: string
