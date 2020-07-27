@@ -144,6 +144,46 @@ paths:
         200:
           description: Ok
           schema:
+            $ref: '#/definitions/BasicOrganizations'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization
+  "/Import":
+    post:
+      description: |
+        This API is used to create the organization defined in the user input without changing a underlying user store.
+        This API is used to import an exisitng LDAP level organiation hierarchy into the WSO2.
+      x-wso2-request: |
+        curl -k -X POST
+      x-wso2-curl: |
+        curl -k -X POST
+      x-wso2-response: |
+        {}
+      summary: |
+        Create an organization without changing the underlying LDAP.
+      # post parameters:
+      parameters:
+        - name: organization
+          in: body
+          description: This represents the organization to be added.
+          required: true
+          schema:
+            $ref: '#/definitions/OrganizationAdd'
+      responses:
+        201:
+          description: Successful response
+          schema:
             $ref: '#/definitions/Organization'
         400:
           description: Bad Request
@@ -151,6 +191,10 @@ paths:
             $ref: '#/definitions/Error'
         401:
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Conflict
           schema:
             $ref: '#/definitions/Error'
         500:
@@ -283,7 +327,7 @@ paths:
 
 definitions:
   #-----------------------------------------------------
-  # Organization Add Object
+  # OrganizationAdd Object
   #-----------------------------------------------------
   OrganizationAdd:
     type: object
@@ -291,7 +335,7 @@ definitions:
       - name
       - tenantDomain
       - parentId
-      - suspended
+      - status
       - rdn
       - dn
     properties:
@@ -301,7 +345,7 @@ definitions:
         type: string
       parentId:
         type: string
-      suspended:
+      status:
         type: boolean
       rdn:
         type: string
@@ -321,7 +365,7 @@ definitions:
       - name
       - tenantDomain
       - parentId
-      - suspended
+      - status
       - rdn
       - dn
       - attributes
@@ -336,7 +380,7 @@ definitions:
         type: string
       parentId:
         type: string
-      suspended:
+      status:
         type: boolean
       rdn:
         type: string
@@ -354,6 +398,58 @@ definitions:
         type: array
         items:
           type: string
+  #-----------------------------------------------------
+  # BasicOrganization Object
+  #-----------------------------------------------------
+  BasicOrganization:
+    type: object
+    required:
+      - id
+      - name
+      - tenantDomain
+      - parentId
+      - status
+      - lastModified
+      - created
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      tenantDomain:
+        type: string
+      parentId:
+        type: string
+      status:
+        type: boolean
+      lastModified:
+        type: string
+      created:
+        type: string
+  #-----------------------------------------------------
+  # Organizations Array Object
+  #-----------------------------------------------------
+  Organizations:
+    type: object
+    required:
+      - organizations
+    properties:
+      organizations:
+        type: array
+        items:
+          $ref: '#/definitions/Organization'
+  #-----------------------------------------------------
+  # BasicOrganizations Array Object
+  #-----------------------------------------------------
+  BasicOrganizations:
+    type: object
+    required:
+      - basicOrganizations
+    properties:
+      basicOrganizations:
+        type: array
+        items:
+          $ref: '#/definitions/BasicOrganization'
   #-----------------------------------------------------
   # Organization Attribute Object
   #-----------------------------------------------------
