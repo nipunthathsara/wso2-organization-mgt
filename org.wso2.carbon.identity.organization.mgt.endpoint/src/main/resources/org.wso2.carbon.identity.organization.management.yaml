@@ -333,15 +333,11 @@ definitions:
     type: object
     required:
       - name
-      - tenantDomain
       - parentId
       - status
       - rdn
-      - dn
     properties:
       name:
-        type: string
-      tenantDomain:
         type: string
       parentId:
         type: string
@@ -349,8 +345,6 @@ definitions:
         type: boolean
       rdn:
         type: string
-      alterLDAP:
-        type: boolean
       attributes:
         type: array
         items:
@@ -363,7 +357,6 @@ definitions:
     required:
       - id
       - name
-      - tenantDomain
       - parentId
       - status
       - rdn
@@ -375,8 +368,6 @@ definitions:
       id:
         type: string
       name:
-        type: string
-      tenantDomain:
         type: string
       parentId:
         type: string
@@ -406,7 +397,6 @@ definitions:
     required:
       - id
       - name
-      - tenantDomain
       - parentId
       - status
       - lastModified
@@ -415,8 +405,6 @@ definitions:
       id:
         type: string
       name:
-        type: string
-      tenantDomain:
         type: string
       parentId:
         type: string
