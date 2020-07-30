@@ -68,7 +68,7 @@ produces:
 
 paths:
   # Endpoint for organization metadata management
-  "/Organizations":
+  "/organizations":
     post:
       description: |
         This API is used to create the organization defined in the user input.
@@ -79,7 +79,7 @@ paths:
       x-wso2-response: |
         {}
       summary: |
-        Create an organization.
+        Create a new organization.
       # post parameters:
       parameters:
         - name: organization
@@ -144,7 +144,9 @@ paths:
         200:
           description: Ok
           schema:
-            $ref: '#/definitions/BasicOrganizations'
+            type: array
+            items:
+              $ref: '#/definitions/BasicOrganization'
         400:
           description: Bad Request
           schema:
@@ -159,11 +161,10 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Organization
-  "/Import":
+  "/import":
     post:
       description: |
-        This API is used to create the organization defined in the user input without changing a underlying user store.
-        This API is used to import an exisitng LDAP level organiation hierarchy into the WSO2.
+        This API is used to create the organization defined in the user input without changing the underlying user store. This API is used to import an exisitng LDAP level organiation hierarchy into the WSO2.
       x-wso2-request: |
         curl -k -X POST
       x-wso2-curl: |
@@ -203,7 +204,7 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Organization
-  "/Organizations/{organization-id}":
+  "/organizations/{organization-id}":
     get:
       description: |
         This API is used to get an existing organization identified by the organization Id.
@@ -261,7 +262,7 @@ paths:
           description:  This represents the organization to be updated.
           required: true
           type: 'string'
-        - name: attribute
+        - name: organization
           in: body
           description:  This represents the organization object to be updated.
           required: true
@@ -414,30 +415,6 @@ definitions:
         type: string
       created:
         type: string
-  #-----------------------------------------------------
-  # Organizations Array Object
-  #-----------------------------------------------------
-  Organizations:
-    type: object
-    required:
-      - organizations
-    properties:
-      organizations:
-        type: array
-        items:
-          $ref: '#/definitions/Organization'
-  #-----------------------------------------------------
-  # BasicOrganizations Array Object
-  #-----------------------------------------------------
-  BasicOrganizations:
-    type: object
-    required:
-      - basicOrganizations
-    properties:
-      basicOrganizations:
-        type: array
-        items:
-          $ref: '#/definitions/BasicOrganization'
   #-----------------------------------------------------
   # Organization Attribute Object
   #-----------------------------------------------------
