@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,9 +36,8 @@ public class Organization {
     private String lastModified;
     private String created;
     private boolean hasAttribute;
-    private List<Attribute> attributes;
-    private List<Organization> children;
-
+    private List<Attribute> attributes = new ArrayList<>();
+    private List<Organization> children = new ArrayList<>();
 
     public List<Organization> getChildren() {
         return children;

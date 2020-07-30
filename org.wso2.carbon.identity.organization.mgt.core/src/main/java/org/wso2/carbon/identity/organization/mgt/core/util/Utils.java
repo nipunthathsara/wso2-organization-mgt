@@ -72,20 +72,26 @@ public class Utils {
 
     public static void logOrganizationAddObject(OrganizationAdd organizationAdd) {
 
+        if (!log.isDebugEnabled()) {
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("Logging OrganizationAdd object");
         sb.append("\nName : " + organizationAdd.getName());
         sb.append("\nParentId : " + organizationAdd.getParentId());
         sb.append("\nStatus : " + organizationAdd.getStatus());
         sb.append("\nRDN : " + organizationAdd.getRdn());
-        sb.append("\nAttributes : " + organizationAdd.getAttributes().toString());
-        if (log.isDebugEnabled()) {
-            log.debug(sb.toString());
+        if (organizationAdd.getAttributes() != null) {
+            sb.append("\nAttributes : " + organizationAdd.getAttributes().toString());
         }
+        log.debug(sb.toString());
     }
 
     public static void logOrganizationObject(Organization organization) {
 
+        if (!log.isDebugEnabled()) {
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("Logging Organization object");
         sb.append("\nID : " + organization.getId());
@@ -97,10 +103,12 @@ public class Utils {
         sb.append("\nDN : " + organization.getDn());
         sb.append("\nCreated Time : " + organization.getCreated());
         sb.append("\nLast Modified Time : " + organization.getLastModified());
-        sb.append("\nAttributes : " + organization.getAttributes().toString());
-        sb.append("\nChild Organization : " + organization.getChildren().toString());
-        if (log.isDebugEnabled()) {
-            log.debug(sb.toString());
+        if (organization.getAttributes() != null) {
+            sb.append("\nAttributes : " + organization.getAttributes().toString());
         }
+        if (organization.getChildren() != null) {
+            sb.append("\nChild Organizations : " + organization.getChildren().toString());
+        }
+        log.debug(sb.toString());
     }
 }

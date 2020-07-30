@@ -48,7 +48,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
     @Override
     public int getPriority() {
-        return 0;
+        return 1;
     }
 
     @Override
@@ -76,6 +76,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             if (organization.hasAttribute()) {
                 insertOrganizationAttributes(jdbcTemplate, organization);
             }
+            organization.setCreated(currentTime.toInstant().toString());
+            organization.setLastModified(currentTime.toInstant().toString());
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_INSERT_ORGANIZATION_ERROR, "Name - " + organization.getName()
                     + " Tenant Id - " + organization.getTenantId(), e);

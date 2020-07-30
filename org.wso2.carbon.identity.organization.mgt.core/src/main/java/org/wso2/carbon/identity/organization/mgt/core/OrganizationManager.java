@@ -45,13 +45,20 @@ public interface OrganizationManager {
 //    Organization getOrganizations() throws OrganizationManagementException;
 
     /**
-     *
-     * @param organizationName
      * @param tenantId
+     * @param organizationName
      * @return
      * @throws OrganizationManagementException
      */
-    boolean isOrganizationExist(String organizationName, int tenantId) throws OrganizationManagementException;
+    boolean isOrganizationExistByName(int tenantId, String organizationName) throws OrganizationManagementException;
+
+    /**
+     * @param tenantId
+     * @param id
+     * @return
+     * @throws OrganizationManagementException
+     */
+    boolean isOrganizationExistById(int tenantId, String id) throws OrganizationManagementException;
 
     /**
      * @param organizationId
@@ -63,7 +70,6 @@ public interface OrganizationManager {
             throws OrganizationManagementException;
 
     /**
-     *
      * @param organizationId
      * @throws OrganizationManagementException
      */

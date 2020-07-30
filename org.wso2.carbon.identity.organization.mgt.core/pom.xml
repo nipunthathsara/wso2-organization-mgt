@@ -5,7 +5,7 @@
     <parent>
         <artifactId>organization-mgt</artifactId>
         <groupId>org.wso2.carbon.identity.framework</groupId>
-        <version>1.0</version>
+        <version>5.17.5</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,6 +13,11 @@
     <name>WSO2 - Organization Management Core</name>
     <packaging>bundle</packaging>
     <url>http://www.wso2.com</url>
+
+    <properties>
+<!--        <carbon.identity.framework.version>5.17.5</carbon.identity.framework.version>-->
+        <commons.logging.version>1.2</commons.logging.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -30,6 +35,7 @@
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
+            <version>${commons.logging.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
@@ -47,6 +53,7 @@
         <dependency>
             <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.core</artifactId>
+<!--            <version>${carbon.identity.framework.version}</version>-->
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -120,5 +127,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
