@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
-import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
@@ -49,7 +48,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throws OrganizationManagementException {
 
         int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
-        validateAddOrganizationRequest(organizationAdd, tenantId);
+        validateAddOrganizationRequest(tenantId, organizationAdd);
         Organization organization = generateOrganizationFromRequest(organizationAdd);
         organization.setId(generateUniqueID());
         organization.setTenantId(tenantId);
@@ -82,9 +81,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
         return false;
     }
 
-    private void validateAddOrganizationRequest(OrganizationAdd organizationAdd, int tenantId)
+    private void validateAddOrganizationRequest(int tenantId, OrganizationAdd organizationAdd)
             throws OrganizationManagementException {
 
+        // Check required fields.
         if (StringUtils.isEmpty(organizationAdd.getName()) || StringUtils.isEmpty(organizationAdd.getRdn()) ||
                 StringUtils.isEmpty(organizationAdd.getRdn())) {
             throw handleClientException(OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,

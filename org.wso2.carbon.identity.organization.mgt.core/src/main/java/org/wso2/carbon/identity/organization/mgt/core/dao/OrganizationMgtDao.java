@@ -56,7 +56,16 @@ public interface OrganizationMgtDao {
      * @return
      * @throws OrganizationManagementException
      */
-    boolean isOrganizationExist(int tenantId, String name) throws OrganizationManagementException;
+    boolean isOrganizationExistByName(int tenantId, String name) throws OrganizationManagementException;
+
+    /**
+     * Check if the {@link Organization} exists by organization Id in a given tenant.
+     * @param tenantId
+     * @param id
+     * @return
+     * @throws OrganizationManagementException
+     */
+    boolean isOrganizationExistById(int tenantId, String id) throws OrganizationManagementException;
 
     /**
      * Retrieve {@link Organization} by ID in the given tenant.

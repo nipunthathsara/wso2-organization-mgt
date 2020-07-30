@@ -119,7 +119,7 @@ public class Organization {
         this.created = created;
     }
 
-    public boolean isHasAttribute() {
+    public boolean hasAttribute() {
         return hasAttribute;
     }
 

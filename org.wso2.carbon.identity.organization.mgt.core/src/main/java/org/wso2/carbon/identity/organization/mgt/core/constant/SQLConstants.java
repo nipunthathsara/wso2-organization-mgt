@@ -20,5 +20,31 @@ package org.wso2.carbon.identity.organization.mgt.core.constant;
 
 public class SQLConstants {
 
-
+    public static final String CHECK_ORGANIZATION_EXIST_BY_NAME =
+            "SELECT\n" +
+            "    COUNT(1)\n" +
+            "FROM\n" +
+            "    IDN_ORG\n" +
+            "WHERE\n" +
+            "    TENANT_ID = ? AND NAME = ?";
+    public static final String CHECK_ORGANIZATION_EXIST_BY_ID =
+            "SELECT\n" +
+            "    COUNT(1)\n" +
+            "FROM\n" +
+            "    IDN_ORG\n" +
+            "WHERE\n" +
+            "    TENANT_ID = ? AND ID = ?";
+    public static final String COUNT_COLUMN_NAME = "COUNT(1)";
+    public static final String INSERT_ORGANIZATION =
+            "INSERT INTO \n" +
+            "    IDN_ORG\n" +
+            "    (ID, TENANT_ID, NAME, CREATED_TIME, LAST_MODIFIED, HAS_ATTRIBUTE, STATUS, PARENT_ID)\n" +
+            "VALUES\n" +
+            "    (?, ?, ?, ?, ?, ?, ?, ?)";
+    public static final String INSERT_ATTRIBUTES =
+            "INSERT INTO \n" +
+            "    IDN_ORG_ATTRIBUTES\n" +
+            "    (ID, ORG_ID, ATTR_KEY, ATTR_VALUE)\n" +
+            "VALUES\n" +
+            "    (?, ?, ?, ?)";
 }
