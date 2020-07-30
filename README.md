@@ -8,8 +8,8 @@ CREATE TABLE IDN_ORG (
     NAME VARCHAR2(255) NOT NULL,
     CREATED_TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     LAST_MODIFIED TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    HAS_ATTRIBUTE CHAR(1) DEFAULT '1' NOT NULL,
-    STATUS CHAR(1) DEFAULT '1' NOT NULL,
+    HAS_ATTRIBUTE NUMBER(1) DEFAULT '1' NOT NULL,
+    STATUS NUMBER(1) DEFAULT '1' NOT NULL,
     PARENT_ID VARCHAR2(255),
     PRIMARY KEY (ID),
     CONSTRAINT TENANT_ORG_CONSTRAINT UNIQUE (NAME, TENANT_ID)
@@ -48,9 +48,9 @@ IDN_ORG;
 +---------------+--------------+-------------+----------+-----------------+
 | LAST_MODIFIED | TIMESTAMP(6) | 11          | N        | NO              |
 +---------------+--------------+-------------+----------+-----------------+
-| HAS_ATTRIBUTE | CHAR         | 1           | N        | NO              |
+| HAS_ATTRIBUTE | NUMBER       | 1           | N        | NO              |
 +---------------+--------------+-------------+----------+-----------------+
-| STATUS        | CHAR         | 1           | N        | NO              |
+| STATUS        | NUMBER       | 1           | N        | NO              |
 +---------------+--------------+-------------+----------+-----------------+
 | PARENT_ID     | VARCHAR2     | 255         | Y        | NO              |
 +---------------+--------------+-------------+----------+-----------------+
