@@ -9,21 +9,10 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.*;
 
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_PATH;
 
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.*;
-
-
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.BasicOrganizationDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-
-import java.io.InputStream;
-
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationAddFromDTO;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationDTOFromModel;

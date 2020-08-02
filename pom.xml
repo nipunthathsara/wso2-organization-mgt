@@ -17,7 +17,6 @@
 
     <artifactId>organization-mgt</artifactId>
     <packaging>pom</packaging>
-<!--    <version>1.0</version>-->
     <name>WSO2 - Organization Management Module</name>
     <description>
         Hierarchical organization management with REST API support.
