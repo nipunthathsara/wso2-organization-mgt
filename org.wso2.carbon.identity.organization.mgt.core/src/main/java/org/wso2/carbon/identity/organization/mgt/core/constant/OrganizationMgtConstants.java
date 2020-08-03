@@ -26,6 +26,11 @@ public class OrganizationMgtConstants {
         ERROR_CODE_ORGANIZATION_ALREADY_EXISTS_ERROR("ORGMGT_00002", "Organization already exists : %s."),
         ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR("ORGMGT_00003", "Error while checking if the organization exist : %s."),
         ERROR_CODE_INSERT_ORGANIZATION_ERROR("ORGMGT_00004", "Error creating the organization : %s."),
+        ERROR_CODE_QUERY_LENGTH_EXCEEDED_ERROR("CONFIGM_00005", "SQL query length too large."),
+        ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR("CONFIGM_00006", "Invalid organization ID : %s."),
+        ERROR_CODE_DELETE_ORGANIZATION_ERROR("CONFIGM_00007", "Error while deleting the organization : %s."),
+        ERROR_CODE_RETRIEVE_DN_BY_ORG_ID_ERROR("ORGMGT_00008", "Error obtaining DN by organization ID : %s."),
+        ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR("ORGMGT_00009", "Error retrieving organization by Id : %s."),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

@@ -27,7 +27,10 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 
+import java.util.Arrays;
 import java.util.UUID;
+
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 
 /**
  * This class provides util functions for the Organization Management.
@@ -65,8 +68,9 @@ public class Utils {
         return UUID.randomUUID().toString();
     }
 
-    public static String getDN(String parentId, String rdn) {
-        //TODO implement
+    public static String getLdapRootDn() {
+
+        //TODO implement logic.
         return null;
     }
 
@@ -107,8 +111,13 @@ public class Utils {
             sb.append("\nAttributes : " + organization.getAttributes().toString());
         }
         if (organization.getChildren() != null) {
-            sb.append("\nChild Organizations : " + organization.getChildren().toString());
+            sb.append("\nChild Organizations : " + Arrays.toString(organization.getChildren().toArray()));
         }
         log.debug(sb.toString());
+    }
+
+    public static int getMaximumQueryLengthInBytes() {
+
+        return StringUtils.isBlank(MAX_QUERY_LENGTH_IN_BYTES_SQL) ? 4194304 : Integer.parseInt(MAX_QUERY_LENGTH_IN_BYTES_SQL);
     }
 }

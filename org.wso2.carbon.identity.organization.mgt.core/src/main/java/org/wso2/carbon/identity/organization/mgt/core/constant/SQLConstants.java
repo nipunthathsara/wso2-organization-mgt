@@ -18,8 +18,13 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.constant;
 
+import org.wso2.carbon.identity.core.util.IdentityUtil;
+
 public class SQLConstants {
 
+    // TODO Using the same config from the configuration store here.
+    public static final String MAX_QUERY_LENGTH_IN_BYTES_SQL =
+            IdentityUtil.getProperty("ConfigurationStore.MaximumQueryLengthInBytes");
     public static final String CHECK_ORGANIZATION_EXIST_BY_NAME =
             "SELECT\n" +
             "    COUNT(1)\n" +
@@ -35,6 +40,25 @@ public class SQLConstants {
             "WHERE\n" +
             "    TENANT_ID = ? AND ID = ?";
     public static final String COUNT_COLUMN_NAME = "COUNT(1)";
+    public static final String ORG_ID_COLUMN_NAME = "O.ID";
+    public static final String ORG_NAME_COLUMN_NAME = "O.NAME";
+    public static final String ORG_TENANT_ID_COLUMN_NAME = "O.TENANT_ID";
+    public static final String ORG_CREATED_TIME_COLUMN_NAME = "O.CREATED_TIME";
+    public static final String ORG_LAST_MODIFIED_COLUMN_NAME = "O.LAST_MODIFIED";
+    public static final String ORG_HAS_ATTRIBUTE_COLUMN_NAME = "O.HAS_ATTRIBUTE";
+    public static final String ORG_STATUS_COLUMN_NAME = "O.STATUS";
+    public static final String ORG_PARENT_ID_COLUMN_NAME = "O.PARENT_ID";
+    public static final String ATTR_ATTR_KEY_COLUMN_NAME = "A.ATTR_KEY";
+    public static final String ATTR_ATTR_VALUE_COLUMN_NAME = "A.ATTR_VALUE";
+    public static final String UM_RDN_COLUMN_NAME = "U.RDN";
+    public static final String UM_DN_COLUMN_NAME = "U.DN";
+    public static final String GET_DN_BY_ORG_ID =
+            "SELECT\n" +
+             "    U.DN\n" +
+             "FROM\n" +
+             "    UM_USERSTORE_ORG_HIERARCHY U\n" +
+             "WHERE\n" +
+             "    U.ORG_ID = ?";
     public static final String INSERT_ORGANIZATION =
             "INSERT INTO \n" +
             "    IDN_ORG\n" +
@@ -42,9 +66,56 @@ public class SQLConstants {
             "VALUES\n" +
             "    (?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String INSERT_ATTRIBUTES =
-            "INSERT INTO \n" +
-            "    IDN_ORG_ATTRIBUTES\n" +
-            "    (ID, ORG_ID, ATTR_KEY, ATTR_VALUE)\n" +
-            "VALUES\n" +
-            "    (?, ?, ?, ?)";
+            "INSERT ALL\n";
+    public static final String INSERT_ATTRIBUTE =
+            "    INTO IDN_ORG_ATTRIBUTES (ID, ORG_ID, ATTR_KEY, ATTR_VALUE)\n" +
+            "    VALUES (?, ?, ?, ?)\n";
+    public static final String INSERT_ATTRIBUTES_CONCLUDE =
+            "SELECT 1 FROM dual";
+    public static final String INSERT_OR_UPDATE_DIRECTORY_INFO =
+            "MERGE INTO\n" +
+            "    UM_USERSTORE_ORG_HIERARCHY U\n" +
+            "USING\n" +
+            "    (SELECT ? ORG_ID, ? RDN, ? DN FROM dual) N\n" +
+            "ON \n" +
+            "    (N.ORG_ID = U.ORG_ID)\n" +
+            "WHEN MATCHED THEN\n" +
+            "UPDATE\n" +
+            "    SET U.RDN = N.RDN, U.DN = N.DN\n" +
+            "WHEN NOT MATCHED THEN\n" +
+            "INSERT\n" +
+            "    (U.ORG_ID, U.RDN, U.DN)\n" +
+            "    VALUES (N.ORG_ID, N.RDN, N.DN);";
+    public static final String DELETE_RESOURCE_BY_ID = "";
+    public static final String GET_RESOURCE_BY_ID =
+            "SELECT\n" +
+            "   O.NAME,\n" +
+            "   O.CREATED_TIME,\n" +
+            "   O.LAST_MODIFIED,\n" +
+            "   O.HAS_ATTRIBUTE,\n" +
+            "   O.STATUS,\n" +
+            "   O.PARENT_ID,\n" +
+            "   A.ATTR_KEY,\n" +
+            "   A.ATTR_VALUE\n" +
+            "   U.RDN\n" +
+            "   U.DN\n" +
+            "FROM\n" +
+            "    IDN_ORG O\n" +
+            "INNER JOIN\n" +
+            "    IDN_ORG_ATTRIBUTES A\n" +
+            "ON\n" +
+            "    O.ID = A.ORG_ID\n" +
+            "LEFT JOIN\n" +
+            "    UM_USERSTORE_ORG_HIERARCHY U\n" +
+            "ON\n" +
+            "    O.ID = U.ORG_ID\n" +
+            "WHERE\n" +
+            "    O.ID = ? AND O.TENANT_ID = ?";
+    public static final String FIND_CHILD_ORG_IDS =
+            "SELECT\n" +
+            "    O.ID\n" +
+            "FROM\n" +
+            "    IDN_ORG O\n" +
+            "WHERE\n" +
+            "    O.PARENT_ID = ?";
 }

@@ -37,13 +37,13 @@ public class Organization {
     private String created;
     private boolean hasAttribute;
     private List<Attribute> attributes = new ArrayList<>();
-    private List<Organization> children = new ArrayList<>();
+    private List<String> children = new ArrayList<>();
 
-    public List<Organization> getChildren() {
+    public List<String> getChildren() {
         return children;
     }
 
-    public void setChildren(List<Organization> children) {
+    public void setChildren(List<String> children) {
         this.children = children;
     }
 

@@ -30,9 +30,9 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 
-import java.util.ArrayList;
-
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getLdapRootDn;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationAddObject;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationObject;
@@ -44,18 +44,18 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
     private static final Log log = LogFactory.getLog(OrganizationManagerImpl.class);
     private OrganizationMgtDao organizationMgtDao = OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao();
+    private int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
 
     @Override
     public Organization addOrganization(OrganizationAdd organizationAdd)
             throws OrganizationManagementException {
 
-        int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
         logOrganizationAddObject(organizationAdd);
-        validateAddOrganizationRequest(tenantId, organizationAdd);
+        validateAddOrganizationRequest(organizationAdd);
         Organization organization = generateOrganizationFromRequest(organizationAdd);
         organization.setId(generateUniqueID());
         organization.setTenantId(tenantId);
-        organization.setChildren(new ArrayList());
+        // No children as this is a leaf organization at the moment
         logOrganizationObject(organization);
         organizationMgtDao.addOrganization(tenantId, organization);
         return organization;
@@ -63,7 +63,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
     @Override
     public Organization getOrganization(String organizationId) throws OrganizationManagementException {
-        return null;
+
+        if (StringUtils.isBlank(organizationId)) {
+            handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
+        }
+        return organizationMgtDao.getOrganization(tenantId, organizationId.trim());
     }
 
     @Override
@@ -76,59 +80,89 @@ public class OrganizationManagerImpl implements OrganizationManager {
     @Override
     public void deleteOrganization(String organizationId) throws OrganizationManagementException {
 
+        if (StringUtils.isBlank(organizationId)) {
+            handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
+        }
+        organizationMgtDao.deleteOrganization(tenantId, organizationId.trim());
     }
 
     @Override
-    public boolean isOrganizationExistByName(int tenantId, String organizationName) throws OrganizationManagementException {
+    public boolean isOrganizationExistByName(String organizationName) throws OrganizationManagementException {
 
         return organizationMgtDao.isOrganizationExistByName(tenantId, organizationName);
     }
 
     @Override
-    public boolean isOrganizationExistById(int tenantId, String id) throws OrganizationManagementException {
+    public boolean isOrganizationExistById(String id) throws OrganizationManagementException {
 
         return organizationMgtDao.isOrganizationExistById(tenantId, id);
     }
 
-    private void validateAddOrganizationRequest(int tenantId, OrganizationAdd organizationAdd)
+    private void validateAddOrganizationRequest(OrganizationAdd organizationAdd)
             throws OrganizationManagementException {
 
         // Check required fields.
-        if (StringUtils.isEmpty(organizationAdd.getName()) || StringUtils.isEmpty(organizationAdd.getRdn()) ||
-                StringUtils.isEmpty(organizationAdd.getRdn())) {
+        if (StringUtils.isBlank(organizationAdd.getName()) || StringUtils.isBlank(organizationAdd.getRdn()) ||
+                StringUtils.isBlank(organizationAdd.getRdn())) {
             throw handleClientException(OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
                     "Required fields are empty");
         }
         // Attribute keys can't be empty
         for (Attribute attribute : organizationAdd.getAttributes()) {
-            if (StringUtils.isEmpty(attribute.getKey())) {
+            if (StringUtils.isBlank(attribute.getKey())) {
                 throw handleClientException(OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
                         "Attribute keys cannot be empty.");
             }
+            // Sanitize input
+            attribute.setKey(attribute.getKey().trim());
         }
         // Check if the organization name already exists for the given tenant
-        if (isOrganizationExistByName(tenantId, organizationAdd.getName())) {
+        if (isOrganizationExistByName(organizationAdd.getName().trim())) {
             throw handleClientException(OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ALREADY_EXISTS_ERROR,
-                    "Organization name " + organizationAdd.getName() + " already exists in this tenant.");
+                    "Organization name " + organizationAdd.getName().trim() + " already exists in this tenant.");
         }
         // Check if parent org exists
-        if (StringUtils.isNotEmpty(organizationAdd.getParentId()) &&
-                !organizationMgtDao.isOrganizationExistById(tenantId, organizationAdd.getParentId())) {
+        if (StringUtils.isNotBlank(organizationAdd.getParentId()) &&
+                !isOrganizationExistById(organizationAdd.getParentId().trim())) {
             throw handleClientException(OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
-                    "Defined parent organization doesn't exist " + organizationAdd.getParentId());
+                    "Defined parent organization doesn't exist " + organizationAdd.getParentId().trim());
+        }
+        // Sanitize values
+        organizationAdd.setName(organizationAdd.getName().trim());
+        organizationAdd.setRdn(organizationAdd.getRdn().trim());
+        organizationAdd.setParentId(
+                StringUtils.isNotBlank(organizationAdd.getParentId()) ? organizationAdd.getParentId().trim() : null);
+    }
+
+    //TODO should this be public? No as this is not tenant aware.
+    private String getDnByOrganizationId(String organizationId) throws OrganizationManagementException {
+
+        return organizationMgtDao.getDnByOrganizationId(organizationId);
+    }
+
+    private String constructDn(String parentId, String rdn) throws OrganizationManagementException {
+
+        if (parentId != null) {
+            String parentDn = getDnByOrganizationId(parentId);
+            return parentDn.concat("," + rdn);
+        } else {
+            return getLdapRootDn().concat("," + rdn);
         }
     }
 
-    private Organization generateOrganizationFromRequest(OrganizationAdd organizationAdd) {
+    private Organization generateOrganizationFromRequest(OrganizationAdd organizationAdd)
+            throws OrganizationManagementException {
 
         Organization organization = new Organization();
         organization.setName(organizationAdd.getName());
         organization.setParentId(organizationAdd.getParentId());
         organization.setStatus(organizationAdd.getStatus());
-        organization.setAttributes(organizationAdd.getAttributes());
-        // TODO make sure no null could happen in the endpoint layer
+        if (organizationAdd.getAttributes() != null) {
+            organization.setAttributes(organizationAdd.getAttributes());
+        }
         organization.setHasAttribute(!organizationAdd.getAttributes().isEmpty());
         organization.setRdn(organizationAdd.getRdn());
+        organization.setDn(constructDn(organization.getParentId(), organization.getRdn()));
         return organization;
     }
 }

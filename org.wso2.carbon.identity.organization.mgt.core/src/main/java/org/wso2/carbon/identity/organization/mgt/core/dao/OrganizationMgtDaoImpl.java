@@ -18,7 +18,8 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
@@ -26,24 +27,53 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.util.JdbcUtils;
+import org.wso2.carbon.identity.organization.mgt.core.util.Utils;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import static java.time.ZoneOffset.UTC;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_DELETE_ORGANIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INSERT_ORGANIZATION_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_QUERY_LENGTH_EXCEEDED_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_DN_BY_ORG_ID_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_ATTR_KEY_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_ATTR_VALUE_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_RESOURCE_BY_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_DN_BY_ORG_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_RESOURCE_BY_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES_CONCLUDE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_DIRECTORY_INFO;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_CREATED_TIME_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_HAS_ATTRIBUTE_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_ID_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_LAST_MODIFIED_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_NAME_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_PARENT_ID_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_STATUS_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_DN_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_RDN_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getMaximumQueryLengthInBytes;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 
 public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
+    private static final Log log = LogFactory.getLog(OrganizationMgtDaoImpl.class);
     private static final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(UTC));
 
     @Override
@@ -76,6 +106,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             if (organization.hasAttribute()) {
                 insertOrganizationAttributes(jdbcTemplate, organization);
             }
+            insertOrUpdateDirectoryInfo(jdbcTemplate, organization);
             organization.setCreated(currentTime.toInstant().toString());
             organization.setLastModified(currentTime.toInstant().toString());
         } catch (DataAccessException e) {
@@ -87,6 +118,18 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @Override
     public void deleteOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
 
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        try {
+            //TODO complete query to delete from all 3 tables.
+            jdbcTemplate.executeUpdate(DELETE_RESOURCE_BY_ID,
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                    });
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_DELETE_ORGANIZATION_ERROR, organizationId, e);
+        }
     }
 
     @Override
@@ -132,7 +175,57 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
     @Override
     public Organization getOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
-        return null;
+
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        List<OrganizationRowDataCollector> organizationRowDataCollectors;
+        try {
+            organizationRowDataCollectors = jdbcTemplate.executeQuery(GET_RESOURCE_BY_ID,
+                    (resultSet, rowNumber) -> {
+                        OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
+                        collector.setId(organizationId);
+                        collector.setTenantId(tenantId);
+                        collector.setName(resultSet.getString(ORG_NAME_COLUMN_NAME));
+                        collector.setCreatedTime(resultSet.getTimestamp(ORG_CREATED_TIME_COLUMN_NAME));
+                        collector.setLastModified(resultSet.getTimestamp(ORG_LAST_MODIFIED_COLUMN_NAME));
+                        collector.setHasAttribute(resultSet.getInt(ORG_HAS_ATTRIBUTE_COLUMN_NAME) == 1 ? true : false);
+                        collector.setStatus(resultSet.getInt(ORG_STATUS_COLUMN_NAME) == 1 ? true : false);
+                        collector.setParentId(resultSet.getString(ORG_PARENT_ID_COLUMN_NAME));
+                        collector.setAttributeKey(resultSet.getString(ATTR_ATTR_KEY_COLUMN_NAME));
+                        collector.setAttributeValue(resultSet.getString(ATTR_ATTR_VALUE_COLUMN_NAME));
+                        collector.setDn(resultSet.getString(UM_DN_COLUMN_NAME));
+                        collector.setRdn(resultSet.getString(UM_RDN_COLUMN_NAME));
+                        return collector;
+                    },
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                    }
+            );
+            Organization organization = (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?
+                    null : buildResourceFromRawData(organizationRowDataCollectors);
+            return findChildOrganizations(jdbcTemplate, organization);
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR, organizationId, e);
+        }
+    }
+
+    @Override
+    public String getDnByOrganizationId(String organizationId) throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        try {
+            String dn = jdbcTemplate.fetchSingleRecord(GET_DN_BY_ORG_ID,
+                    (resultSet, rowNumber) ->
+                            resultSet.getString(UM_DN_COLUMN_NAME),
+                    preparedStatement -> {
+                        preparedStatement.setString(1, organizationId);
+                    });
+            return dn;
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_RETRIEVE_DN_BY_ORG_ID_ERROR,
+                    organizationId, e);
+        }
     }
 
     private void insertOrganizationAttributes(JdbcTemplate template, Organization organization)
@@ -154,9 +247,76 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         );
     }
 
+    private void insertOrUpdateDirectoryInfo(JdbcTemplate template, Organization organization)
+            throws DataAccessException {
+
+        template.executeInsert(INSERT_OR_UPDATE_DIRECTORY_INFO,
+                preparedStatement -> {
+                    int parameterIndex = 0;
+                    preparedStatement.setString(++parameterIndex, organization.getId());
+                    preparedStatement.setString(++parameterIndex, organization.getRdn());
+                    preparedStatement.setString(++parameterIndex, organization.getDn());
+                },
+                organization,
+                false
+        );
+    }
+
+    private Organization findChildOrganizations(JdbcTemplate template, Organization organization)
+            throws DataAccessException {
+
+        template.executeQuery(FIND_CHILD_ORG_IDS,
+                (resultSet, rowNumber) -> {
+                    organization.getChildren().add(resultSet.getString(ORG_ID_COLUMN_NAME));
+                    return null;
+                },
+                preparedStatement -> {
+                    preparedStatement.setString(1, organization.getId());
+                });
+        return organization;
+    }
+
     private String buildQueryForAttributes(Organization organization) throws OrganizationManagementClientException {
 
-        return null;
+        StringBuilder sb = new StringBuilder();
+        sb.append(INSERT_ATTRIBUTES);
+        for (int i = 0; i < organization.getAttributes().size(); i++) {
+            sb.append(INSERT_ATTRIBUTE);
+        }
+        // Multiple insertions require a SELECT 1 FROM Dual at the end
+        sb.append(INSERT_ATTRIBUTES_CONCLUDE);
+        if (sb.toString().getBytes().length > getMaximumQueryLengthInBytes()) {
+            if (log.isDebugEnabled()) {
+                log.debug("Error building SQL query for the attribute insert. Number of attributes: " +
+                        organization.getAttributes().size() + " exceeds the maximum query length: " +
+                        MAX_QUERY_LENGTH_IN_BYTES_SQL);
+            }
+            throw Utils.handleClientException(ERROR_CODE_QUERY_LENGTH_EXCEEDED_ERROR, null);
+        }
+        return sb.toString();
+    }
 
+    private Organization buildResourceFromRawData(List<OrganizationRowDataCollector> organizationRowDataCollectors) {
+
+        Organization organization = new Organization();
+        organizationRowDataCollectors.forEach(collector -> {
+            if (organization.getId() == null) {
+                organization.setId(collector.getId());
+                organization.setName(collector.getName());
+                organization.setTenantId(collector.getTenantId());
+                organization.setCreated(collector.getCreatedTime().toString());
+                organization.setLastModified(collector.getLastModified().toString());
+                organization.setParentId(collector.getParentId());
+                organization.setHasAttribute(collector.hasAttribute());
+                organization.setStatus(collector.isStatus());
+                organization.setRdn(collector.getRdn());
+                organization.setDn(collector.getDn());
+            }
+            if (organization.hasAttribute() && !organization.getAttributes().contains(collector.getAttributeKey())) {
+                organization.getAttributes()
+                        .add(new Attribute(collector.getAttributeKey(), collector.getAttributeValue()));
+            }
+        });
+        return organization;
     }
 }

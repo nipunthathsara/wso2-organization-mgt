@@ -75,4 +75,12 @@ public interface OrganizationMgtDao {
      * @throws OrganizationManagementException
      */
     Organization getOrganization(int tenantId, String organizationId) throws OrganizationManagementException;
+
+    /**
+     * Returns the DN value of the {@link Organization} referenced by the given Organization ID.
+     * @param organizationId
+     * @return
+     * @throws OrganizationManagementException
+     */
+    String getDnByOrganizationId(String organizationId) throws OrganizationManagementException;
 }
