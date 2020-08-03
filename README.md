@@ -25,11 +25,10 @@ CREATE TABLE IDN_ORG_ATTRIBUTES (
 )
 /
 CREATE TABLE UM_USERSTORE_ORG_HIERARCHY (
-    ID VARCHAR2(255) NOT NULL,
     ORG_ID VARCHAR2(255) NOT NULL,
     RDN VARCHAR2(255) NOT NULL,
     DN VARCHAR2(255) NOT NULL,
-    PRIMARY KEY (ID)
+    PRIMARY KEY (ORG_ID)
 );
 ```
 
@@ -71,8 +70,6 @@ IDN_ORG_ATTRIBUTES;
 UM_USERSTORE_ORG_HIERARCHY;
 +-------------+-----------+-------------+----------+-----------------+
 | COLUMN_NAME | DATA_TYPE | DATA_LENGTH | NULLABLE | DEFAULT_ON_NULL |
-+-------------+-----------+-------------+----------+-----------------+
-| ID          | VARCHAR2  | 255         | N        | NO              |
 +-------------+-----------+-------------+----------+-----------------+
 | ORG_ID      | VARCHAR2  | 255         | N        | NO              |
 +-------------+-----------+-------------+----------+-----------------+
