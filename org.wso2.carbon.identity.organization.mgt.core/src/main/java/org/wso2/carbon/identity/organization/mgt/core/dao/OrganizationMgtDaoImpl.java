@@ -30,7 +30,6 @@ import org.wso2.carbon.identity.organization.mgt.core.util.JdbcUtils;
 import org.wso2.carbon.identity.organization.mgt.core.util.Utils;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -48,10 +47,12 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_RESOURCE_BY_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_ATTRIBUTES_BY_ORG_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_DIRECTORY_INFO_BY_ORG_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_DN_BY_ORG_ID;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_RESOURCE_BY_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES_CONCLUDE;
@@ -120,15 +121,23 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
         try {
-            //TODO complete query to delete from all 3 tables.
-            jdbcTemplate.executeUpdate(DELETE_RESOURCE_BY_ID,
+            // Delete organization from IDN_ORG table
+            jdbcTemplate.executeUpdate(DELETE_ORGANIZATION_BY_ID,
                     preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, organizationId);
                     });
+            // Delete organization attributes
+            jdbcTemplate.executeUpdate(DELETE_ATTRIBUTES_BY_ORG_ID,
+                    preparedStatement -> preparedStatement.setString(1, organizationId)
+            );
+            // Delete RDN and DN entries for the organization
+            jdbcTemplate.executeUpdate(DELETE_DIRECTORY_INFO_BY_ORG_ID,
+                    preparedStatement -> preparedStatement.setString(1, organizationId)
+            );
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_DELETE_ORGANIZATION_ERROR, organizationId, e);
+            throw handleServerException(ERROR_CODE_DELETE_ORGANIZATION_ERROR, "Id - " + organizationId, e);
         }
     }
 
@@ -179,7 +188,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
-            organizationRowDataCollectors = jdbcTemplate.executeQuery(GET_RESOURCE_BY_ID,
+            organizationRowDataCollectors = jdbcTemplate.executeQuery(GET_ORGANIZATION_BY_ID,
                     (resultSet, rowNumber) -> {
                         OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
                         collector.setId(organizationId);

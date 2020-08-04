@@ -15,7 +15,6 @@
     <url>http://www.wso2.com</url>
 
     <properties>
-<!--        <carbon.identity.framework.version>5.17.5</carbon.identity.framework.version>-->
         <commons.logging.version>1.2</commons.logging.version>
     </properties>
 
@@ -53,7 +52,6 @@
         <dependency>
             <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.core</artifactId>
-<!--            <version>${carbon.identity.framework.version}</version>-->
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

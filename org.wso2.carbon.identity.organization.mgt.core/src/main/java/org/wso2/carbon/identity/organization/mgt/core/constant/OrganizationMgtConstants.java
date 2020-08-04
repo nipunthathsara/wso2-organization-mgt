@@ -31,6 +31,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_DELETE_ORGANIZATION_ERROR("CONFIGM_00007", "Error while deleting the organization : %s."),
         ERROR_CODE_RETRIEVE_DN_BY_ORG_ID_ERROR("ORGMGT_00008", "Error obtaining DN by organization ID : %s."),
         ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR("ORGMGT_00009", "Error retrieving organization by Id : %s."),
+        ERROR_CODE_ORG_ID_NOT_FOUND("ORGMGT_00010", "Organization ID not found within this tenant : %s."),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

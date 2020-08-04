@@ -86,8 +86,25 @@ public class SQLConstants {
             "INSERT\n" +
             "    (U.ORG_ID, U.RDN, U.DN)\n" +
             "    VALUES (N.ORG_ID, N.RDN, N.DN);";
-    public static final String DELETE_RESOURCE_BY_ID = "";
-    public static final String GET_RESOURCE_BY_ID =
+    public static final String DELETE_ORGANIZATION_BY_ID =
+            "DELETE\n" +
+            "FROM\n" +
+            "    IDN_ORG O\n" +
+            "WHERE\n" +
+            "    O.ID = ? AND O.TENANT_ID = ?;";
+    public static final String DELETE_ATTRIBUTES_BY_ORG_ID =
+            "DELETE\n" +
+            "FROM\n" +
+            "    IDN_ORG_ATTRIBUTES A\n" +
+            "WHERE\n" +
+            "    A.ORG_ID = ?";
+    public static final String DELETE_DIRECTORY_INFO_BY_ORG_ID =
+            "DELETE" +
+                    "FROM" +
+                    "   UM_USERSTORE_ORG_HIERARCHY U" +
+                    "WHERE" +
+                    "   U.ORG_ID = ?";
+    public static final String GET_ORGANIZATION_BY_ID =
             "SELECT\n" +
             "   O.NAME,\n" +
             "   O.CREATED_TIME,\n" +

@@ -31,6 +31,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORG_ID_NOT_FOUND;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getLdapRootDn;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
@@ -82,6 +83,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         if (StringUtils.isBlank(organizationId)) {
             handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
+        }
+        if (!isOrganizationExistById(organizationId.trim())) {
+            handleClientException(ERROR_CODE_ORG_ID_NOT_FOUND, "ID - " + organizationId + " Tenant - " + tenantId);
         }
         organizationMgtDao.deleteOrganization(tenantId, organizationId.trim());
     }
