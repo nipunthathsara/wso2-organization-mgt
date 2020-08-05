@@ -19,8 +19,11 @@
 package org.wso2.carbon.identity.organization.mgt.core;
 
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.model.BasicOrganization;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
+
+import java.util.List;
 
 /**
  * Organization manager service interface.
@@ -42,7 +45,16 @@ public interface OrganizationManager {
      */
     Organization getOrganization(String organizationId) throws OrganizationManagementException;
 
-//    Organization getOrganizations() throws OrganizationManagementException;
+    /**
+     * @param offset
+     * @param limit
+     * @param sortBy
+     * @param sortOrder
+     * @return
+     * @throws OrganizationManagementException
+     */
+    List<BasicOrganization> getOrganizations(int offset, int limit, String sortBy, String sortOrder)
+            throws OrganizationManagementException;
 
     /**
      * @param organizationName

@@ -19,7 +19,10 @@
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.model.BasicOrganization;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+
+import java.util.List;
 
 /**
  * Interface to perform CRUD operations on {@link Organization}
@@ -75,6 +78,19 @@ public interface OrganizationMgtDao {
      * @throws OrganizationManagementException
      */
     Organization getOrganization(int tenantId, String organizationId) throws OrganizationManagementException;
+
+    /**
+     *
+     * @param tenantId
+     * @param offset
+     * @param limit
+     * @param sortBy
+     * @param sortOrder
+     * @return
+     * @throws OrganizationManagementException
+     */
+    List<BasicOrganization> getOrganizations(int tenantId, int offset, int limit, String sortBy, String sortOrder)
+            throws OrganizationManagementException;
 
     /**
      * Returns the DN value of the {@link Organization} referenced by the given Organization ID.

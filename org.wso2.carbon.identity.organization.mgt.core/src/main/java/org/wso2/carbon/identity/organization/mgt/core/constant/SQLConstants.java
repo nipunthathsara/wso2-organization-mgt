@@ -52,6 +52,7 @@ public class SQLConstants {
     public static final String ATTR_ATTR_VALUE_COLUMN_NAME = "A.ATTR_VALUE";
     public static final String UM_RDN_COLUMN_NAME = "U.RDN";
     public static final String UM_DN_COLUMN_NAME = "U.DN";
+    public static final String VIEW_ORG_ID = "V.ID";
     public static final String GET_DN_BY_ORG_ID =
             "SELECT\n" +
              "    U.DN\n" +
@@ -121,7 +122,7 @@ public class SQLConstants {
             "INNER JOIN\n" +
             "    IDN_ORG_ATTRIBUTES A\n" +
             "ON\n" +
-            "    O.ID = A.ORG_ID\n" +
+            "    (O.HAS_ATTRIBUTE = 1 AND O.ID = A.ORG_ID)\n" +
             "LEFT JOIN\n" +
             "    UM_USERSTORE_ORG_HIERARCHY U\n" +
             "ON\n" +
@@ -135,4 +136,32 @@ public class SQLConstants {
             "    IDN_ORG O\n" +
             "WHERE\n" +
             "    O.PARENT_ID = ?";
+    public static final String GET_ALL_ORGANIZATION_IDS =
+            "SELECT\n" +
+            "    DISTINCT V.ID\n" +
+            "FROM\n" +
+            "    ORG_MGT_VIEW V\n" +
+            "WHERE\n" +
+            "    V.TENANT_ID = ?";
+    public static final String ORDER_BY =
+            "\nORDER BY" +
+            "   \n%s %s";
+    public static final String PAGINATION =
+            "\nOFFSET" +
+            "   \n%s ROWS" +
+            "\nFETCH NEXT" +
+            "   \n%s ROWS ONLY";
+    public static final String GET_BASIC_ORGANIZATIONS_BY_IDS =
+            "SELECT\n" +
+            "    V.ID,\n" +
+            "    V.NAME,\n" +
+            "    V.CREATED_TIME,\n" +
+            "    V.LAST_MODIFIED,\n" +
+            "    V.HAS_ATTRIBUTE,\n" +
+            "    V.STATUS,\n" +
+            "    V.PARENT_ID \n" +
+            "FROM\n" +
+            "    ORG_MGT_VIEW V\n" +
+            "WHERE\n" +
+            "    V.TENANT_ID = 1234 AND V.ID IN ('1')";
 }

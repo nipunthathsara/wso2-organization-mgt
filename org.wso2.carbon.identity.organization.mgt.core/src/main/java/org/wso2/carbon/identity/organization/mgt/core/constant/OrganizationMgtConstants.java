@@ -32,6 +32,9 @@ public class OrganizationMgtConstants {
         ERROR_CODE_RETRIEVE_DN_BY_ORG_ID_ERROR("ORGMGT_00008", "Error obtaining DN by organization ID : %s."),
         ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR("ORGMGT_00009", "Error retrieving organization by Id : %s."),
         ERROR_CODE_ORG_ID_NOT_FOUND("ORGMGT_00010", "Organization ID not found within this tenant : %s."),
+        ERROR_CODE_INVALID_SORTING("ORGMGT_00011", "Invalid sorting arguments : %s."),
+        ERROR_CODE_INVALID_PAGINATION("ORGMGT_00012", "Invalid pagination arguments : %s."),
+        ERROR_CODE_RETRIEVE_ALL_ORG_IDS_ERROR("ORGMGT_00013", "Error retrieving all organizations : %s."),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

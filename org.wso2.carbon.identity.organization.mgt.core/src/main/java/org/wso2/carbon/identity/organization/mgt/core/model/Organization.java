@@ -26,17 +26,26 @@ import java.util.List;
  */
 public class Organization {
 
+    //TODO SHould search return the full object or basic?
+    //TODO patch or put?
+    //TODO delete an actove org status code ? bad request?
+    //TODO should /import changed?
+
     private String id;
     private String name;
     private int tenantId;
+    //TODO should root be root?
     private String parentId;
+    //TODO isActive
     private boolean status;
+    //TODO should this be renamed in a more generic way?
     private String rdn;
     private String dn;
     private String lastModified;
     private String created;
     private boolean hasAttribute;
     private List<Attribute> attributes = new ArrayList<>();
+    //TODO should this be paginated/included?
     private List<String> children = new ArrayList<>();
 
     public List<String> getChildren() {

@@ -24,13 +24,19 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
+import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
+import org.wso2.carbon.identity.organization.mgt.core.model.BasicOrganization;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 
+import java.util.List;
+
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_PAGINATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_SORTING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORG_ID_NOT_FOUND;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getLdapRootDn;
@@ -66,9 +72,21 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public Organization getOrganization(String organizationId) throws OrganizationManagementException {
 
         if (StringUtils.isBlank(organizationId)) {
-            handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
         }
         return organizationMgtDao.getOrganization(tenantId, organizationId.trim());
+    }
+
+    @Override
+    public List<BasicOrganization> getOrganizations(int offset, int limit, String sortBy, String sortOrder)
+            throws OrganizationManagementException {
+
+        // Validate pagination and sorting parameters
+        sortBy = getMatchingColumnNameForSortingParameter(sortBy);
+        if (offset < 0 || (offset > -1 && limit < 0)) {
+            throw handleClientException(ERROR_CODE_INVALID_PAGINATION, "[ limit > 0, offset >= 0]");
+        }
+        return organizationMgtDao.getOrganizations(tenantId, offset, limit, sortBy, sortOrder);
     }
 
     @Override
@@ -82,10 +100,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public void deleteOrganization(String organizationId) throws OrganizationManagementException {
 
         if (StringUtils.isBlank(organizationId)) {
-            handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
         }
         if (!isOrganizationExistById(organizationId.trim())) {
-            handleClientException(ERROR_CODE_ORG_ID_NOT_FOUND, "ID - " + organizationId + " Tenant - " + tenantId);
+            throw handleClientException(ERROR_CODE_ORG_ID_NOT_FOUND, "ID - " + organizationId + " Tenant - " + tenantId);
         }
         organizationMgtDao.deleteOrganization(tenantId, organizationId.trim());
     }
@@ -168,5 +186,26 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organization.setRdn(organizationAdd.getRdn());
         organization.setDn(constructDn(organization.getParentId(), organization.getRdn()));
         return organization;
+    }
+
+    private String getMatchingColumnNameForSortingParameter(String sortBy)
+            throws OrganizationManagementClientException {
+
+        if (sortBy == null) {
+            return null;
+        }
+        switch (sortBy.trim().toLowerCase()) {
+            case "name":
+                return "V.NAME";
+            case "createdTime":
+                return "V.CREATED_TIME";
+            case "lastModified":
+                return "V.LAST_MODIFIED";
+            case "rdn":
+                return "V.RDN";
+            default:
+                throw handleClientException(ERROR_CODE_INVALID_SORTING,
+                        "'sortOrder' [ASC | DESC] and 'sortBy' [name | createdTime | lastModified | rdn]");
+        }
     }
 }

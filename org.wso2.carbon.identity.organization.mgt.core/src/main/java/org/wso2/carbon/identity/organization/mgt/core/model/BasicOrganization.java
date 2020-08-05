@@ -18,19 +18,25 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.model;
 
-import java.util.List;
-
 /**
- * This class represents the Organization data retrieved in the Organization create request.
+ * This is a minimal representation of an {@link Organization} object.
  */
-public class OrganizationAdd {
+public class BasicOrganization {
 
+    private String id;
     private String name;
     private String parentId;
     private boolean status;
-    //TODO shouls this be an attribute? to support JDBC as well
-    private String rdn;
-    private List<Attribute> attributes;
+    private String lastModified;
+    private String created;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -48,7 +54,7 @@ public class OrganizationAdd {
         this.parentId = parentId;
     }
 
-    public boolean getStatus() {
+    public boolean isStatus() {
         return status;
     }
 
@@ -56,19 +62,19 @@ public class OrganizationAdd {
         this.status = status;
     }
 
-    public String getRdn() {
-        return rdn;
+    public String getLastModified() {
+        return lastModified;
     }
 
-    public void setRdn(String rdn) {
-        this.rdn = rdn;
+    public void setLastModified(String lastModified) {
+        this.lastModified = lastModified;
     }
 
-    public List<Attribute> getAttributes() {
-        return attributes;
+    public String getCreated() {
+        return created;
     }
 
-    public void setAttributes(List<Attribute> attributes) {
-        this.attributes = attributes;
+    public void setCreated(String created) {
+        this.created = created;
     }
 }
