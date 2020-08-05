@@ -41,8 +41,17 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsOrganizationIdGet(String organizationId) {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+
+        try {
+            Organization organization = getOrganizationManager().getOrganization(organizationId);
+            return Response.ok().entity(getOrganizationDTOFromModel(organization)).build();
+        } catch (OrganizationManagementClientException e) {
+            return handleBadRequestResponse(e, LOG);
+        } catch (OrganizationManagementException e) {
+            return handleServerErrorResponse(e, LOG);
+        } catch (Throwable throwable) {
+            return handleUnexpectedServerError(throwable, LOG);
+        }
     }
 
     @Override

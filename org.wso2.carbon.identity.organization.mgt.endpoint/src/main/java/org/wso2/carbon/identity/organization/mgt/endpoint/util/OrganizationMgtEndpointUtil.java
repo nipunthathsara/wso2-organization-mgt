@@ -80,6 +80,7 @@ public class OrganizationMgtEndpointUtil {
         organizationDTO.setDn(organization.getDn());
         organizationDTO.setAttributes(organization.getAttributes()
                 .stream().map(OrganizationMgtEndpointUtil::getAttributeDTOFromModel).collect(Collectors.toList()));
+        organizationDTO.setChildren(organization.getChildren());
         return organizationDTO;
     }
 

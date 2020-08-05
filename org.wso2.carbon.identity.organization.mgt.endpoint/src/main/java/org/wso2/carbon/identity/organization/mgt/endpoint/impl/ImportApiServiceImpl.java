@@ -7,6 +7,7 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO
 import javax.ws.rs.core.Response;
 
 public class ImportApiServiceImpl extends ImportApiService {
+
     @Override
     public Response importPost(OrganizationAddDTO organization) {
         // do some magic!
