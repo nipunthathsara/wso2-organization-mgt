@@ -90,7 +90,7 @@ paths:
             $ref: '#/definitions/OrganizationAdd'
       responses:
         201:
-          description: Successful response
+          description: Successful Response
           schema:
             $ref: '#/definitions/Organization'
         400:
@@ -113,8 +113,7 @@ paths:
         - Organization
     get:
       description: |
-        This API is used to search and retrieve organizations created for this tenant which matches the defined
-        search criteria, if any.
+        This API is used to search and retrieve organizations created for this tenant which matches the defined search criteria, if any.
       x-wso2-request: |
         curl -k -X GET
       x-wso2-curl: |
@@ -124,6 +123,10 @@ paths:
       summary: |
         Retrieve organizations created for this tenant which matches the defined search criteria, if any.
       parameters:
+        - in: query
+          name: filter
+          type: string
+          description: Search query using (name, parentId, active, lastModified, created, userStoreConfig.key, userStoreConfig.value) fields and (eq, ne, lt, le, gt, ge) operators.
         - in: query
           name: offset
           type: integer
@@ -135,7 +138,7 @@ paths:
         - in: query
           name: sortBy
           type: string
-          description: Criteria to sort by. (name, lastModified, created, rdn)
+          description: Criteria to sort by. (name, lastModified, created)
         - in: query
           name: sortOrder
           type: string
@@ -146,56 +149,13 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/BasicOrganization'
+              $ref: '#/definitions/Organization'
         400:
           description: Bad Request
           schema:
             $ref: '#/definitions/Error'
         401:
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/Error'
-        500:
-          description: Server Error
-          schema:
-            $ref: '#/definitions/Error'
-      tags:
-        - Organization
-  "/import":
-    post:
-      description: |
-        This API is used to create the organization defined in the user input without changing the underlying user store. This API is used to import an exisitng LDAP level organiation hierarchy into the WSO2.
-      x-wso2-request: |
-        curl -k -X POST
-      x-wso2-curl: |
-        curl -k -X POST
-      x-wso2-response: |
-        {}
-      summary: |
-        Create an organization without changing the underlying LDAP.
-      # post parameters:
-      parameters:
-        - name: organization
-          in: body
-          description: This represents the organization to be added.
-          required: true
-          schema:
-            $ref: '#/definitions/OrganizationAdd'
-      responses:
-        201:
-          description: Successful response
-          schema:
-            $ref: '#/definitions/Organization'
-        400:
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/Error'
-        401:
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/Error'
-        409:
-          description: Conflict
           schema:
             $ref: '#/definitions/Error'
         500:
@@ -219,7 +179,7 @@ paths:
       parameters:
         - name: organization-id
           in: path
-          description: This represents the organization to be retrieved.
+          description: ID of the organization of which, the fields are to be patched.
           required: true
           type: string
       responses:
@@ -245,9 +205,9 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Organization
-    put:
+    patch:
       description: |
-        This API is used to update an existing organization, identified by the organization Id.
+        This API is used to add, delete or update the defined field of the organization identified by the organization Id.
       x-wso2-request: |
         curl -k -X PUT
       x-wso2-curl: |
@@ -259,20 +219,20 @@ paths:
       parameters:
         - name: organization-id
           in: path
-          description:  This represents the organization to be updated.
+          description:  Id of the organization to be patched.
           required: true
           type: 'string'
-        - name: organization
+        - name: Operations
           in: body
           description:  This represents the organization object to be updated.
           required: true
           schema:
-            $ref: '#/definitions/OrganizationAdd'
+            type: array
+            items:
+              $ref: '#/definitions/Operation'
       responses:
-        200:
+        204:
           description: Ok
-          schema:
-            $ref: '#/definitions/Organization'
         400:
           description: Bad Request
           schema:
@@ -289,7 +249,7 @@ paths:
         - Organization
     delete:
       description: |
-        This API is used to delete the organization identified by the organization ID.
+        This API is used to delete an organization, identified by the organization ID.
       x-wso2-request: |
         curl -k -X DELETE
       x-wso2-curl: |
@@ -301,12 +261,183 @@ paths:
       parameters:
         - name: organization-id
           in: path
-          description: This represents the organization to be deleted.
+          description: ID of the organization to be deleted.
+          required: true
+          type: string
+      responses:
+        204:
+          description: Ok
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization
+  "/organizations/{organization-id}/userstore-configs":
+    get:
+      description: |
+        This API is used to retrieve user store configurations of an organization identified by the organization Id.
+      x-wso2-request: |
+        curl -k -X GET
+      x-wso2-curl: |
+        curl -k -X GET
+      x-wso2-response: |
+        {}
+      summary: |
+        Get user store configurations of an organization identified by the organization Id.
+      parameters:
+        - name: organization-id
+          in: path
+          description: ID of the organization of which, the user store configurations are to be retrieved.
           required: true
           type: string
       responses:
         200:
           description: Ok
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserstoreConfig'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization
+    patch:
+      description: |
+        This API is used to patch user store configurations of an organization, identified by the organization Id.
+      x-wso2-request: |
+        curl -k -X GET
+      x-wso2-curl: |
+        curl -k -X GET
+      x-wso2-response: |
+        {}
+      summary: |
+        Patch user store configurations of an organization identified by the organization Id.
+      parameters:
+        - name: organization-id
+          in: path
+          description: ID of the organization of which, the user store configurations are to be retrieved.
+          required: true
+          type: string
+      responses:
+        200:
+          description: Ok
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserstoreConfig'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization
+  "/organizations/{organization-id}/children":
+    get:
+      description: |
+        This API is used to retrieve children of an organization identified by the organization Id.
+      x-wso2-request: |
+        curl -k -X GET
+      x-wso2-curl: |
+        curl -k -X GET
+      x-wso2-response: |
+        {}
+      summary: |
+        Get a list of child organization IDs for a given organization.
+      parameters:
+        - name: organization-id
+          in: path
+          description: ID of the organization of which, the children are to be retrieved.
+          required: true
+          type: string
+      responses:
+        200:
+          description: Ok
+          schema:
+            type: array
+            items:
+              type: string
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization
+  "/organizations/import":
+    post:
+      description: |
+        This API is used to create an organization to represent an exisitng organization of the underlying user store. Hence, this will not create any OU in the LDAP.
+      x-wso2-request: |
+        curl -k -X POST
+      x-wso2-curl: |
+        curl -k -X POST
+      x-wso2-response: |
+        {}
+      summary: |
+        Create an organization without changing the underlying LDAP.
+      # post parameters:
+      parameters:
+        - name: organization
+          in: body
+          description: This represents the organization to be added.
+          required: true
+          schema:
+            $ref: '#/definitions/OrganizationAdd'
+      responses:
+        201:
+          description: Successful Response
+          schema:
+            $ref: '#/definitions/Organization'
         400:
           description: Bad Request
           schema:
@@ -334,22 +465,15 @@ definitions:
     type: object
     required:
       - name
-      - parentId
-      - status
-      - rdn
     properties:
       name:
         type: string
       parentId:
         type: string
-      status:
-        type: boolean
-      rdn:
-        type: string
-      attributes:
+      userstoreConfigs:
         type: array
         items:
-          $ref: '#/definitions/Attribute'
+          $ref: '#/definitions/UserstoreConfig'
   #-----------------------------------------------------
   # Organization Object
   #-----------------------------------------------------
@@ -359,10 +483,7 @@ definitions:
       - id
       - name
       - parentId
-      - status
-      - rdn
-      - dn
-      - attributes
+      - active
       - lastModified
       - created
     properties:
@@ -372,53 +493,16 @@ definitions:
         type: string
       parentId:
         type: string
-      status:
-        type: boolean
-      rdn:
-        type: string
-      dn:
-        type: string
-      lastModified:
-        type: string
-      created:
-        type: string
-      attributes:
-        type: array
-        items:
-          $ref: '#/definitions/Attribute'
-      children:
-        type: array
-        items:
-          type: string
-  #-----------------------------------------------------
-  # BasicOrganization Object
-  #-----------------------------------------------------
-  BasicOrganization:
-    type: object
-    required:
-      - id
-      - name
-      - parentId
-      - status
-      - lastModified
-      - created
-    properties:
-      id:
-        type: string
-      name:
-        type: string
-      parentId:
-        type: string
-      status:
+      active:
         type: boolean
       lastModified:
         type: string
       created:
         type: string
   #-----------------------------------------------------
-  # Organization Attribute Object
+  # Organization UserstoreConfig Object
   #-----------------------------------------------------
-  Attribute:
+  UserstoreConfig:
     type: object
     required:
       - key
@@ -429,7 +513,23 @@ definitions:
       value:
         type: string
   #-----------------------------------------------------
-  # The Error Response  object
+  # Organization Patch Operation Object
+  #-----------------------------------------------------
+  Operation:
+    type: object
+    required:
+      - op
+      - path
+      - value
+    properties:
+      op:
+        type: string
+      path:
+        type: string
+      value:
+        type: string
+  #-----------------------------------------------------
+  # Error Response  object
   #-----------------------------------------------------
   Error:
     type: object
