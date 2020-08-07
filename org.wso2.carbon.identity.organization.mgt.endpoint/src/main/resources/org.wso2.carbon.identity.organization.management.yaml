@@ -472,8 +472,14 @@ definitions:
     properties:
       name:
         type: string
+      description:
+        type: string
       parentId:
         type: string
+      attributes:
+        type: array
+        items:
+          $ref: '#/definitions/Attribute'
       userstore-configs:
         type: array
         items:
