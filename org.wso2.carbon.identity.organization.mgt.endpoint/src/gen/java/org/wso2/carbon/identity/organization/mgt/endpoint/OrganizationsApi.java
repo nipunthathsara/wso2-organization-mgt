@@ -6,9 +6,10 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.factories.Organization
 
 import io.swagger.annotations.ApiParam;
 
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.BasicOrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 import java.util.List;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserstoreConfigDTO;
@@ -34,7 +35,7 @@ public class OrganizationsApi  {
     
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "Retrieve organizations created for this tenant which matches the defined search criteria, if any.\n", notes = "This API is used to search and retrieve organizations created for this tenant which matches the defined search criteria, if any.\n", response = OrganizationDTO.class, responseContainer = "List")
+    @io.swagger.annotations.ApiOperation(value = "Retrieve organizations created for this tenant which matches the defined search criteria, if any.\n", notes = "This API is used to search and retrieve organizations created for this tenant which matches the defined search criteria, if any.\n", response = BasicOrganizationDTO.class, responseContainer = "List")
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 200, message = "Ok"),
         
@@ -56,7 +57,7 @@ public class OrganizationsApi  {
     @Path("/import")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "Create an organization without changing the underlying LDAP.\n", notes = "This API is used to create an organization to represent an exisitng organization of the underlying user store. Hence, this will not create any OU in the LDAP.\n", response = OrganizationDTO.class)
+    @io.swagger.annotations.ApiOperation(value = "Create an organization without changing the underlying LDAP.\n", notes = "This API is used to create an organization to represent an exisitng organization of the underlying user store. Hence, this will not create any OU in the LDAP.\n", response = BasicOrganizationDTO.class)
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 201, message = "Successful Response"),
         
@@ -147,7 +148,7 @@ public class OrganizationsApi  {
         @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
 
     public Response organizationsOrganizationIdPatch(@ApiParam(value = "Id of the organization to be patched.",required=true ) @PathParam("organization-id")  String organizationId,
-    @ApiParam(value = "This represents the organization object to be updated." ,required=true ) List<OperationDTO> operations)
+    @ApiParam(value = "This represents the patch operation." ,required=true ) List<OperationDTO> operations)
     {
     return delegate.organizationsOrganizationIdPatch(organizationId,operations);
     }
@@ -175,9 +176,9 @@ public class OrganizationsApi  {
     @Path("/{organization-id}/userstore-configs")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "Patch user store configurations of an organization identified by the organization Id.\n", notes = "This API is used to patch user store configurations of an organization, identified by the organization Id.\n", response = UserstoreConfigDTO.class, responseContainer = "List")
+    @io.swagger.annotations.ApiOperation(value = "Patch user store configurations of an organization identified by the organization Id.\n", notes = "This API is used to patch user store configurations of an organization, identified by the organization Id.\n", response = void.class)
     @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "Ok"),
+        @io.swagger.annotations.ApiResponse(code = 204, message = "Ok"),
         
         @io.swagger.annotations.ApiResponse(code = 400, message = "Bad Request"),
         
@@ -187,15 +188,16 @@ public class OrganizationsApi  {
         
         @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
 
-    public Response organizationsOrganizationIdUserstoreConfigsPatch(@ApiParam(value = "ID of the organization of which, the user store configurations are to be retrieved.",required=true ) @PathParam("organization-id")  String organizationId)
+    public Response organizationsOrganizationIdUserstoreConfigsPatch(@ApiParam(value = "ID of the organization of which, the user store configurations are to be patched.",required=true ) @PathParam("organization-id")  String organizationId,
+    @ApiParam(value = "This represents the patch operation." ,required=true ) List<OperationDTO> operations)
     {
-    return delegate.organizationsOrganizationIdUserstoreConfigsPatch(organizationId);
+    return delegate.organizationsOrganizationIdUserstoreConfigsPatch(organizationId,operations);
     }
     @POST
     
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "Create a new organization.\n", notes = "This API is used to create the organization defined in the user input.\n", response = OrganizationDTO.class)
+    @io.swagger.annotations.ApiOperation(value = "Create a new organization.\n", notes = "This API is used to create the organization defined in the user input.\n", response = BasicOrganizationDTO.class)
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 201, message = "Successful Response"),
         

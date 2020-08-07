@@ -4,9 +4,10 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.*;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.*;
 
 
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.BasicOrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 import java.util.List;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserstoreConfigDTO;
@@ -55,7 +56,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
         return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
     }
     @Override
-    public Response organizationsOrganizationIdUserstoreConfigsPatch(String organizationId){
+    public Response organizationsOrganizationIdUserstoreConfigsPatch(String organizationId,List<OperationDTO> operations){
         // do some magic!
         return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
     }

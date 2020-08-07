@@ -3,9 +3,10 @@ package org.wso2.carbon.identity.organization.mgt.endpoint;
 import org.wso2.carbon.identity.organization.mgt.endpoint.*;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.*;
 
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.BasicOrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 import java.util.List;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserstoreConfigDTO;
@@ -25,7 +26,7 @@ public abstract class OrganizationsApiService {
     public abstract Response organizationsOrganizationIdGet(String organizationId);
     public abstract Response organizationsOrganizationIdPatch(String organizationId,List<OperationDTO> operations);
     public abstract Response organizationsOrganizationIdUserstoreConfigsGet(String organizationId);
-    public abstract Response organizationsOrganizationIdUserstoreConfigsPatch(String organizationId);
+    public abstract Response organizationsOrganizationIdUserstoreConfigsPatch(String organizationId,List<OperationDTO> operations);
     public abstract Response organizationsPost(OrganizationAddDTO organization);
 }
 

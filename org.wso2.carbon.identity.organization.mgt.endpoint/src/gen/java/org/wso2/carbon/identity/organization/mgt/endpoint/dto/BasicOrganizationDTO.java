@@ -1,8 +1,5 @@
 package org.wso2.carbon.identity.organization.mgt.endpoint.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.AttributeDTO;
 
 import io.swagger.annotations.*;
 import com.fasterxml.jackson.annotation.*;
@@ -14,7 +11,7 @@ import javax.validation.constraints.NotNull;
 
 
 @ApiModel(description = "")
-public class OrganizationDTO  {
+public class BasicOrganizationDTO  {
   
   
   @NotNull
@@ -34,9 +31,6 @@ public class OrganizationDTO  {
   
   @NotNull
   private String created = null;
-  
-  
-  private List<AttributeDTO> attributes = new ArrayList<AttributeDTO>();
 
   
   /**
@@ -111,23 +105,11 @@ public class OrganizationDTO  {
   }
 
   
-  /**
-   **/
-  @ApiModelProperty(value = "")
-  @JsonProperty("attributes")
-  public List<AttributeDTO> getAttributes() {
-    return attributes;
-  }
-  public void setAttributes(List<AttributeDTO> attributes) {
-    this.attributes = attributes;
-  }
-
-  
 
   @Override
   public String toString()  {
     StringBuilder sb = new StringBuilder();
-    sb.append("class OrganizationDTO {\n");
+    sb.append("class BasicOrganizationDTO {\n");
     
     sb.append("  id: ").append(id).append("\n");
     sb.append("  name: ").append(name).append("\n");
@@ -135,7 +117,6 @@ public class OrganizationDTO  {
     sb.append("  active: ").append(active).append("\n");
     sb.append("  lastModified: ").append(lastModified).append("\n");
     sb.append("  created: ").append(created).append("\n");
-    sb.append("  attributes: ").append(attributes).append("\n");
     sb.append("}\n");
     return sb.toString();
   }
