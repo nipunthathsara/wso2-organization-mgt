@@ -19,11 +19,12 @@
 package org.wso2.carbon.identity.organization.mgt.core;
 
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
-import org.wso2.carbon.identity.organization.mgt.core.model.BasicOrganization;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
+import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Organization manager service interface.
@@ -53,7 +54,7 @@ public interface OrganizationManager {
      * @return
      * @throws OrganizationManagementException
      */
-    List<BasicOrganization> getOrganizations(int offset, int limit, String sortBy, String sortOrder)
+    List<Organization> getOrganizations(int offset, int limit, String sortBy, String sortOrder)
             throws OrganizationManagementException;
 
     /**
@@ -76,7 +77,7 @@ public interface OrganizationManager {
      * @return
      * @throws OrganizationManagementException
      */
-    Organization updateOrganization(String organizationId, OrganizationAdd organizationAdd)
+    Organization patchOrganization(String organizationId, OrganizationAdd organizationAdd)
             throws OrganizationManagementException;
 
     /**
@@ -84,4 +85,11 @@ public interface OrganizationManager {
      * @throws OrganizationManagementException
      */
     void deleteOrganization(String organizationId) throws OrganizationManagementException;
+
+    /**
+     * @param organizationId
+     * @return
+     * @throws OrganizationManagementException
+     */
+    Map<String, UserStoreConfig> getUserStoreConfigs(String organizationId) throws OrganizationManagementException;
 }

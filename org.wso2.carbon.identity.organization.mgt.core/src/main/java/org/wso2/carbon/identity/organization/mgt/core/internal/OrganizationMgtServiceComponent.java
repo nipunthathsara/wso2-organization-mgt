@@ -24,10 +24,13 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
-import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
+import org.wso2.carbon.user.core.service.RealmService;
 
 /**
  * OSGI service component for organization management core bundle.
@@ -42,25 +45,44 @@ public class OrganizationMgtServiceComponent {
 
     /**
      * Register Organization Manager service in the OSGI context.
+     *
      * @param componentContext
      */
     @Activate
     protected void activate(ComponentContext componentContext) {
 
         try {
+            OrganizationMgtDataHolder.getInstance().setOrganizationMgtDao(new OrganizationMgtDaoImpl());
             BundleContext bundleContext = componentContext.getBundleContext();
-            //TODO Should I register DAO as a service?
-            bundleContext.registerService(OrganizationMgtDao.class.getName(), new OrganizationMgtDaoImpl(),null);
             bundleContext.registerService(OrganizationManager.class.getName(),
                     new OrganizationManagerImpl(), null);
-            OrganizationMgtDataHolder.getInstance().setOrganizationMgtDao(new OrganizationMgtDaoImpl());
             if (log.isDebugEnabled()) {
                 log.debug("Organization Management component activated successfully.");
             }
-            //TODO erase
-            log.info("Organization Management component activated successfully.*********************************");
         } catch (Throwable e) {
             log.error("Error while activating Organization Management module.", e);
         }
+    }
+
+    @Reference(
+            name = "realm.service",
+            service = org.wso2.carbon.user.core.service.RealmService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetRealmService")
+    protected void setRealmService(RealmService realmService) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Setting the Realm Service");
+        }
+        OrganizationMgtDataHolder.getInstance().setRealmService(realmService);
+    }
+
+    protected void unsetRealmService(RealmService realmService) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Unset the Realm Service.");
+        }
+        OrganizationMgtDataHolder.getInstance().setRealmService(null);
     }
 }

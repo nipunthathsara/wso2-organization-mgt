@@ -19,11 +19,13 @@
 package org.wso2.carbon.identity.organization.mgt.core.internal;
 
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
+import org.wso2.carbon.user.core.service.RealmService;
 
 public class OrganizationMgtDataHolder {
 
     private static OrganizationMgtDataHolder orgMgtDataHolder = new OrganizationMgtDataHolder();
-    private static OrganizationMgtDao organizationMgtDao;
+    private OrganizationMgtDao organizationMgtDao;
+    private RealmService realmService;
 
     public static OrganizationMgtDataHolder getInstance() {
 
@@ -37,6 +39,14 @@ public class OrganizationMgtDataHolder {
 
     public void setOrganizationMgtDao(OrganizationMgtDao organizationMgtDao) {
 
-        OrganizationMgtDataHolder.organizationMgtDao = organizationMgtDao;
+        this.organizationMgtDao = organizationMgtDao;
+    }
+
+    public RealmService getRealmService() {
+        return realmService;
+    }
+
+    public void setRealmService(RealmService realmService) {
+        this.realmService = realmService;
     }
 }

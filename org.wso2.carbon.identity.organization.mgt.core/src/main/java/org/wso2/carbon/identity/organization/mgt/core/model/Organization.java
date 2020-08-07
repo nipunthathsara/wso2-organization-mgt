@@ -18,43 +18,25 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class represents the model of an Organization.
  */
 public class Organization {
 
-    //TODO SHould search return the full object or basic?
-    //TODO patch or put?
-    //TODO delete an actove org status code ? bad request?
-    //TODO should /import changed?
-
     private String id;
     private String name;
+    private String description;
     private int tenantId;
-    //TODO should root be root?
     private String parentId;
-    //TODO isActive
-    private boolean status;
-    //TODO should this be renamed in a more generic way?
-    private String rdn;
-    private String dn;
+    private boolean active;
     private String lastModified;
     private String created;
-    private boolean hasAttribute;
-    private List<Attribute> attributes = new ArrayList<>();
-    //TODO should this be paginated/included?
-    private List<String> children = new ArrayList<>();
-
-    public List<String> getChildren() {
-        return children;
-    }
-
-    public void setChildren(List<String> children) {
-        this.children = children;
-    }
+    private boolean hasAttributes;
+    private Map<String, Attribute> attributes = new HashMap<>();
+    private Map<String, UserStoreConfig> userStoreConfigs = new HashMap<>();
 
     public String getId() {
         return id;
@@ -70,6 +52,14 @@ public class Organization {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public int getTenantId() {
@@ -88,28 +78,12 @@ public class Organization {
         this.parentId = parentId;
     }
 
-    public boolean getStatus() {
-        return status;
+    public boolean isActive() {
+        return active;
     }
 
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
-
-    public String getRdn() {
-        return rdn;
-    }
-
-    public void setRdn(String rdn) {
-        this.rdn = rdn;
-    }
-
-    public String getDn() {
-        return dn;
-    }
-
-    public void setDn(String dn) {
-        this.dn = dn;
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public String getLastModified() {
@@ -128,19 +102,27 @@ public class Organization {
         this.created = created;
     }
 
-    public boolean hasAttribute() {
-        return hasAttribute;
+    public boolean hasAttributes() {
+        return hasAttributes;
     }
 
-    public void setHasAttribute(boolean hasAttribute) {
-        this.hasAttribute = hasAttribute;
+    public void setHasAttributes(boolean hasAttributes) {
+        this.hasAttributes = hasAttributes;
     }
 
-    public List<Attribute> getAttributes() {
+    public Map<String, Attribute> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(List<Attribute> attributes) {
+    public void setAttributes(Map<String, Attribute> attributes) {
         this.attributes = attributes;
+    }
+
+    public Map<String, UserStoreConfig> getUserStoreConfigs() {
+        return userStoreConfigs;
+    }
+
+    public void setUserStoreConfigs(Map<String, UserStoreConfig> userStoreConfigs) {
+        this.userStoreConfigs = userStoreConfigs;
     }
 }

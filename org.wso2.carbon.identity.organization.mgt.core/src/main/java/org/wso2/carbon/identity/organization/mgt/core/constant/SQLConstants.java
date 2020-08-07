@@ -50,22 +50,23 @@ public class SQLConstants {
     public static final String ORG_PARENT_ID_COLUMN_NAME = "O.PARENT_ID";
     public static final String ATTR_ATTR_KEY_COLUMN_NAME = "A.ATTR_KEY";
     public static final String ATTR_ATTR_VALUE_COLUMN_NAME = "A.ATTR_VALUE";
-    public static final String UM_RDN_COLUMN_NAME = "U.RDN";
-    public static final String UM_DN_COLUMN_NAME = "U.DN";
-    public static final String VIEW_ORG_ID = "V.ID";
-    public static final String GET_DN_BY_ORG_ID =
+    public static final String VIEW_ID = "ID";
+    public static final String VIEW_CONFIG_ID = "CONFIG_ID";
+    public static final String VIEW_CONFIG_KEY = "CONFIG_KEY";
+    public static final String VIEW_CONFIG_VALUE = "CONFIG_VALUE";
+    public static final String GET_USER_STORE_CONFIGS_BY_ORG_ID =
             "SELECT\n" +
-             "    U.DN\n" +
-             "FROM\n" +
-             "    UM_USERSTORE_ORG_HIERARCHY U\n" +
-             "WHERE\n" +
-             "    U.ORG_ID = ?";
+            "    V.CONFIG_ID, V.CONFIG_KEY, V.CONFIG_VALUE\n" +
+            "FROM\n" +
+            "    ORG_MGT_VIEW V\n" +
+            "WHERE\n" +
+            "    V.TENANT_ID = ? AND V.ID = ?";
     public static final String INSERT_ORGANIZATION =
             "INSERT INTO \n" +
             "    IDN_ORG\n" +
-            "    (ID, TENANT_ID, NAME, CREATED_TIME, LAST_MODIFIED, HAS_ATTRIBUTE, STATUS, PARENT_ID)\n" +
+            "    (ID, TENANT_ID, NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, HAS_ATTRIBUTES, ACTIVE, PARENT_ID)\n" +
             "VALUES\n" +
-            "    (?, ?, ?, ?, ?, ?, ?, ?)";
+            "    (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String INSERT_ATTRIBUTES =
             "INSERT ALL\n";
     public static final String INSERT_ATTRIBUTE =
@@ -73,20 +74,20 @@ public class SQLConstants {
             "    VALUES (?, ?, ?, ?)\n";
     public static final String INSERT_ATTRIBUTES_CONCLUDE =
             "SELECT 1 FROM dual";
-    public static final String INSERT_OR_UPDATE_DIRECTORY_INFO =
-            "MERGE INTO\n" +
-            "    UM_USERSTORE_ORG_HIERARCHY U\n" +
-            "USING\n" +
-            "    (SELECT ? ORG_ID, ? RDN, ? DN FROM dual) N\n" +
-            "ON \n" +
-            "    (N.ORG_ID = U.ORG_ID)\n" +
-            "WHEN MATCHED THEN\n" +
-            "UPDATE\n" +
-            "    SET U.RDN = N.RDN, U.DN = N.DN\n" +
-            "WHEN NOT MATCHED THEN\n" +
-            "INSERT\n" +
-            "    (U.ORG_ID, U.RDN, U.DN)\n" +
-            "    VALUES (N.ORG_ID, N.RDN, N.DN);";
+    public static final String INSERT_OR_UPDATE_USER_STORE_CONFIG =
+        "MERGE INTO\n" +
+        "    IDN_ORG_USERSTORE_CONFIGS C\n" +
+        "USING\n" +
+        "    (SELECT ? ID, ? ORG_ID, ? ATTR_KEY, ? ATTR_VALUE FROM dual) N\n" +
+        "ON \n" +
+        "    (N.ORG_ID = C.ORG_ID AND N.ATTR_KEY = C.ATTR_KEY)\n" +
+        "WHEN MATCHED THEN\n" +
+        "UPDATE\n" +
+        "    SET C.ATTR_VALUE = N.ATTR_VALUE\n" +
+        "WHEN NOT MATCHED THEN\n" +
+        "INSERT\n" +
+        "    (C.ID, C.ORG_ID, C.ATTR_KEY, C.ATTR_VALUE)\n" +
+        "    VALUES (N.ID, N.ORG_ID, N.ATTR_KEY, N.ATTR_VALUE)";
     public static final String DELETE_ORGANIZATION_BY_ID =
             "DELETE\n" +
             "FROM\n" +

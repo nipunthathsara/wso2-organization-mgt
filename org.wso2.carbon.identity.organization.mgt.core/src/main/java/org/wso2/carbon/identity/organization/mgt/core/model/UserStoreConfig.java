@@ -18,60 +18,51 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.model;
 
-/**
- * This class represents an Attribute of an Organization entity.
- */
-public class Attribute {
+public class UserStoreConfig {
 
     private String key;
     private String value;
-    private String attributeId;
+    private String id;
 
-    public Attribute(String key, String value, String attributeId) {
+    public UserStoreConfig() {
 
-        this.key = key;
-        this.value = value;
-        this.attributeId = attributeId;
     }
 
-    public Attribute(String key, String value) {
+    public UserStoreConfig(String key, String value) {
 
         this.key = key;
         this.value = value;
     }
 
-    public Attribute() {
+    public UserStoreConfig(String key, String value, String id) {
 
-    }
-
-    public String getAttributeId() {
-
-        return attributeId;
-    }
-
-    public void setAttributeId(String attributeId) {
-
-        this.attributeId = attributeId;
+        this.key = key;
+        this.value = value;
+        this.id = id;
     }
 
     public String getKey() {
-
         return key;
     }
 
     public void setKey(String key) {
-
         this.key = key;
     }
 
     public String getValue() {
-
         return value;
     }
 
     public void setValue(String value) {
-
         this.value = value;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

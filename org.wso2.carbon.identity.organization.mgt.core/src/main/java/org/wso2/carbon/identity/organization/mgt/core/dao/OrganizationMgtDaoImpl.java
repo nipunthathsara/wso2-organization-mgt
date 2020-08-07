@@ -25,16 +25,23 @@ import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
-import org.wso2.carbon.identity.organization.mgt.core.model.BasicOrganization;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.util.JdbcUtils;
 import org.wso2.carbon.identity.organization.mgt.core.util.Utils;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static java.time.ZoneOffset.UTC;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR;
@@ -42,7 +49,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INSERT_ORGANIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_QUERY_LENGTH_EXCEEDED_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ALL_ORG_IDS_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_DN_BY_ORG_ID_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_USER_STORE_CONFIGS_BY_ORG_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_ATTR_KEY_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_ATTR_VALUE_COLUMN_NAME;
@@ -54,27 +61,26 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_BASIC_ORGANIZATIONS_BY_IDS;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_DN_BY_ORG_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_STORE_CONFIGS_BY_ORG_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES_CONCLUDE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ORGANIZATION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_DIRECTORY_INFO;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_USER_STORE_CONFIG;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORDER_BY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_CREATED_TIME_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_HAS_ATTRIBUTE_COLUMN_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_ID_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_LAST_MODIFIED_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_NAME_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_PARENT_ID_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_STATUS_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PAGINATION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_DN_COLUMN_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_RDN_COLUMN_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ORG_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_KEY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_VALUE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getMaximumQueryLengthInBytes;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
@@ -85,15 +91,9 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     private static final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(UTC));
 
     @Override
-    public int getPriority() {
-        return 1;
-    }
-
-    @Override
     public void addOrganization(int tenantId, Organization organization) throws OrganizationManagementException {
 
         Timestamp currentTime = new java.sql.Timestamp(new Date().getTime());
-
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
         try {
             jdbcTemplate.executeInsert(INSERT_ORGANIZATION,
@@ -102,19 +102,20 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         preparedStatement.setString(parameterIndex, organization.getId());
                         preparedStatement.setInt(++parameterIndex, organization.getTenantId());
                         preparedStatement.setString(++parameterIndex, organization.getName());
+                        preparedStatement.setString(++parameterIndex, organization.getDescription());
                         preparedStatement.setTimestamp(++parameterIndex, currentTime, calendar);
                         preparedStatement.setTimestamp(++parameterIndex, currentTime, calendar);
-                        preparedStatement.setInt(++parameterIndex, organization.hasAttribute() ? 1 : 0);
-                        preparedStatement.setInt(++parameterIndex, organization.getStatus() ? 1 : 0);
+                        preparedStatement.setInt(++parameterIndex, organization.hasAttributes() ? 1 : 0);
+                        preparedStatement.setInt(++parameterIndex, organization.isActive() ? 1 : 0);
                         preparedStatement.setString(++parameterIndex, organization.getParentId());
                     },
                     organization,
                     false
             );
-            if (organization.hasAttribute()) {
+            if (organization.hasAttributes()) {
                 insertOrganizationAttributes(jdbcTemplate, organization);
             }
-            insertOrUpdateDirectoryInfo(jdbcTemplate, organization);
+            insertOrUpdateUserStoreConfigs(jdbcTemplate, organization);
             organization.setCreated(currentTime.toInstant().toString());
             organization.setLastModified(currentTime.toInstant().toString());
         } catch (DataAccessException e) {
@@ -208,8 +209,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         collector.setParentId(resultSet.getString(ORG_PARENT_ID_COLUMN_NAME));
                         collector.setAttributeKey(resultSet.getString(ATTR_ATTR_KEY_COLUMN_NAME));
                         collector.setAttributeValue(resultSet.getString(ATTR_ATTR_VALUE_COLUMN_NAME));
-                        collector.setDn(resultSet.getString(UM_DN_COLUMN_NAME));
-                        collector.setRdn(resultSet.getString(UM_RDN_COLUMN_NAME));
+//                        collector.setDn(resultSet.getString(UM_DN_COLUMN_NAME));
+//                        collector.setRdn(resultSet.getString(UM_RDN_COLUMN_NAME));
                         return collector;
                     },
                     preparedStatement -> {
@@ -227,25 +228,40 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     @Override
-    public String getDnByOrganizationId(String organizationId) throws OrganizationManagementException {
+    public Map<String, UserStoreConfig> getUserStoreConfigsByOrgId(int tenantId, String organizationId) throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
         try {
-            String dn = jdbcTemplate.fetchSingleRecord(GET_DN_BY_ORG_ID,
-                    (resultSet, rowNumber) ->
-                            resultSet.getString(UM_DN_COLUMN_NAME),
+            List<UserStoreConfig> userStoreConfigs = jdbcTemplate.executeQuery(GET_USER_STORE_CONFIGS_BY_ORG_ID,
+                    (resultSet, rowNumber) -> {
+                        UserStoreConfig config = new UserStoreConfig();
+                        config.setId(resultSet.getString(VIEW_CONFIG_ID));
+                        config.setId(resultSet.getString(VIEW_CONFIG_KEY));
+                        config.setId(resultSet.getString(VIEW_CONFIG_VALUE));
+                        return config;
+                    },
                     preparedStatement -> {
-                        preparedStatement.setString(1, organizationId);
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, organizationId);
                     });
-            return dn;
+            return userStoreConfigs.stream().filter(distinctByKey(config -> config.getKey())).collect(
+                    Collectors.toMap(UserStoreConfig::getKey, config -> config));
+
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_RETRIEVE_DN_BY_ORG_ID_ERROR,
-                    organizationId, e);
+            throw handleServerException(ERROR_CODE_RETRIEVE_USER_STORE_CONFIGS_BY_ORG_ID_ERROR, organizationId, e);
         }
     }
 
+    public static <T> Predicate<T> distinctByKey(
+            Function<? super T, ?> keyExtractor) {
+
+        Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+        return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+    }
+
     @Override
-    public List<BasicOrganization> getOrganizations(int tenantId, int offset, int limit, String sortBy, String sortOrder)
+    public List<Organization> getOrganizations(int tenantId, int offset, int limit, String sortBy, String sortOrder)
             throws OrganizationManagementException {
 
         boolean paginationReq = offset >= 0 && limit > 0;
@@ -269,7 +285,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         try {
             orgIds = jdbcTemplate.executeQuery(query,
                     (resultSet, rowNumber) ->
-                            resultSet.getString(VIEW_ORG_ID),
+                            resultSet.getString(VIEW_ID),
                     preparedStatement -> {
                         preparedStatement.setInt(1, tenantId);
                     });
@@ -287,11 +303,11 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         template.executeInsert(query,
                 preparedStatement -> {
                     int parameterIndex = 0;
-                    for (Attribute attribute : organization.getAttributes()) {
+                    for (Map.Entry<String, Attribute> entry : organization.getAttributes().entrySet()) {
                         preparedStatement.setString(++parameterIndex, generateUniqueID());
                         preparedStatement.setString(++parameterIndex, organization.getId());
-                        preparedStatement.setString(++parameterIndex, attribute.getKey());
-                        preparedStatement.setString(++parameterIndex, attribute.getValue());
+                        preparedStatement.setString(++parameterIndex, entry.getValue().getKey());
+                        preparedStatement.setString(++parameterIndex, entry.getValue().getValue());
                     }
                 },
                 organization,
@@ -299,19 +315,23 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         );
     }
 
-    private void insertOrUpdateDirectoryInfo(JdbcTemplate template, Organization organization)
+    private void insertOrUpdateUserStoreConfigs(JdbcTemplate template, Organization organization)
             throws DataAccessException {
 
-        template.executeInsert(INSERT_OR_UPDATE_DIRECTORY_INFO,
-                preparedStatement -> {
-                    int parameterIndex = 0;
-                    preparedStatement.setString(++parameterIndex, organization.getId());
-                    preparedStatement.setString(++parameterIndex, organization.getRdn());
-                    preparedStatement.setString(++parameterIndex, organization.getDn());
-                },
-                organization,
-                false
-        );
+        for (Map.Entry<String, UserStoreConfig> entry : organization.getUserStoreConfigs().entrySet()) {
+            template.executeInsert(INSERT_OR_UPDATE_USER_STORE_CONFIG,
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        // On update, unique ID and Org ID will not be updated
+                        preparedStatement.setString(++parameterIndex, generateUniqueID());
+                        preparedStatement.setString(++parameterIndex, organization.getId());
+                        preparedStatement.setString(++parameterIndex, entry.getValue().getKey());
+                        preparedStatement.setString(++parameterIndex, entry.getValue().getValue());
+                    },
+                    organization,
+                    false
+            );
+        }
     }
 
     private Organization findChildOrganizations(JdbcTemplate template, Organization organization)
@@ -319,7 +339,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         template.executeQuery(FIND_CHILD_ORG_IDS,
                 (resultSet, rowNumber) -> {
-                    organization.getChildren().add(resultSet.getString(ORG_ID_COLUMN_NAME));
+//                    organization.getChildren().add(resultSet.getString(ORG_ID_COLUMN_NAME));
                     return null;
                 },
                 preparedStatement -> {
@@ -335,7 +355,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         for (int i = 0; i < organization.getAttributes().size(); i++) {
             sb.append(INSERT_ATTRIBUTE);
         }
-        // Multiple insertions require a SELECT 1 FROM Dual at the end
+        // Multiple insertions require a 'SELECT 1 FROM Dual' at the end
         sb.append(INSERT_ATTRIBUTES_CONCLUDE);
         if (sb.toString().getBytes().length > getMaximumQueryLengthInBytes()) {
             if (log.isDebugEnabled()) {
@@ -359,15 +379,15 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 organization.setCreated(collector.getCreatedTime().toString());
                 organization.setLastModified(collector.getLastModified().toString());
                 organization.setParentId(collector.getParentId());
-                organization.setHasAttribute(collector.hasAttribute());
-                organization.setStatus(collector.isStatus());
-                organization.setRdn(collector.getRdn());
-                organization.setDn(collector.getDn());
+                organization.setHasAttributes(collector.hasAttribute());
+                organization.setActive(collector.isStatus());
+//                organization.setRdn(collector.getRdn());
+//                organization.setDn(collector.getDn());
             }
-            if (organization.hasAttribute() && !organization.getAttributes().contains(collector.getAttributeKey())) {
-                organization.getAttributes()
-                        .add(new Attribute(collector.getAttributeKey(), collector.getAttributeValue()));
-            }
+//            if (organization.hasAttribute() && !organization.getAttributes().contains(collector.getAttributeKey())) {
+//                organization.getAttributes()
+//                        .add(new Attribute(collector.getAttributeKey(), collector.getAttributeValue()));
+//            }
         });
         return organization;
     }

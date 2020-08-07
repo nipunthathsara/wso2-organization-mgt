@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,11 +27,10 @@ import java.util.List;
 public class OrganizationAdd {
 
     private String name;
+    private String description;
     private String parentId;
-    private boolean status;
-    //TODO shouls this be an attribute? to support JDBC as well
-    private String rdn;
-    private List<Attribute> attributes;
+    private List<Attribute> attributes = new ArrayList<>();
+    private List<UserStoreConfig> userStoreConfigs = new ArrayList<>();
 
     public String getName() {
         return name;
@@ -48,20 +48,12 @@ public class OrganizationAdd {
         this.parentId = parentId;
     }
 
-    public boolean getStatus() {
-        return status;
+    public String getDescription() {
+        return description;
     }
 
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
-
-    public String getRdn() {
-        return rdn;
-    }
-
-    public void setRdn(String rdn) {
-        this.rdn = rdn;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<Attribute> getAttributes() {
@@ -70,5 +62,13 @@ public class OrganizationAdd {
 
     public void setAttributes(List<Attribute> attributes) {
         this.attributes = attributes;
+    }
+
+    public List<UserStoreConfig> getUserStoreConfigs() {
+        return userStoreConfigs;
+    }
+
+    public void setUserStoreConfigs(List<UserStoreConfig> userStoreConfigs) {
+        this.userStoreConfigs = userStoreConfigs;
     }
 }

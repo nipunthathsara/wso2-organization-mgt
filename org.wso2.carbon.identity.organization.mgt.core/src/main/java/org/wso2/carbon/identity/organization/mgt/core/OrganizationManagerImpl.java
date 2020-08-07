@@ -28,21 +28,35 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
-import org.wso2.carbon.identity.organization.mgt.core.model.BasicOrganization;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
+import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
+import org.wso2.carbon.user.api.UserRealm;
+import org.wso2.carbon.user.api.UserStoreException;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_PAGINATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_SORTING;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORG_ID_NOT_FOUND;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_ACCESS_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PRIMARY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.READ_WRITE_LDAP_USER_STORE_CLASS_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.UNIQUE_ID_READ_WRITE_LDAP_USER_STORE_CLASS_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getLdapRootDn;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationAddObject;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationObject;
+import static org.wso2.carbon.user.core.ldap.LDAPConstants.USER_SEARCH_BASE;
 
 /**
  * This class implements the {@link OrganizationManager} interface.
@@ -62,7 +76,21 @@ public class OrganizationManagerImpl implements OrganizationManager {
         Organization organization = generateOrganizationFromRequest(organizationAdd);
         organization.setId(generateUniqueID());
         organization.setTenantId(tenantId);
-        // No children as this is a leaf organization at the moment
+        // If user store domain is not provided, defaults to PRIMARY
+        if (organization.getUserStoreConfigs().get(USER_STORE_DOMAIN) == null) {
+            organization.getUserStoreConfigs().put(USER_STORE_DOMAIN, new UserStoreConfig(USER_STORE_DOMAIN, PRIMARY));
+        }
+        // If RDN is not provided, defaults to organization ID
+        if (organization.getUserStoreConfigs().get(RDN) == null) {
+            organization.getUserStoreConfigs().put(RDN, new UserStoreConfig(RDN, "ou=".concat(organization.getId())));
+        }
+        // Construct and set DN using RDN, User store domain and the parent ID
+        String dn = constructDn(
+                organization.getParentId(),
+                organization.getUserStoreConfigs().get(RDN).getValue(),
+                organization.getUserStoreConfigs().get(USER_STORE_DOMAIN).getValue()
+        );
+        organization.getUserStoreConfigs().put(DN, new UserStoreConfig(DN, dn));
         logOrganizationObject(organization);
         organizationMgtDao.addOrganization(tenantId, organization);
         return organization;
@@ -78,7 +106,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     @Override
-    public List<BasicOrganization> getOrganizations(int offset, int limit, String sortBy, String sortOrder)
+    public List<Organization> getOrganizations(int offset, int limit, String sortBy, String sortOrder)
             throws OrganizationManagementException {
 
         // Validate pagination and sorting parameters
@@ -90,7 +118,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     @Override
-    public Organization updateOrganization(String organizationId, OrganizationAdd organizationAdd)
+    public Organization patchOrganization(String organizationId, OrganizationAdd organizationAdd)
             throws OrganizationManagementException {
 
         return null;
@@ -120,71 +148,109 @@ public class OrganizationManagerImpl implements OrganizationManager {
         return organizationMgtDao.isOrganizationExistById(tenantId, id);
     }
 
+    @Override
+    public Map<String, UserStoreConfig> getUserStoreConfigs(String organizationId)
+            throws OrganizationManagementException {
+
+        return organizationMgtDao.getUserStoreConfigsByOrgId(tenantId, organizationId);
+    }
+
     private void validateAddOrganizationRequest(OrganizationAdd organizationAdd)
             throws OrganizationManagementException {
 
         // Check required fields.
-        if (StringUtils.isBlank(organizationAdd.getName()) || StringUtils.isBlank(organizationAdd.getRdn()) ||
-                StringUtils.isBlank(organizationAdd.getRdn())) {
-            throw handleClientException(OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
+        if (StringUtils.isBlank(organizationAdd.getName())) {
+            throw handleClientException(ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
                     "Required fields are empty");
         }
-        // Attribute keys can't be empty
+        organizationAdd.setName(organizationAdd.getName().trim());
+        // Attribute keys cannot be empty
         for (Attribute attribute : organizationAdd.getAttributes()) {
             if (StringUtils.isBlank(attribute.getKey())) {
-                throw handleClientException(OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
+                throw handleClientException(ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
                         "Attribute keys cannot be empty.");
             }
             // Sanitize input
             attribute.setKey(attribute.getKey().trim());
+            attribute.setValue(attribute.getValue().trim());
+        }
+        // User store config keys and values can't be empty
+        List<UserStoreConfig> userStoreConfigs = organizationAdd.getUserStoreConfigs();
+        for (int i = 0; i < userStoreConfigs.size(); i++) {
+            UserStoreConfig config = userStoreConfigs.get(i);
+            if (StringUtils.isBlank(config.getKey()) || StringUtils.isBlank(config.getValue())) {
+                throw handleClientException(ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
+                        "User store config attribute keys or values cannot be empty.");
+            }
+            // Sanitize input
+            config.setKey(config.getKey().trim());
+            config.setValue(config.getValue().trim());
+            // User store configs may only contain RDN and USER_STORE_DOMAIN (DN to be constructed later)
+            if (config.getKey().equalsIgnoreCase(RDN) || config.getKey().equalsIgnoreCase(USER_STORE_DOMAIN)) {
+                config.setKey(config.getKey().toUpperCase());
+            } else {
+                userStoreConfigs.remove(i);
+            }
         }
         // Check if the organization name already exists for the given tenant
-        if (isOrganizationExistByName(organizationAdd.getName().trim())) {
+        if (isOrganizationExistByName(organizationAdd.getName())) {
             throw handleClientException(OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ALREADY_EXISTS_ERROR,
-                    "Organization name " + organizationAdd.getName().trim() + " already exists in this tenant.");
+                    "Organization name " + organizationAdd.getName() + " already exists in this tenant.");
         }
         // Check if parent org exists
         if (StringUtils.isNotBlank(organizationAdd.getParentId()) &&
                 !isOrganizationExistById(organizationAdd.getParentId().trim())) {
-            throw handleClientException(OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
+            throw handleClientException(ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
                     "Defined parent organization doesn't exist " + organizationAdd.getParentId().trim());
         }
-        // Sanitize values
-        organizationAdd.setName(organizationAdd.getName().trim());
-        organizationAdd.setRdn(organizationAdd.getRdn().trim());
+        // TODO Check if the user store domain matches that of the parent.
         organizationAdd.setParentId(
-                StringUtils.isNotBlank(organizationAdd.getParentId()) ? organizationAdd.getParentId().trim() : null);
+                StringUtils.isNotBlank(organizationAdd.getParentId()) ? organizationAdd.getParentId().trim() : ROOT);
     }
 
-    //TODO should this be public? No as this is not tenant aware.
-    private String getDnByOrganizationId(String organizationId) throws OrganizationManagementException {
+    private String constructDn(String parentId, String rdn, String userStoreDomain)
+            throws OrganizationManagementException {
 
-        return organizationMgtDao.getDnByOrganizationId(organizationId);
-    }
-
-    private String constructDn(String parentId, String rdn) throws OrganizationManagementException {
-
-        if (parentId != null) {
-            String parentDn = getDnByOrganizationId(parentId);
-            return parentDn.concat("," + rdn);
-        } else {
-            return getLdapRootDn().concat("," + rdn);
+        //TODO mind the user store domain
+        String parentDn, dn;
+        try {
+            UserRealm userRealm = OrganizationMgtDataHolder.getInstance().getRealmService().getTenantUserRealm(tenantId);
+            String userStoreClass = userRealm.getRealmConfiguration().getUserStoreClass();
+            // Check if organization management is supported by the user store
+            if (!(UNIQUE_ID_READ_WRITE_LDAP_USER_STORE_CLASS_NAME.equals(userStoreClass)
+                    || READ_WRITE_LDAP_USER_STORE_CLASS_NAME.equals(userStoreClass))) {
+                throw handleClientException(ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
+                        "Organization Mgt is only supported for Read/Write LDAP user stores. Provided domain : " + userStoreDomain);
+            }
+            if (ROOT.equals(parentId)) {
+                // If root level organization
+                parentDn = userRealm.getRealmConfiguration().getUserStoreProperty(USER_SEARCH_BASE);
+                dn = rdn.concat(",").concat(parentDn);
+            } else {
+                dn = rdn.concat(",").concat(getUserStoreConfigs(parentId).get(DN).getValue());
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("User store domain : " + userStoreDomain + ", RDN : " + rdn + ", DN : " + dn);
+            }
+            return dn;
+        } catch (UserStoreException e) {
+            throw handleServerException(ERROR_CODE_USER_STORE_ACCESS_ERROR, "Error while constructing the DN", e);
         }
     }
 
-    private Organization generateOrganizationFromRequest(OrganizationAdd organizationAdd)
-            throws OrganizationManagementException {
+    private Organization generateOrganizationFromRequest(OrganizationAdd organizationAdd) {
 
         Organization organization = new Organization();
         organization.setName(organizationAdd.getName());
+        organization.setDescription(organizationAdd.getDescription());
         organization.setParentId(organizationAdd.getParentId());
-        organization.setStatus(organizationAdd.getStatus());
-        if (organizationAdd.getAttributes() != null) {
-            organization.setAttributes(organizationAdd.getAttributes());
-        }
-        organization.setHasAttribute(!organizationAdd.getAttributes().isEmpty());
-        organization.setRdn(organizationAdd.getRdn());
-        organization.setDn(constructDn(organization.getParentId(), organization.getRdn()));
+        organization.setActive(true);
+        organization.setHasAttributes(!organizationAdd.getAttributes().isEmpty());
+        // Convert attributes list to map for better accessibility
+        organization.setAttributes(organizationAdd.getAttributes().stream().collect(
+                Collectors.toMap(Attribute::getKey, attribute -> attribute)));
+        organization.setUserStoreConfigs(organizationAdd.getUserStoreConfigs().stream().collect(
+                Collectors.toMap(UserStoreConfig::getKey, config -> config)));
         return organization;
     }
 

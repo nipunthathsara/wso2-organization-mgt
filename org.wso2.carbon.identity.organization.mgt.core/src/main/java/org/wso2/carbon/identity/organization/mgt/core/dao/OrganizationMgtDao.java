@@ -19,22 +19,16 @@
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
-import org.wso2.carbon.identity.organization.mgt.core.model.BasicOrganization;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Interface to perform CRUD operations on {@link Organization}
  */
 public interface OrganizationMgtDao {
-
-    /**
-     * Get priority value for the {@link OrganizationMgtDao}.
-     *
-     * @return Priority value for the DAO.
-     */
-    int getPriority();
 
     /**
      * Create new {@link Organization} in the database.
@@ -89,14 +83,15 @@ public interface OrganizationMgtDao {
      * @return
      * @throws OrganizationManagementException
      */
-    List<BasicOrganization> getOrganizations(int tenantId, int offset, int limit, String sortBy, String sortOrder)
+    List<Organization> getOrganizations(int tenantId, int offset, int limit, String sortBy, String sortOrder)
             throws OrganizationManagementException;
 
     /**
-     * Returns the DN value of the {@link Organization} referenced by the given Organization ID.
+     * Returns user store configs of the {@link Organization} identified by the given ID.
+     * @param tenantId
      * @param organizationId
      * @return
      * @throws OrganizationManagementException
      */
-    String getDnByOrganizationId(String organizationId) throws OrganizationManagementException;
+    Map<String, UserStoreConfig> getUserStoreConfigsByOrgId(int tenantId, String organizationId) throws OrganizationManagementException;
 }
