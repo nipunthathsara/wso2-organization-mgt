@@ -92,7 +92,7 @@ paths:
         201:
           description: Successful Response
           schema:
-            $ref: '#/definitions/Organization'
+            $ref: '#/definitions/BasicOrganization'
         400:
           description: Bad Request
           schema:
@@ -149,7 +149,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Organization'
+              $ref: '#/definitions/BasicOrganization'
         400:
           description: Bad Request
           schema:
@@ -224,7 +224,7 @@ paths:
           type: 'string'
         - name: Operations
           in: body
-          description:  This represents the organization object to be updated.
+          description:  This represents the patch operation.
           required: true
           schema:
             type: array
@@ -342,16 +342,20 @@ paths:
       parameters:
         - name: organization-id
           in: path
-          description: ID of the organization of which, the user store configurations are to be retrieved.
+          description: ID of the organization of which, the user store configurations are to be patched.
           required: true
           type: string
-      responses:
-        200:
-          description: Ok
+        - name: Operations
+          in: body
+          description:  This represents the patch operation.
+          required: true
           schema:
             type: array
             items:
-              $ref: '#/definitions/UserstoreConfig'
+              $ref: '#/definitions/Operation'
+      responses:
+        204:
+          description: Ok
         400:
           description: Bad Request
           schema:
@@ -437,7 +441,7 @@ paths:
         201:
           description: Successful Response
           schema:
-            $ref: '#/definitions/Organization'
+            $ref: '#/definitions/BasicOrganization'
         400:
           description: Bad Request
           schema:
@@ -470,10 +474,35 @@ definitions:
         type: string
       parentId:
         type: string
-      userstoreConfigs:
+      userstore-configs:
         type: array
         items:
           $ref: '#/definitions/UserstoreConfig'
+  #-----------------------------------------------------
+  # BasicOrganization Object
+  #-----------------------------------------------------
+  BasicOrganization:
+    type: object
+    required:
+      - id
+      - name
+      - parentId
+      - active
+      - lastModified
+      - created
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      parentId:
+        type: string
+      active:
+        type: boolean
+      lastModified:
+        type: string
+      created:
+        type: string
   #-----------------------------------------------------
   # Organization Object
   #-----------------------------------------------------
@@ -498,6 +527,23 @@ definitions:
       lastModified:
         type: string
       created:
+        type: string
+      attributes:
+        type: array
+        items:
+          $ref: '#/definitions/Attribute'
+  #-----------------------------------------------------
+  # Organization Attribute Object
+  #-----------------------------------------------------
+  Attribute:
+    type: object
+    required:
+      - key
+      - value
+    properties:
+      key:
+        type: string
+      value:
         type: string
   #-----------------------------------------------------
   # Organization UserstoreConfig Object
