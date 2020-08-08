@@ -23,6 +23,9 @@ public class OrganizationDTO  {
   @NotNull
   private String name = null;
   
+  
+  private String description = null;
+  
   @NotNull
   private String parentId = null;
   
@@ -60,6 +63,18 @@ public class OrganizationDTO  {
   }
   public void setName(String name) {
     this.name = name;
+  }
+
+  
+  /**
+   **/
+  @ApiModelProperty(value = "")
+  @JsonProperty("description")
+  public String getDescription() {
+    return description;
+  }
+  public void setDescription(String description) {
+    this.description = description;
   }
 
   
@@ -131,6 +146,7 @@ public class OrganizationDTO  {
     
     sb.append("  id: ").append(id).append("\n");
     sb.append("  name: ").append(name).append("\n");
+    sb.append("  description: ").append(description).append("\n");
     sb.append("  parentId: ").append(parentId).append("\n");
     sb.append("  active: ").append(active).append("\n");
     sb.append("  lastModified: ").append(lastModified).append("\n");

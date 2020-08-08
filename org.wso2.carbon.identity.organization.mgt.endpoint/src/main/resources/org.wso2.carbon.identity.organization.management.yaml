@@ -528,6 +528,8 @@ definitions:
         type: string
       name:
         type: string
+      description:
+        type: string
       parentId:
         type: string
       active:
