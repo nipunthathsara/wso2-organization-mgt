@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.endpoint.*;
 
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_PATH;
@@ -20,6 +21,8 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 
@@ -67,8 +70,17 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsOrganizationIdUserstoreConfigsGet(String organizationId) {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+
+        try {
+            Map<String, UserStoreConfig> userStoreConfigs = getOrganizationManager().getUserStoreConfigs(organizationId);
+            return Response.ok(userStoreConfigs.values().stream().collect(Collectors.toList())).build();
+        } catch (OrganizationManagementClientException e) {
+            return handleBadRequestResponse(e, LOG);
+        } catch (OrganizationManagementException e) {
+            return handleServerErrorResponse(e, LOG);
+        } catch (Throwable throwable) {
+            return handleUnexpectedServerError(throwable, LOG);
+        }
     }
 
     @Override
