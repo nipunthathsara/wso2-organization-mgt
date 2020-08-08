@@ -196,6 +196,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
+            //TODO query is done, do the rest.
             organizationRowDataCollectors = jdbcTemplate.executeQuery(GET_ORGANIZATION_BY_ID,
                     (resultSet, rowNumber) -> {
                         OrganizationRowDataCollector collector = new OrganizationRowDataCollector();

@@ -110,28 +110,11 @@ public class SQLConstants {
                     "   U.ORG_ID = ?";
     public static final String GET_ORGANIZATION_BY_ID =
             "SELECT\n" +
-            "   O.NAME,\n" +
-            "   O.CREATED_TIME,\n" +
-            "   O.LAST_MODIFIED,\n" +
-            "   O.HAS_ATTRIBUTE,\n" +
-            "   O.STATUS,\n" +
-            "   O.PARENT_ID,\n" +
-            "   A.ATTR_KEY,\n" +
-            "   A.ATTR_VALUE\n" +
-            "   U.RDN\n" +
-            "   U.DN\n" +
+            "    DISTINCT V.ID, V.NAME, V.DESCRIPTION, V.PARENT_ID, V.ACTIVE, V.LAST_MODIFIED, V.CREATED_TIME, V.ATTR_ID, V.ATTR_KEY, V.ATTR_VALUE\n" +
             "FROM\n" +
-            "    IDN_ORG O\n" +
-            "INNER JOIN\n" +
-            "    IDN_ORG_ATTRIBUTES A\n" +
-            "ON\n" +
-            "    (O.HAS_ATTRIBUTE = 1 AND O.ID = A.ORG_ID)\n" +
-            "LEFT JOIN\n" +
-            "    UM_USERSTORE_ORG_HIERARCHY U\n" +
-            "ON\n" +
-            "    O.ID = U.ORG_ID\n" +
+            "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +
-            "    O.ID = ? AND O.TENANT_ID = ?";
+            "    V.TENANT_ID = ? AND V.ID = ? AND V.ATTR_ID IS NOT NULL";
     public static final String FIND_CHILD_ORG_IDS =
             "SELECT\n" +
             "    O.ID\n" +
