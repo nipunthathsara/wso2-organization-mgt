@@ -236,8 +236,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     (resultSet, rowNumber) -> {
                         UserStoreConfig config = new UserStoreConfig();
                         config.setId(resultSet.getString(VIEW_CONFIG_ID));
-                        config.setId(resultSet.getString(VIEW_CONFIG_KEY));
-                        config.setId(resultSet.getString(VIEW_CONFIG_VALUE));
+                        config.setKey(resultSet.getString(VIEW_CONFIG_KEY));
+                        config.setValue(resultSet.getString(VIEW_CONFIG_VALUE));
                         return config;
                     },
                     preparedStatement -> {
@@ -245,19 +245,12 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, organizationId);
                     });
-            return userStoreConfigs.stream().filter(distinctByKey(config -> config.getKey())).collect(
-                    Collectors.toMap(UserStoreConfig::getKey, config -> config));
+            System.out.println("gg");
+            return userStoreConfigs.stream().collect(Collectors.toMap(UserStoreConfig::getKey, config -> config));
 
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_RETRIEVE_USER_STORE_CONFIGS_BY_ORG_ID_ERROR, organizationId, e);
         }
-    }
-
-    public static <T> Predicate<T> distinctByKey(
-            Function<? super T, ?> keyExtractor) {
-
-        Map<Object, Boolean> seen = new ConcurrentHashMap<>();
-        return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
     @Override

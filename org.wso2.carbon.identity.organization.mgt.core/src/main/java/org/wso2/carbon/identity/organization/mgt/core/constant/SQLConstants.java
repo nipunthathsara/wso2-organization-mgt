@@ -54,13 +54,15 @@ public class SQLConstants {
     public static final String VIEW_CONFIG_ID = "CONFIG_ID";
     public static final String VIEW_CONFIG_KEY = "CONFIG_KEY";
     public static final String VIEW_CONFIG_VALUE = "CONFIG_VALUE";
+    // View returns null for non matching entries upon join. Hence, NULL check.
+    // View returns duplicate CONFIG_IDs if the  #attributes > #configs. Hence, DISTINCT
     public static final String GET_USER_STORE_CONFIGS_BY_ORG_ID =
             "SELECT\n" +
-            "    V.CONFIG_ID, V.CONFIG_KEY, V.CONFIG_VALUE\n" +
+            "    DISTINCT V.CONFIG_ID, V.CONFIG_KEY, V.CONFIG_VALUE\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +
-            "    V.TENANT_ID = ? AND V.ID = ?";
+            "    V.TENANT_ID = ? AND V.ID = ? AND V.CONFIG_ID IS NOT NULL";
     public static final String INSERT_ORGANIZATION =
             "INSERT INTO \n" +
             "    IDN_ORG\n" +
