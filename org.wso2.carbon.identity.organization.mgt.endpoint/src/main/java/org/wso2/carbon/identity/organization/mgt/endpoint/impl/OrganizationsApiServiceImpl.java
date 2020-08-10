@@ -9,7 +9,8 @@ import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.endpoint.*;
 
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_PATH;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getBasicOrganizationDTOFromModel;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getBasicOrganizationDTOFromOrganization;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationDTOFromOrganization;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationManager;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationAddFromDTO;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleBadRequestResponse;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 
 import javax.ws.rs.core.Response;
 
@@ -58,8 +60,17 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsOrganizationIdGet(String organizationId) {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+
+        try {
+            Organization organization = getOrganizationManager().getOrganization(organizationId);
+            return Response.ok().entity(getOrganizationDTOFromOrganization(organization)).build();
+        } catch (OrganizationManagementClientException e) {
+            return handleBadRequestResponse(e, LOG);
+        } catch (OrganizationManagementException e) {
+            return handleServerErrorResponse(e, LOG);
+        } catch (Throwable throwable) {
+            return handleUnexpectedServerError(throwable, LOG);
+        }
     }
 
     @Override
@@ -97,7 +108,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             Organization organization = getOrganizationManager()
                     .addOrganization(getOrganizationAddFromDTO(organizationAddDTO));
             return Response.created(getResourceURI(organization))
-                    .entity(getBasicOrganizationDTOFromModel(organization)).build();
+                    .entity(getBasicOrganizationDTOFromOrganization(organization)).build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, LOG);
         } catch (OrganizationManagementException e) {

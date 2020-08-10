@@ -32,6 +32,7 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.dto.AttributeDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.BasicOrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserstoreConfigDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.BadRequestException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ConflictRequestException;
@@ -70,7 +71,7 @@ public class OrganizationMgtEndpointUtil {
         return organizationAdd;
     }
 
-    public static BasicOrganizationDTO getBasicOrganizationDTOFromModel(Organization organization) {
+    public static BasicOrganizationDTO getBasicOrganizationDTOFromOrganization(Organization organization) {
 
         BasicOrganizationDTO basicOrganizationDTO = new BasicOrganizationDTO();
         basicOrganizationDTO.setId(organization.getId());
@@ -83,6 +84,21 @@ public class OrganizationMgtEndpointUtil {
         return basicOrganizationDTO;
     }
 
+    public static OrganizationDTO getOrganizationDTOFromOrganization(Organization organization) {
+
+        OrganizationDTO organizationDTO = new OrganizationDTO();
+        organizationDTO.setId(organization.getId());
+        organizationDTO.setName(organization.getName());
+        organizationDTO.setDescription(organization.getDescription());
+        organizationDTO.setParentId(organization.getParentId());
+        organizationDTO.setActive(organization.isActive());
+        organizationDTO.setCreated(organization.getCreated());
+        organizationDTO.setLastModified(organization.getLastModified());
+        organizationDTO.setAttributes(organization.getAttributes().values().stream()
+                .map(OrganizationMgtEndpointUtil::getAttributeDTOFromAttribute).collect(Collectors.toList()));
+        return organizationDTO;
+    }
+
     public static Attribute getAttributeFromDTO(AttributeDTO attributeDTO) {
 
         return new Attribute(attributeDTO.getKey(), attributeDTO.getValue());
@@ -93,7 +109,7 @@ public class OrganizationMgtEndpointUtil {
         return new UserStoreConfig(userStoreConfigDTO.getKey(), userStoreConfigDTO.getValue());
     }
 
-    public static AttributeDTO getAttributeDTOFromModel(Attribute attribute) {
+    public static AttributeDTO getAttributeDTOFromAttribute(Attribute attribute) {
 
         AttributeDTO attributeDTO = new AttributeDTO();
         attributeDTO.setKey(attribute.getKey());
