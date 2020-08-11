@@ -26,17 +26,20 @@ import java.sql.Timestamp;
 public class OrganizationRowDataCollector {
 
     private String id;
-    private int tenantId;
     private String name;
-    private Timestamp createdTime;
-    private Timestamp lastModified;
-    private boolean hasAttribute;
-    private boolean status;
+    private String description;
+    private int tenantId;
     private String parentId;
+    private boolean active;
+    private Timestamp lastModified;
+    private Timestamp created;
+    private boolean hasAttributes;
+    private String attributeId;
     private String attributeKey;
     private String attributeValue;
-    private String rdn;
-    private String dn;
+    private String configId;
+    private String configKey;
+    private String configValue;
 
     public String getId() {
         return id;
@@ -44,14 +47,6 @@ public class OrganizationRowDataCollector {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public int getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(int tenantId) {
-        this.tenantId = tenantId;
     }
 
     public String getName() {
@@ -62,12 +57,36 @@ public class OrganizationRowDataCollector {
         this.name = name;
     }
 
-    public Timestamp getCreatedTime() {
-        return createdTime;
+    public String getDescription() {
+        return description;
     }
 
-    public void setCreatedTime(Timestamp createdTime) {
-        this.createdTime = createdTime;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public int getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(int tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public String getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public Timestamp getLastModified() {
@@ -78,28 +97,28 @@ public class OrganizationRowDataCollector {
         this.lastModified = lastModified;
     }
 
-    public boolean hasAttribute() {
-        return hasAttribute;
+    public Timestamp getCreated() {
+        return created;
     }
 
-    public void setHasAttribute(boolean hasAttribute) {
-        this.hasAttribute = hasAttribute;
+    public void setCreated(Timestamp created) {
+        this.created = created;
     }
 
-    public boolean isStatus() {
-        return status;
+    public boolean hasAttributes() {
+        return hasAttributes;
     }
 
-    public void setStatus(boolean status) {
-        this.status = status;
+    public void setHasAttributes(boolean hasAttributes) {
+        this.hasAttributes = hasAttributes;
     }
 
-    public String getParentId() {
-        return parentId;
+    public String getAttributeId() {
+        return attributeId;
     }
 
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
+    public void setAttributeId(String attributeId) {
+        this.attributeId = attributeId;
     }
 
     public String getAttributeKey() {
@@ -118,19 +137,27 @@ public class OrganizationRowDataCollector {
         this.attributeValue = attributeValue;
     }
 
-    public String getRdn() {
-        return rdn;
+    public String getConfigId() {
+        return configId;
     }
 
-    public void setRdn(String rdn) {
-        this.rdn = rdn;
+    public void setConfigId(String configId) {
+        this.configId = configId;
     }
 
-    public String getDn() {
-        return dn;
+    public String getConfigKey() {
+        return configKey;
     }
 
-    public void setDn(String dn) {
-        this.dn = dn;
+    public void setConfigKey(String configKey) {
+        this.configKey = configKey;
+    }
+
+    public String getConfigValue() {
+        return configValue;
+    }
+
+    public void setConfigValue(String configValue) {
+        this.configValue = configValue;
     }
 }

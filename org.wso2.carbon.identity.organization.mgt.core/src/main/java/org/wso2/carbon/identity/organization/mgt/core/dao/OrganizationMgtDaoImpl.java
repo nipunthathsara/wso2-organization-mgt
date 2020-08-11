@@ -77,10 +77,20 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_PARENT_ID_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORG_STATUS_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PAGINATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ACTIVE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_KEY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_VALUE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_KEY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_VALUE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_HAS_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getMaximumQueryLengthInBytes;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
@@ -196,33 +206,30 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
-            //TODO query is done, do the rest.
             organizationRowDataCollectors = jdbcTemplate.executeQuery(GET_ORGANIZATION_BY_ID,
                     (resultSet, rowNumber) -> {
                         OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
                         collector.setId(organizationId);
-                        collector.setTenantId(tenantId);
-                        collector.setName(resultSet.getString(ORG_NAME_COLUMN_NAME));
-                        collector.setCreatedTime(resultSet.getTimestamp(ORG_CREATED_TIME_COLUMN_NAME, calendar));
-                        collector.setLastModified(resultSet.getTimestamp(ORG_LAST_MODIFIED_COLUMN_NAME, calendar));
-                        collector.setHasAttribute(resultSet.getInt(ORG_HAS_ATTRIBUTE_COLUMN_NAME) == 1 ? true : false);
-                        collector.setStatus(resultSet.getInt(ORG_STATUS_COLUMN_NAME) == 1 ? true : false);
-                        collector.setParentId(resultSet.getString(ORG_PARENT_ID_COLUMN_NAME));
-                        collector.setAttributeKey(resultSet.getString(ATTR_ATTR_KEY_COLUMN_NAME));
-                        collector.setAttributeValue(resultSet.getString(ATTR_ATTR_VALUE_COLUMN_NAME));
-//                        collector.setDn(resultSet.getString(UM_DN_COLUMN_NAME));
-//                        collector.setRdn(resultSet.getString(UM_RDN_COLUMN_NAME));
+                        collector.setName(resultSet.getString(VIEW_NAME));
+                        collector.setDescription(resultSet.getString(VIEW_DESCRIPTION));
+                        collector.setParentId(resultSet.getString(VIEW_PARENT_ID));
+                        collector.setActive(resultSet.getInt(VIEW_ACTIVE) == 1 ? true : false);
+                        collector.setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED, calendar));
+                        collector.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME, calendar));
+                        collector.setHasAttributes(resultSet.getInt(VIEW_HAS_ATTRIBUTES) == 1 ? true : false);
+                        collector.setAttributeId(resultSet.getString(VIEW_ATTR_ID));
+                        collector.setAttributeKey(resultSet.getString(VIEW_ATTR_KEY));
+                        collector.setAttributeValue(resultSet.getString(VIEW_ATTR_VALUE));
                         return collector;
                     },
                     preparedStatement -> {
                         int parameterIndex = 0;
-                        preparedStatement.setString(++parameterIndex, organizationId);
                         preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, organizationId);
                     }
             );
-            Organization organization = (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?
+            return  (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?
                     null : buildOrganizationFromRawData(organizationRowDataCollectors);
-            return findChildOrganizations(jdbcTemplate, organization);
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR, organizationId, e);
         }
@@ -246,7 +253,6 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, organizationId);
                     });
-            System.out.println("gg");
             return userStoreConfigs.stream().collect(Collectors.toMap(UserStoreConfig::getKey, config -> config));
 
         } catch (DataAccessException e) {
@@ -369,19 +375,18 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             if (organization.getId() == null) {
                 organization.setId(collector.getId());
                 organization.setName(collector.getName());
-                organization.setTenantId(collector.getTenantId());
-                organization.setCreated(collector.getCreatedTime().toString());
-                organization.setLastModified(collector.getLastModified().toString());
+                organization.setDescription(collector.getDescription());
                 organization.setParentId(collector.getParentId());
-                organization.setHasAttributes(collector.hasAttribute());
-                organization.setActive(collector.isStatus());
-//                organization.setRdn(collector.getRdn());
-//                organization.setDn(collector.getDn());
+                organization.setActive(collector.isActive());
+                organization.setLastModified(collector.getLastModified().toString());
+                organization.setCreated(collector.getCreated().toString());
+                organization.setHasAttributes(collector.hasAttributes());
             }
-//            if (organization.hasAttribute() && !organization.getAttributes().contains(collector.getAttributeKey())) {
-//                organization.getAttributes()
-//                        .add(new Attribute(collector.getAttributeKey(), collector.getAttributeValue()));
-//            }
+            if (organization.hasAttributes() && !organization.getAttributes().containsKey(collector.getAttributeKey())) {
+                organization.getAttributes()
+                        .put(collector.getAttributeKey(),
+                                new Attribute(collector.getAttributeKey(), collector.getAttributeValue()));
+            }
         });
         return organization;
     }

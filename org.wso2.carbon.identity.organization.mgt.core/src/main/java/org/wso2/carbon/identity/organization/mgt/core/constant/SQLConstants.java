@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.constant;
 
+import org.pdfbox.pdmodel.common.filespecification.PDSimpleFileSpecification;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
 public class SQLConstants {
@@ -51,6 +52,17 @@ public class SQLConstants {
     public static final String ATTR_ATTR_KEY_COLUMN_NAME = "A.ATTR_KEY";
     public static final String ATTR_ATTR_VALUE_COLUMN_NAME = "A.ATTR_VALUE";
     public static final String VIEW_ID = "ID";
+    public static final String VIEW_TENANT_ID = "TENANT_ID";
+    public static final String VIEW_NAME = "NAME";
+    public static final String VIEW_DESCRIPTION = "DESCRIPTION";
+    public static final String VIEW_CREATED_TIME = "CREATED_TIME";
+    public static final String VIEW_LAST_MODIFIED = "LAST_MODIFIED";
+    public static final String VIEW_HAS_ATTRIBUTES = "HAS_ATTRIBUTES";
+    public static final String VIEW_ACTIVE = "ACTIVE";
+    public static final String VIEW_PARENT_ID = "PARENT_ID";
+    public static final String VIEW_ATTR_ID = "ATTR_ID";
+    public static final String VIEW_ATTR_KEY = "ATTR_KEY";
+    public static final String VIEW_ATTR_VALUE = "ATTR_VALUE";
     public static final String VIEW_CONFIG_ID = "CONFIG_ID";
     public static final String VIEW_CONFIG_KEY = "CONFIG_KEY";
     public static final String VIEW_CONFIG_VALUE = "CONFIG_VALUE";
@@ -110,7 +122,7 @@ public class SQLConstants {
                     "   U.ORG_ID = ?";
     public static final String GET_ORGANIZATION_BY_ID =
             "SELECT\n" +
-            "    DISTINCT V.ID, V.NAME, V.DESCRIPTION, V.PARENT_ID, V.ACTIVE, V.LAST_MODIFIED, V.CREATED_TIME, V.ATTR_ID, V.ATTR_KEY, V.ATTR_VALUE\n" +
+            "    DISTINCT V.ID, V.NAME, V.DESCRIPTION, V.PARENT_ID, V.ACTIVE, V.LAST_MODIFIED, V.CREATED_TIME, V.HAS_ATTRIBUTES, V.ATTR_ID, V.ATTR_KEY, V.ATTR_VALUE\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +
