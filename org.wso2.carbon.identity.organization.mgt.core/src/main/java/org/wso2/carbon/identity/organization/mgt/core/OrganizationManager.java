@@ -33,10 +33,11 @@ public interface OrganizationManager {
 
     /**
      * @param organizationAdd
+     * @param isImport
      * @return
      * @throws OrganizationManagementException
      */
-    Organization addOrganization(OrganizationAdd organizationAdd)
+    Organization addOrganization(OrganizationAdd organizationAdd, boolean isImport)
             throws OrganizationManagementException;
 
     /**
@@ -47,6 +48,7 @@ public interface OrganizationManager {
     Organization getOrganization(String organizationId) throws OrganizationManagementException;
 
     /**
+     * @param filter
      * @param offset
      * @param limit
      * @param sortBy
@@ -54,7 +56,7 @@ public interface OrganizationManager {
      * @return
      * @throws OrganizationManagementException
      */
-    List<Organization> getOrganizations(int offset, int limit, String sortBy, String sortOrder)
+    List<Organization> getOrganizations(String filter, int offset, int limit, String sortBy, String sortOrder)
             throws OrganizationManagementException;
 
     /**
@@ -92,4 +94,11 @@ public interface OrganizationManager {
      * @throws OrganizationManagementException
      */
     Map<String, UserStoreConfig> getUserStoreConfigs(String organizationId) throws OrganizationManagementException;
+
+    /**
+     * @param organizationId
+     * @return
+     * @throws OrganizationManagementException
+     */
+    List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException;
 }

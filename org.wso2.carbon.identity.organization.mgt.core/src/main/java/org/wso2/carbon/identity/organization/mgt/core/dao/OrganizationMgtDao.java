@@ -93,5 +93,14 @@ public interface OrganizationMgtDao {
      * @return
      * @throws OrganizationManagementException
      */
-    Map<String, UserStoreConfig> getUserStoreConfigsByOrgId(int tenantId, String organizationId) throws OrganizationManagementException;
+    Map<String, UserStoreConfig> getUserStoreConfigsByOrgId(int tenantId, String organizationId)
+            throws OrganizationManagementException;
+
+    /**
+     *
+     * @param organizationId
+     * @return
+     * @throws OrganizationManagementException
+     */
+    List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException;
 }

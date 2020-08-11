@@ -44,6 +44,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_SORTING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORG_ID_NOT_FOUND;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_ACCESS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PRIMARY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
@@ -51,6 +52,10 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.UNIQUE_ID_READ_WRITE_LDAP_USER_STORE_CLASS_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
@@ -68,7 +73,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
     private int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
 
     @Override
-    public Organization addOrganization(OrganizationAdd organizationAdd)
+    public Organization addOrganization(OrganizationAdd organizationAdd, boolean isImport)
             throws OrganizationManagementException {
 
         logOrganizationAddObject(organizationAdd);
@@ -111,7 +116,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     @Override
-    public List<Organization> getOrganizations(int offset, int limit, String sortBy, String sortOrder)
+    public List<Organization> getOrganizations(String filter, int offset, int limit, String sortBy, String sortOrder)
             throws OrganizationManagementException {
 
         // Validate pagination and sorting parameters
@@ -158,6 +163,17 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throws OrganizationManagementException {
 
         return organizationMgtDao.getUserStoreConfigsByOrgId(tenantId, organizationId);
+    }
+
+    @Override
+    public List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException {
+
+        if (organizationMgtDao.isOrganizationExistById(tenantId, organizationId)) {
+            return organizationMgtDao.getChildOrganizationIds(organizationId);
+        } else {
+            throw handleClientException(ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR,
+                    organizationId + ". This organization ID doesn't exist in this tenant");
+        }
     }
 
     private void validateAddOrganizationRequest(OrganizationAdd organizationAdd)
@@ -267,16 +283,16 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         switch (sortBy.trim().toLowerCase()) {
             case "name":
-                return "V.NAME";
+                return VIEW_NAME;
+            case "description":
+                return VIEW_DESCRIPTION;
             case "createdTime":
-                return "V.CREATED_TIME";
+                return VIEW_CREATED_TIME;
             case "lastModified":
-                return "V.LAST_MODIFIED";
-            case "rdn":
-                return "V.RDN";
+                return VIEW_LAST_MODIFIED;
             default:
                 throw handleClientException(ERROR_CODE_INVALID_SORTING,
-                        "'sortOrder' [ASC | DESC] and 'sortBy' [name | createdTime | lastModified | rdn]");
+                        "'sortOrder' [ASC | DESC] and 'sortBy' [name | description | createdTime | lastModified ]");
         }
     }
 }

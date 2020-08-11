@@ -41,16 +41,6 @@ public class SQLConstants {
             "WHERE\n" +
             "    TENANT_ID = ? AND ID = ?";
     public static final String COUNT_COLUMN_NAME = "COUNT(1)";
-    public static final String ORG_ID_COLUMN_NAME = "O.ID";
-    public static final String ORG_NAME_COLUMN_NAME = "O.NAME";
-    public static final String ORG_TENANT_ID_COLUMN_NAME = "O.TENANT_ID";
-    public static final String ORG_CREATED_TIME_COLUMN_NAME = "O.CREATED_TIME";
-    public static final String ORG_LAST_MODIFIED_COLUMN_NAME = "O.LAST_MODIFIED";
-    public static final String ORG_HAS_ATTRIBUTE_COLUMN_NAME = "O.HAS_ATTRIBUTE";
-    public static final String ORG_STATUS_COLUMN_NAME = "O.STATUS";
-    public static final String ORG_PARENT_ID_COLUMN_NAME = "O.PARENT_ID";
-    public static final String ATTR_ATTR_KEY_COLUMN_NAME = "A.ATTR_KEY";
-    public static final String ATTR_ATTR_VALUE_COLUMN_NAME = "A.ATTR_VALUE";
     public static final String VIEW_ID = "ID";
     public static final String VIEW_TENANT_ID = "TENANT_ID";
     public static final String VIEW_NAME = "NAME";
@@ -149,17 +139,18 @@ public class SQLConstants {
             "   \n%s ROWS" +
             "\nFETCH NEXT" +
             "   \n%s ROWS ONLY";
-    public static final String GET_BASIC_ORGANIZATIONS_BY_IDS =
+    public static final String GET_ORGANIZATIONS_BY_IDS =
             "SELECT\n" +
-            "    V.ID,\n" +
+            "    DISTINCT V.ID,\n" +
             "    V.NAME,\n" +
+            "    V.DESCRIPTION,\n" +
             "    V.CREATED_TIME,\n" +
             "    V.LAST_MODIFIED,\n" +
-            "    V.HAS_ATTRIBUTE,\n" +
-            "    V.STATUS,\n" +
+            "    V.HAS_ATTRIBUTES,\n" +
+            "    V.ACTIVE,\n" +
             "    V.PARENT_ID \n" +
             "FROM\n" +
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +
-            "    V.TENANT_ID = 1234 AND V.ID IN ('1')";
+            "    V.ID IN (?)";
 }

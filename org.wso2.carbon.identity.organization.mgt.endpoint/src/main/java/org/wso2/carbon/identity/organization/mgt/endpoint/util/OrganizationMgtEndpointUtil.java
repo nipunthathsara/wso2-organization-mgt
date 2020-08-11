@@ -125,6 +125,25 @@ public class OrganizationMgtEndpointUtil {
         return configDTOs;
     }
 
+    public static List<BasicOrganizationDTO> getBasicOrganizationDTOsFromOrganizations(List<Organization> organizations) {
+
+        List<BasicOrganizationDTO> basicOrganizationDTOs = new ArrayList<>();
+        for (Organization organization : organizations) {
+            BasicOrganizationDTO basicOrganization = new BasicOrganizationDTO();
+            basicOrganization.setId(organization.getId());
+            basicOrganization.setName(organization.getName());
+            if (organization.getDescription() != null) {
+                basicOrganization.setDescription(organization.getDescription());
+            }
+            basicOrganization.setParentId(organization.getParentId());
+            basicOrganization.setActive(organization.isActive());
+            basicOrganization.setLastModified(organization.getLastModified());
+            basicOrganization.setCreated(organization.getCreated());
+            basicOrganizationDTOs.add(basicOrganization);
+        }
+        return basicOrganizationDTOs;
+    }
+
     public static AttributeDTO getAttributeDTOFromAttribute(Attribute attribute) {
 
         AttributeDTO attributeDTO = new AttributeDTO();

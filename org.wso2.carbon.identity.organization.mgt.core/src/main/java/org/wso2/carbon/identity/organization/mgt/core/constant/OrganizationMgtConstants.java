@@ -42,8 +42,10 @@ public class OrganizationMgtConstants {
         ERROR_CODE_ORG_ID_NOT_FOUND("ORGMGT_00010", "Organization ID not found within this tenant : %s."),
         ERROR_CODE_INVALID_SORTING("ORGMGT_00011", "Invalid sorting arguments : %s."),
         ERROR_CODE_INVALID_PAGINATION("ORGMGT_00012", "Invalid pagination arguments : %s."),
-        ERROR_CODE_RETRIEVE_ALL_ORG_IDS_ERROR("ORGMGT_00013", "Error retrieving all organizations : %s."),
+        ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR("ORGMGT_00013", "Error retrieving organizations : %s."),
         ERROR_CODE_USER_STORE_ACCESS_ERROR("ORGMGT_00014", "Error accessing user store : %s."),
+        ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR("ORGMGT_00015", "Error retrieving child organization of organization ID : %s."),
+
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 
