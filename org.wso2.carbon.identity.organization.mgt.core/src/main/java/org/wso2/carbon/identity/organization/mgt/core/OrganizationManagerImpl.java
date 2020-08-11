@@ -28,6 +28,7 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
+import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
@@ -44,8 +45,17 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_SORTING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORG_ID_NOT_FOUND;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_PATCH_OPERATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_ACCESS_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ACTIVE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ATTRIBUTE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DESCRIPTION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PRIMARY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.READ_WRITE_LDAP_USER_STORE_CLASS_NAME;
@@ -128,8 +138,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     @Override
-    public Organization patchOrganization(String organizationId, OrganizationAdd organizationAdd)
+    public void patchOrganization(String organizationId, List<Operation> operations)
             throws OrganizationManagementException {
+
 
         return null;
     }
@@ -141,7 +152,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
         }
         if (!isOrganizationExistById(organizationId.trim())) {
-            throw handleClientException(ERROR_CODE_ORG_ID_NOT_FOUND, "ID - " + organizationId + " Tenant - " + tenantId);
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "ID - " + organizationId + " doesn't exist in this tenant - " + tenantId);
         }
         organizationMgtDao.deleteOrganization(tenantId, organizationId.trim());
     }
@@ -293,6 +304,42 @@ public class OrganizationManagerImpl implements OrganizationManager {
             default:
                 throw handleClientException(ERROR_CODE_INVALID_SORTING,
                         "'sortOrder' [ASC | DESC] and 'sortBy' [name | description | createdTime | lastModified ]");
+        }
+    }
+
+    private void validatePatchOperations(List<Operation> operations) throws OrganizationManagementClientException {
+
+        for (Operation operation : operations) {
+            // Validate op
+            if (StringUtils.isBlank(operation.getOp())) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Patch operation is not defined");
+            }
+            String op = operation.getOp().trim().toLowerCase();
+            if (!(PATCH_OP_ADD.equals(operation.getOp()) || PATCH_OP_REMOVE.equals(operation.getOp())
+                    || PATCH_OP_REPLACE.equals(operation.getOp()))) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                        "Patch operation must be either ['add', 'replace', 'remove']");
+            }
+            // Validate path
+            if (StringUtils.isBlank(operation.getPath())) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Patch operation path is not defined");
+            }
+            String path = operation.getPath().trim().toLowerCase();
+            if (!(path.startsWith(PATCH_PATH_ORG_NAME)) ||
+                    path.startsWith(PATCH_PATH_ORG_DESCRIPTION) ||
+                    path.startsWith(PATCH_PATH_ORG_ACTIVE) ||
+                    path.startsWith(PATCH_PATH_ORG_PARENT_ID) ||
+                    path.startsWith(PATCH_PATH_ORG_ATTRIBUTE)) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Invalid Patch operation path : " + path);
+            }
+            // Validate value
+            if (StringUtils.isBlank(operation.getValue()) && !PATCH_OP_REMOVE.equals(op)) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Patch operation value is not defined");
+            }
+            // You can only remove attributes
+            if (PATCH_OP_REMOVE.equals(op) && !path.startsWith(PATCH_PATH_ORG_ATTRIBUTE)) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Can not remove mandatory field : " + path);
+            }
         }
     }
 }

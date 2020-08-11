@@ -28,6 +28,15 @@ public class OrganizationMgtConstants {
     public static final String UNIQUE_ID_READ_WRITE_LDAP_USER_STORE_CLASS_NAME = "org.wso2.carbon.user.core.ldap.UniqueIDReadWriteLDAPUserStoreManager";
     public static final String READ_WRITE_LDAP_USER_STORE_CLASS_NAME = "org.wso2.carbon.user.core.ldap.ReadWriteLDAPUserStoreManager";
 
+    public static final String PATCH_OP_ADD = "add";
+    public static final String PATCH_OP_REMOVE = "remove";
+    public static final String PATCH_OP_REPLACE = "replace";
+    public static final String PATCH_PATH_ORG_NAME = "/name";
+    public static final String PATCH_PATH_ORG_DESCRIPTION = "/description";
+    public static final String PATCH_PATH_ORG_ACTIVE = "/active";
+    public static final String PATCH_PATH_ORG_PARENT_ID = "/parentId";
+    public static final String PATCH_PATH_ORG_ATTRIBUTE = "/attributes/";
+
     public enum ErrorMessages {
 
         ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID("ORGMGT_00001", "Invalid organization creation request : %s."),
@@ -45,6 +54,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR("ORGMGT_00013", "Error retrieving organizations : %s."),
         ERROR_CODE_USER_STORE_ACCESS_ERROR("ORGMGT_00014", "Error accessing user store : %s."),
         ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR("ORGMGT_00015", "Error retrieving child organization of organization ID : %s."),
+        ERROR_CODE_PATCH_OPERATION_ERROR("ORGMGT_00016", "Error performing the patch operations : %s."),
 
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");

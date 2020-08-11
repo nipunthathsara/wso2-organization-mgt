@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
@@ -132,21 +131,13 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
         try {
-            // Delete organization from IDN_ORG table
+            // Delete organization from IDN_ORG table and cascade deletion to other tables
             jdbcTemplate.executeUpdate(DELETE_ORGANIZATION_BY_ID,
                     preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, organizationId);
                     });
-            // Delete organization attributes
-            jdbcTemplate.executeUpdate(DELETE_ATTRIBUTES_BY_ORG_ID,
-                    preparedStatement -> preparedStatement.setString(1, organizationId)
-            );
-            // Delete RDN and DN entries for the organization
-            jdbcTemplate.executeUpdate(DELETE_DIRECTORY_INFO_BY_ORG_ID,
-                    preparedStatement -> preparedStatement.setString(1, organizationId)
-            );
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_DELETE_ORGANIZATION_ERROR, "Id - " + organizationId, e);
         }
@@ -320,6 +311,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
     }
 
+    @Override
     public List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();

@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.organization.mgt.core;
 
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
@@ -75,11 +76,10 @@ public interface OrganizationManager {
 
     /**
      * @param organizationId
-     * @param organizationAdd
-     * @return
+     * @param operations
      * @throws OrganizationManagementException
      */
-    Organization patchOrganization(String organizationId, OrganizationAdd organizationAdd)
+    void patchOrganization(String organizationId, List<Operation> operations)
             throws OrganizationManagementException;
 
     /**
