@@ -120,13 +120,22 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsOrganizationIdDelete(String organizationId) {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+
+        try {
+            getOrganizationManager().deleteOrganization(organizationId);
+            return Response.ok().build();
+        } catch (OrganizationManagementClientException e) {
+            return handleBadRequestResponse(e, LOG);
+        } catch (OrganizationManagementException e) {
+            return handleServerErrorResponse(e, LOG);
+        } catch (Throwable throwable) {
+            return handleUnexpectedServerError(throwable, LOG);
+        }
     }
 
     @Override
     public Response organizationsOrganizationIdPatch(String organizationId, List<OperationDTO> operations) {
-        // do some magic!
+
         return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
     }
 
