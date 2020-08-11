@@ -13,6 +13,7 @@ import static org.wso2.carbon.identity.organization.mgt.endpoint.util.Organizati
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationDTOFromOrganization;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationManager;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationAddFromDTO;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getUserStoreConfigDTOsFromUserStoreConfigs;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleBadRequestResponse;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleServerErrorResponse;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleUnexpectedServerError;
@@ -27,6 +28,8 @@ import java.util.stream.Collectors;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserstoreConfigDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil;
 
 import javax.ws.rs.core.Response;
 
@@ -84,7 +87,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
         try {
             Map<String, UserStoreConfig> userStoreConfigs = getOrganizationManager().getUserStoreConfigs(organizationId);
-            return Response.ok(userStoreConfigs.values().stream().collect(Collectors.toList())).build();
+            return Response.ok(getUserStoreConfigDTOsFromUserStoreConfigs(userStoreConfigs.values())).build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, LOG);
         } catch (OrganizationManagementException e) {

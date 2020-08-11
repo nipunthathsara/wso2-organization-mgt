@@ -41,6 +41,10 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.InternalSer
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.NotFoundException;
 
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
@@ -107,6 +111,18 @@ public class OrganizationMgtEndpointUtil {
     public static UserStoreConfig getUserStoreConfigsFromDTO(UserstoreConfigDTO userStoreConfigDTO) {
 
         return new UserStoreConfig(userStoreConfigDTO.getKey(), userStoreConfigDTO.getValue());
+    }
+
+    public static List<UserstoreConfigDTO> getUserStoreConfigDTOsFromUserStoreConfigs(Collection<UserStoreConfig> configs) {
+
+        List<UserstoreConfigDTO> configDTOs = new ArrayList<>();
+        for (UserStoreConfig config : configs) {
+            UserstoreConfigDTO configDTO = new UserstoreConfigDTO();
+            configDTO.setKey(config.getKey());
+            configDTO.setValue(config.getValue());
+            configDTOs.add(configDTO);
+        }
+        return configDTOs;
     }
 
     public static AttributeDTO getAttributeDTOFromAttribute(Attribute attribute) {
