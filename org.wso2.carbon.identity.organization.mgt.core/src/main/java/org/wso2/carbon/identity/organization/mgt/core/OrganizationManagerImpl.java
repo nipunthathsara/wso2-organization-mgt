@@ -102,7 +102,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
         }
-        return organizationMgtDao.getOrganization(tenantId, organizationId.trim());
+        Organization organization = organizationMgtDao.getOrganization(tenantId, organizationId.trim());
+        if (organization == null) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR,
+                    "Organization id" + organizationId + " doesn't exist");
+        }
+        return organization;
     }
 
     @Override
