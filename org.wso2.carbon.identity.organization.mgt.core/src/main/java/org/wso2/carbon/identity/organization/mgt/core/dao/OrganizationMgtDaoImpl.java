@@ -25,6 +25,7 @@ import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
+import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.util.JdbcUtils;
@@ -41,19 +42,27 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static java.time.ZoneOffset.UTC;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_DELETE_ORGANIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INSERT_ORGANIZATION_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_PATCH_OPERATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_QUERY_LENGTH_EXCEEDED_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_USER_STORE_CONFIGS_BY_ORG_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ACTIVE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ATTRIBUTES;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DESCRIPTION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ATTRIBUTE_EXIST_BY_KEY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_ATTRIBUTES_BY_ORG_ID;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_DIRECTORY_INFO_BY_ORG_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS;
@@ -64,10 +73,13 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES_CONCLUDE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_ATTRIBUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_USER_STORE_CONFIG;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORDER_BY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PAGINATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_ORGANIZATION_CONCLUDE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ACTIVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_KEY;
@@ -123,124 +135,6 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_INSERT_ORGANIZATION_ERROR, "Name - " + organization.getName()
                     + " Tenant Id - " + organization.getTenantId(), e);
-        }
-    }
-
-    @Override
-    public void deleteOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
-
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
-        try {
-            // Delete organization from IDN_ORG table and cascade deletion to other tables
-            jdbcTemplate.executeUpdate(DELETE_ORGANIZATION_BY_ID,
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    });
-        } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_DELETE_ORGANIZATION_ERROR, "Id - " + organizationId, e);
-        }
-    }
-
-    @Override
-    public boolean isOrganizationExistByName(int tenantId, String name) throws OrganizationManagementException {
-
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
-        try {
-            int orgCount = jdbcTemplate.fetchSingleRecord(CHECK_ORGANIZATION_EXIST_BY_NAME,
-                    (resultSet, rowNumber) ->
-                            resultSet.getInt(COUNT_COLUMN_NAME),
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, name);
-                    });
-            return orgCount > 0;
-        } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR,
-                    "Name - " + name + " Tenant id - " + tenantId, e);
-        }
-    }
-
-    @Override
-    public boolean isOrganizationExistById(int tenantId, String id) throws OrganizationManagementException {
-
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
-        try {
-            int orgCount = jdbcTemplate.fetchSingleRecord(CHECK_ORGANIZATION_EXIST_BY_ID,
-                    (resultSet, rowNumber) ->
-                            resultSet.getInt(COUNT_COLUMN_NAME),
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, id);
-                    }
-            );
-            return orgCount > 0;
-        } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR,
-                    "Id - " + id + " Tenant id - " + tenantId, e);
-        }
-    }
-
-    @Override
-    public Organization getOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
-
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
-        List<OrganizationRowDataCollector> organizationRowDataCollectors;
-        try {
-            organizationRowDataCollectors = jdbcTemplate.executeQuery(GET_ORGANIZATION_BY_ID,
-                    (resultSet, rowNumber) -> {
-                        OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
-                        collector.setId(organizationId);
-                        collector.setName(resultSet.getString(VIEW_NAME));
-                        collector.setDescription(resultSet.getString(VIEW_DESCRIPTION));
-                        collector.setParentId(resultSet.getString(VIEW_PARENT_ID));
-                        collector.setActive(resultSet.getInt(VIEW_ACTIVE) == 1 ? true : false);
-                        collector.setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED, calendar));
-                        collector.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME, calendar));
-                        collector.setHasAttributes(resultSet.getInt(VIEW_HAS_ATTRIBUTES) == 1 ? true : false);
-                        collector.setAttributeId(resultSet.getString(VIEW_ATTR_ID));
-                        collector.setAttributeKey(resultSet.getString(VIEW_ATTR_KEY));
-                        collector.setAttributeValue(resultSet.getString(VIEW_ATTR_VALUE));
-                        return collector;
-                    },
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    }
-            );
-            return (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?
-                    null : buildOrganizationFromRawData(organizationRowDataCollectors);
-        } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR, organizationId, e);
-        }
-    }
-
-    @Override
-    public Map<String, UserStoreConfig> getUserStoreConfigsByOrgId(int tenantId, String organizationId) throws OrganizationManagementException {
-
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
-        try {
-            List<UserStoreConfig> userStoreConfigs = jdbcTemplate.executeQuery(GET_USER_STORE_CONFIGS_BY_ORG_ID,
-                    (resultSet, rowNumber) -> {
-                        UserStoreConfig config = new UserStoreConfig();
-                        config.setId(resultSet.getString(VIEW_CONFIG_ID));
-                        config.setKey(resultSet.getString(VIEW_CONFIG_KEY));
-                        config.setValue(resultSet.getString(VIEW_CONFIG_VALUE));
-                        return config;
-                    },
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    });
-            return userStoreConfigs.stream().collect(Collectors.toMap(UserStoreConfig::getKey, config -> config));
-
-        } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_RETRIEVE_USER_STORE_CONFIGS_BY_ORG_ID_ERROR, organizationId, e);
         }
     }
 
@@ -312,6 +206,58 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     @Override
+    public Organization getOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        List<OrganizationRowDataCollector> organizationRowDataCollectors;
+        try {
+            organizationRowDataCollectors = jdbcTemplate.executeQuery(GET_ORGANIZATION_BY_ID,
+                    (resultSet, rowNumber) -> {
+                        OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
+                        collector.setId(organizationId);
+                        collector.setName(resultSet.getString(VIEW_NAME));
+                        collector.setDescription(resultSet.getString(VIEW_DESCRIPTION));
+                        collector.setParentId(resultSet.getString(VIEW_PARENT_ID));
+                        collector.setActive(resultSet.getInt(VIEW_ACTIVE) == 1 ? true : false);
+                        collector.setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED, calendar));
+                        collector.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME, calendar));
+                        collector.setHasAttributes(resultSet.getInt(VIEW_HAS_ATTRIBUTES) == 1 ? true : false);
+                        collector.setAttributeId(resultSet.getString(VIEW_ATTR_ID));
+                        collector.setAttributeKey(resultSet.getString(VIEW_ATTR_KEY));
+                        collector.setAttributeValue(resultSet.getString(VIEW_ATTR_VALUE));
+                        return collector;
+                    },
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                    }
+            );
+            return (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?
+                    null : buildOrganizationFromRawData(organizationRowDataCollectors);
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR, organizationId, e);
+        }
+    }
+
+    @Override
+    public void deleteOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        try {
+            // Delete organization from IDN_ORG table and cascade the deletion to other tables
+            jdbcTemplate.executeUpdate(DELETE_ORGANIZATION_BY_ID,
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                    });
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_DELETE_ORGANIZATION_ERROR, "Id - " + organizationId, e);
+        }
+    }
+
+    @Override
     public List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
@@ -324,6 +270,152 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             return childOrganizationIds;
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR, organizationId, e);
+        }
+    }
+
+    @Override
+    public Map<String, UserStoreConfig> getUserStoreConfigsByOrgId(int tenantId, String organizationId) throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        try {
+            List<UserStoreConfig> userStoreConfigs = jdbcTemplate.executeQuery(GET_USER_STORE_CONFIGS_BY_ORG_ID,
+                    (resultSet, rowNumber) -> {
+                        UserStoreConfig config = new UserStoreConfig();
+                        config.setId(resultSet.getString(VIEW_CONFIG_ID));
+                        config.setKey(resultSet.getString(VIEW_CONFIG_KEY));
+                        config.setValue(resultSet.getString(VIEW_CONFIG_VALUE));
+                        return config;
+                    },
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                    });
+            return userStoreConfigs.stream().collect(Collectors.toMap(UserStoreConfig::getKey, config -> config));
+
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_RETRIEVE_USER_STORE_CONFIGS_BY_ORG_ID_ERROR, organizationId, e);
+        }
+    }
+
+    @Override
+    public boolean isOrganizationExistByName(int tenantId, String name) throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        try {
+            int orgCount = jdbcTemplate.fetchSingleRecord(CHECK_ORGANIZATION_EXIST_BY_NAME,
+                    (resultSet, rowNumber) ->
+                            resultSet.getInt(COUNT_COLUMN_NAME),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, name);
+                    });
+            return orgCount > 0;
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR,
+                    "Name - " + name + " Tenant id - " + tenantId, e);
+        }
+    }
+
+    @Override
+    public boolean isOrganizationExistById(int tenantId, String id) throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        try {
+            int orgCount = jdbcTemplate.fetchSingleRecord(CHECK_ORGANIZATION_EXIST_BY_ID,
+                    (resultSet, rowNumber) ->
+                            resultSet.getInt(COUNT_COLUMN_NAME),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, id);
+                    }
+            );
+            return orgCount > 0;
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR,
+                    "Id - " + id + " Tenant id - " + tenantId, e);
+        }
+    }
+
+    @Override
+    public void patchOrganization(int tenantId, String organizationId, Operation operation)
+            throws OrganizationManagementException {
+
+        String path = operation.getPath();
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        if (path.toLowerCase().startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
+            // Patch an attribute
+            try {
+                patchAttribute(jdbcTemplate, organizationId, operation);
+            } catch (DataAccessException e) {
+                throw handleServerException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                        "Error while patching attribute : " + path + ", value : " + operation.getValue() + ", op : " + operation.getOp(), e);
+            }
+        } else {
+            // Updating a primary field
+            StringBuilder sb = new StringBuilder();
+            sb.append(PATCH_ORGANIZATION);
+            if (path.equals(PATCH_PATH_ORG_NAME)) {
+                sb.append(VIEW_NAME);
+            } else if (path.equals(PATCH_PATH_ORG_DESCRIPTION)) {
+                sb.append(VIEW_DESCRIPTION);
+            } else if (path.equals(PATCH_PATH_ORG_ACTIVE)) {
+                sb.append(VIEW_ACTIVE);
+            } else if (path.equals(PATCH_PATH_ORG_PARENT_ID)) {
+                sb.append(VIEW_PARENT_ID);
+            }
+            sb.append(PATCH_ORGANIZATION_CONCLUDE);
+            String query = sb.toString();
+            try {
+                jdbcTemplate.executeUpdate(query,
+                        preparedStatement -> {
+                            int parameterIndex = 0;
+                            if (path.equals(PATCH_PATH_ORG_ACTIVE)) {
+                                preparedStatement.setInt(++parameterIndex, operation.getValue().equals("true") ? 1 : 0);
+                            } else {
+                                preparedStatement.setString(++parameterIndex, operation.getValue());
+                            }
+                            preparedStatement.setString(++parameterIndex, organizationId);
+                        });
+            } catch (DataAccessException e) {
+                throw handleServerException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                        "Error while updating the primary field : " + path + ", value : " + operation.getValue(), e);
+            }
+        }
+    }
+
+    @Override
+    public boolean isAttributeExistByKey(int tenantId, String organizationId, String attributeKey)
+            throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        try {
+            int attrCount = jdbcTemplate.fetchSingleRecord(CHECK_ATTRIBUTE_EXIST_BY_KEY,
+                    (resultSet, rowNumber) ->
+                            resultSet.getInt(COUNT_COLUMN_NAME),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                        preparedStatement.setString(++parameterIndex, attributeKey);
+                    });
+            return attrCount > 0;
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR,
+                    "Attribute key - " + attributeKey, e);
+        }
+    }
+
+    private void patchAttribute(JdbcTemplate template, String organizationId, Operation operation)
+            throws DataAccessException {
+
+        String attributeKey = operation.getPath().replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim();
+        if (operation.getOp().equals(PATCH_OP_ADD) || operation.getOp().equals(PATCH_OP_REPLACE)) {
+            insertOrUpdateAttribute(template, organizationId, attributeKey, operation.getValue());
+        } else {
+            //TODO delete attribute
         }
     }
 
@@ -342,6 +434,23 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     }
                 },
                 organization,
+                false
+        );
+    }
+
+    private void insertOrUpdateAttribute(JdbcTemplate template, String organizationId, String attributeKey,
+                                         String attributeValue) throws DataAccessException {
+
+        template.executeInsert(INSERT_OR_UPDATE_ATTRIBUTE,
+                preparedStatement -> {
+                    int parameterIndex = 0;
+                    // On update, unique ID and Org ID will not be updated
+                    preparedStatement.setString(++parameterIndex, generateUniqueID());
+                    preparedStatement.setString(++parameterIndex, organizationId);
+                    preparedStatement.setString(++parameterIndex, attributeKey);
+                    preparedStatement.setString(++parameterIndex, attributeValue);
+                },
+                new Attribute(),
                 false
         );
     }

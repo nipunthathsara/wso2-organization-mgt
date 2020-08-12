@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 
@@ -103,4 +104,24 @@ public interface OrganizationMgtDao {
      * @throws OrganizationManagementException
      */
     List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException;
+
+    /**
+     * Add, remove or replace organization field, attribute or user store configuration.
+     * @param tenantId
+     * @param organizationId
+     * @param operation
+     * @throws OrganizationManagementException
+     */
+    void patchOrganization(int tenantId, String organizationId, Operation operation)
+            throws OrganizationManagementException;
+
+    /**
+     * @param tenantId
+     * @param organizationId
+     * @param attributeKey
+     * @return
+     * @throws OrganizationManagementException
+     */
+    boolean isAttributeExistByKey(int tenantId, String organizationId, String attributeKey)
+            throws OrganizationManagementException;
 }

@@ -44,7 +44,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_PAGINATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_SORTING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORG_ID_NOT_FOUND;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_PATCH_OPERATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_ACCESS_ERROR;
@@ -52,7 +51,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ACTIVE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ATTRIBUTE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DESCRIPTION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
@@ -141,8 +140,19 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public void patchOrganization(String organizationId, List<Operation> operations)
             throws OrganizationManagementException {
 
+        if (StringUtils.isBlank(organizationId)) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
+        }
+        organizationId = organizationId.trim();
+        if (!isOrganizationExistById(organizationId)) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "ID - " + organizationId + " doesn't exist in this tenant - " + tenantId);
+        }
+        validateOrganizationPatchOperations(operations, organizationId);
+        for (Operation operation : operations) {
+            if (operation.equals(PATCH_OP_ADD)) {
 
-        return null;
+            }
+        }
     }
 
     @Override
@@ -307,7 +317,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
     }
 
-    private void validatePatchOperations(List<Operation> operations) throws OrganizationManagementClientException {
+    private void validateOrganizationPatchOperations(List<Operation> operations, String organizationId)
+            throws OrganizationManagementException {
 
         for (Operation operation : operations) {
             // Validate op
@@ -318,28 +329,79 @@ public class OrganizationManagerImpl implements OrganizationManager {
             if (!(PATCH_OP_ADD.equals(operation.getOp()) || PATCH_OP_REMOVE.equals(operation.getOp())
                     || PATCH_OP_REPLACE.equals(operation.getOp()))) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
-                        "Patch operation must be either ['add', 'replace', 'remove']");
+                        "Patch op must be either ['add', 'replace', 'remove']");
             }
             // Validate path
             if (StringUtils.isBlank(operation.getPath())) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Patch operation path is not defined");
             }
-            String path = operation.getPath().trim().toLowerCase();
-            if (!(path.startsWith(PATCH_PATH_ORG_NAME)) ||
-                    path.startsWith(PATCH_PATH_ORG_DESCRIPTION) ||
-                    path.startsWith(PATCH_PATH_ORG_ACTIVE) ||
-                    path.startsWith(PATCH_PATH_ORG_PARENT_ID) ||
-                    path.startsWith(PATCH_PATH_ORG_ATTRIBUTE)) {
+            String path = operation.getPath().trim();
+            if (!(path.equalsIgnoreCase(PATCH_PATH_ORG_NAME)) ||
+                    path.equalsIgnoreCase(PATCH_PATH_ORG_DESCRIPTION) ||
+                    path.equalsIgnoreCase(PATCH_PATH_ORG_ACTIVE) ||
+                    path.equalsIgnoreCase(PATCH_PATH_ORG_PARENT_ID) ||
+                    path.toLowerCase().startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Invalid Patch operation path : " + path);
             }
             // Validate value
+            String value = null;
+            // Value is mandatory for Add and Replace operations
             if (StringUtils.isBlank(operation.getValue()) && !PATCH_OP_REMOVE.equals(op)) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Patch operation value is not defined");
+            } else {
+                value = operation.getValue().trim();
             }
             // You can only remove attributes
-            if (PATCH_OP_REMOVE.equals(op) && !path.startsWith(PATCH_PATH_ORG_ATTRIBUTE)) {
+            if (PATCH_OP_REMOVE.equals(op) && !path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Can not remove mandatory field : " + path);
             }
+            // Treat attribute paths(attribute names) case sensitive
+            if (!path.toLowerCase().startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
+                path = path.toLowerCase();
+            }
+            // Primary fields can only be Replaced
+            if (!path.startsWith(PATCH_PATH_ORG_ATTRIBUTES) && !op.equals(PATCH_OP_REPLACE)) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                        "Primary organization fields can only be replaced. Provided op : " + op + ", Path : " + path);
+            }
+            // Check for boolean values upon patching the ACTIVE field
+            if (path.equals(PATCH_PATH_ORG_ACTIVE) &&
+                    !(value.equals("true") || value.equals("false"))) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                        "ACTIVE field could only contain 'true' or 'false'. Provided : " + value);
+            }
+            // Check if new parent exist before patching the PARENT field
+            if (path.equals(PATCH_PATH_ORG_PARENT_ID) && !isOrganizationExistById(value)) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                        "Provided parent ID does not exist : " + value);
+            }
+            // Check if new organization Name already exists
+            if (path.equals(PATCH_PATH_ORG_NAME) && isOrganizationExistByName(value)) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                        "Provided organization name already exists : " + value);
+            }
+            if (path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
+                String attributeKey = path.replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim();
+                // Attribute key can not be empty
+                if (StringUtils.isBlank(attributeKey)) {
+                    throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                            "Attribute key not define in the path : " + path);
+                }
+                boolean attributeExist = organizationMgtDao.isAttributeExistByKey(tenantId, organizationId, attributeKey);
+                // If attribute key to be added already exists, update its value
+                if (op.equals(PATCH_OP_ADD) && attributeExist) {
+                    op = PATCH_OP_REPLACE;
+                }
+                if (op.equals(PATCH_OP_REMOVE) && !attributeExist) {
+                    throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                            "Can not remove non existing attribute key : " + path);
+                }
+            }
+
+            // Set sanitized input
+            operation.setOp(op);
+            operation.setPath(path);
+            operation.setValue(value);
         }
     }
 }

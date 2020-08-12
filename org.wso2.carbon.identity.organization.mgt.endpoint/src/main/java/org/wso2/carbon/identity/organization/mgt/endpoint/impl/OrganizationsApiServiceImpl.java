@@ -2,7 +2,6 @@ package org.wso2.carbon.identity.organization.mgt.endpoint.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tools.ant.taskdefs.condition.Or;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
@@ -26,7 +25,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;

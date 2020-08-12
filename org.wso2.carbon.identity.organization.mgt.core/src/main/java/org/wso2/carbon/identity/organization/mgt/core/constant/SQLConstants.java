@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.constant;
 
-import org.pdfbox.pdmodel.common.filespecification.PDSimpleFileSpecification;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
 public class SQLConstants {
@@ -40,6 +39,13 @@ public class SQLConstants {
             "    IDN_ORG\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND ID = ?";
+    public static final String CHECK_ATTRIBUTE_EXIST_BY_KEY =
+            "SELECT\n" +
+            "    COUNT(1)\n" +
+            "FROM\n" +
+            "    ORG_MGT_VIEW\n" +
+            "WHERE\n" +
+            "    TENANT_ID = ? AND ID = ? AND ATTR_KEY = ?";
     public static final String COUNT_COLUMN_NAME = "COUNT(1)";
     public static final String VIEW_ID = "ID";
     public static final String VIEW_TENANT_ID = "TENANT_ID";
@@ -92,24 +98,26 @@ public class SQLConstants {
         "INSERT\n" +
         "    (C.ID, C.ORG_ID, C.ATTR_KEY, C.ATTR_VALUE)\n" +
         "    VALUES (N.ID, N.ORG_ID, N.ATTR_KEY, N.ATTR_VALUE)";
+    public static final String INSERT_OR_UPDATE_ATTRIBUTE =
+            "MERGE INTO\n" +
+            "    IDN_ORG_ATTRIBUTES A\n" +
+            "USING\n" +
+            "    (SELECT ? ID, ? ORG_ID, ? ATTR_KEY, ? ATTR_VALUE FROM dual) N\n" +
+            "ON \n" +
+            "    (N.ORG_ID = A.ORG_ID AND N.ATTR_KEY = A.ATTR_KEY)\n" +
+            "WHEN MATCHED THEN\n" +
+            "UPDATE\n" +
+            "    SET A.ATTR_VALUE = N.ATTR_VALUE\n" +
+            "WHEN NOT MATCHED THEN\n" +
+            "INSERT\n" +
+            "    (A.ID, A.ORG_ID, A.ATTR_KEY, A.ATTR_VALUE)\n" +
+            "    VALUES (N.ID, N.ORG_ID, N.ATTR_KEY, N.ATTR_VALUE)";
     public static final String DELETE_ORGANIZATION_BY_ID =
             "DELETE\n" +
             "FROM\n" +
             "    IDN_ORG O\n" +
             "WHERE\n" +
             "    O.ID = ? AND O.TENANT_ID = ?;";
-    public static final String DELETE_ATTRIBUTES_BY_ORG_ID =
-            "DELETE\n" +
-            "FROM\n" +
-            "    IDN_ORG_ATTRIBUTES A\n" +
-            "WHERE\n" +
-            "    A.ORG_ID = ?";
-    public static final String DELETE_DIRECTORY_INFO_BY_ORG_ID =
-            "DELETE" +
-                    "FROM" +
-                    "   UM_USERSTORE_ORG_HIERARCHY U" +
-                    "WHERE" +
-                    "   U.ORG_ID = ?";
     public static final String GET_ORGANIZATION_BY_ID =
             "SELECT\n" +
             "    DISTINCT V.ID, V.NAME, V.DESCRIPTION, V.PARENT_ID, V.ACTIVE, V.LAST_MODIFIED, V.CREATED_TIME, V.HAS_ATTRIBUTES, V.ATTR_ID, V.ATTR_KEY, V.ATTR_VALUE\n" +
@@ -153,4 +161,11 @@ public class SQLConstants {
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +
             "    V.ID IN (?)";
+    public static final String PATCH_ORGANIZATION =
+            "UPDATE\n" +
+            "    IDN_ORG\n" +
+            "SET ";
+    public static final String PATCH_ORGANIZATION_CONCLUDE =
+            " = ?\n" +
+            "WHERE ID = ?";
 }

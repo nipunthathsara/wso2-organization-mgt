@@ -35,7 +35,7 @@ public class OrganizationMgtConstants {
     public static final String PATCH_PATH_ORG_DESCRIPTION = "/description";
     public static final String PATCH_PATH_ORG_ACTIVE = "/active";
     public static final String PATCH_PATH_ORG_PARENT_ID = "/parentId";
-    public static final String PATCH_PATH_ORG_ATTRIBUTE = "/attributes/";
+    public static final String PATCH_PATH_ORG_ATTRIBUTES = "/attributes/";
 
     public enum ErrorMessages {
 
@@ -55,6 +55,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_USER_STORE_ACCESS_ERROR("ORGMGT_00014", "Error accessing user store : %s."),
         ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR("ORGMGT_00015", "Error retrieving child organization of organization ID : %s."),
         ERROR_CODE_PATCH_OPERATION_ERROR("ORGMGT_00016", "Error performing the patch operations : %s."),
+        ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORGMGT_00017", "Error while checking if the attribute exist : %s."),
 
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
