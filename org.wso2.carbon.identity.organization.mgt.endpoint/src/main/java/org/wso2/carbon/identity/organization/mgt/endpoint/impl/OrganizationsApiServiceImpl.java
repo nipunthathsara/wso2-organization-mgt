@@ -43,8 +43,10 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     public Response organizationsPost(OrganizationAddDTO organizationAddDTO) {
 
         try {
-            Organization organization = getOrganizationManager()
-                    .addOrganization(getOrganizationAddFromDTO(organizationAddDTO), false);
+            Organization organization = getOrganizationManager().addOrganization(
+                    getOrganizationAddFromDTO(organizationAddDTO),
+                    false
+            );
             return Response.created(getResourceURI(organization))
                     .entity(getBasicOrganizationDTOFromOrganization(organization)).build();
         } catch (OrganizationManagementClientException e) {

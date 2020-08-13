@@ -21,6 +21,7 @@ package org.wso2.carbon.identity.organization.mgt.core.util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
@@ -29,15 +30,25 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
+import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
+import org.wso2.carbon.user.core.ldap.ReadOnlyLDAPUserStoreManager;
+import org.wso2.carbon.user.core.ldap.ReadWriteLDAPUserStoreManager;
+import org.wso2.carbon.user.core.ldap.UniqueIDReadOnlyLDAPUserStoreManager;
+import org.wso2.carbon.user.core.ldap.UniqueIDReadWriteLDAPUserStoreManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_ACCESS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
+import static org.wso2.carbon.user.core.UserStoreConfigConstants.DOMAIN_NAME;
+import static org.wso2.carbon.user.core.UserStoreConfigConstants.userSearchBase;
 
 /**
  * This class provides utility functions for the Organization Management.
@@ -75,10 +86,57 @@ public class Utils {
         return UUID.randomUUID().toString();
     }
 
-    public static String getLdapRootDn() {
+    public static String getLdapRootDn(String userStoreDomain) throws OrganizationManagementException {
 
-        //TODO implement logic.
-        return null;
+        List<RealmConfiguration> realmConfigurations = getRealmConfigurations();
+        RealmConfiguration matchingRealmConfig = null;
+        for (RealmConfiguration realmConfig : realmConfigurations) {
+            if (realmConfig.getUserStoreProperties().get(DOMAIN_NAME).equalsIgnoreCase(userStoreDomain)) {
+                matchingRealmConfig = realmConfig;
+                break;
+            }
+        }
+        // Check if user domain exists
+        if (matchingRealmConfig == null) {
+            throw handleClientException(ERROR_CODE_USER_STORE_ACCESS_ERROR,
+                    "Provided user store domain is not valid : " + userStoreDomain);
+        }
+        // Check if the underlying user store supports
+        Class className;
+        try {
+            className = Class.forName(matchingRealmConfig.getUserStoreClass());
+        } catch (ClassNotFoundException e) {
+            throw handleServerException(ERROR_CODE_UNEXPECTED, "Error while loading user store manager class", e);
+        }
+        if (!(ReadWriteLDAPUserStoreManager.class.isAssignableFrom(className) ||
+                ReadOnlyLDAPUserStoreManager.class.isAssignableFrom(className) ||
+                UniqueIDReadWriteLDAPUserStoreManager.class.isAssignableFrom(className) ||
+                UniqueIDReadOnlyLDAPUserStoreManager.class.isAssignableFrom(className))) {
+            throw handleClientException(ERROR_CODE_USER_STORE_ACCESS_ERROR,
+                    "Provided user store domain does not support organization management : " + userStoreDomain);
+        }
+        return matchingRealmConfig.getUserStoreProperties().get(userSearchBase);
+    }
+
+    public static List<RealmConfiguration> getRealmConfigurations() {
+
+        RealmConfiguration realmConfig;
+        List<RealmConfiguration> realmConfigurations = new ArrayList<>();
+        try {
+            // Add PRIMARY user store
+            realmConfig = CarbonContext.getThreadLocalCarbonContext().getUserRealm().getRealmConfiguration();
+            realmConfigurations.add(realmConfig);
+            do {
+                // Check for secondary user stores
+                realmConfig = realmConfig.getSecondaryRealmConfig();
+                if (realmConfig != null) {
+                    realmConfigurations.add(realmConfig);
+                }
+            } while (realmConfig != null);
+        } catch (UserStoreException e) {
+            e.printStackTrace();
+        }
+        return realmConfigurations;
     }
 
     public static void logOrganizationAddObject(OrganizationAdd organizationAdd) {
@@ -93,15 +151,16 @@ public class Utils {
         sb.append("\nName : " + organizationAdd.getName());
         sb.append("\nDescription : " + organizationAdd.getDescription());
         sb.append("\nParentId : " + organizationAdd.getParentId());
-        // user store configs and attributes cannot be null
+        // Attributes cannot be null
         organizationAdd.getAttributes().forEach(entry ->
                 attributesJoiner.add(entry.toString())
         );
         sb.append("\nAttributes : " + attributesJoiner.toString());
+        // User store configs can not be null
         organizationAdd.getUserStoreConfigs().forEach(entry ->
                 configJoiner.add(entry.toString())
         );
-        sb.append("\nUser Store Configs : ");
+        sb.append("\nUser Store Configs : " + configJoiner.toString());
         log.debug(sb.toString());
     }
 

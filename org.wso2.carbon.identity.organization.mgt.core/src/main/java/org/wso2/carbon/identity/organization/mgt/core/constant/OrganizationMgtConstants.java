@@ -48,7 +48,7 @@ public class OrganizationMgtConstants {
 
     public enum ErrorMessages {
 
-        ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID("ORGMGT_00001", "Invalid organization creation request : %s."),
+        ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID("ORGMGT_00001", "Invalid organization creation request : %s"),
         ERROR_CODE_ORGANIZATION_ALREADY_EXISTS_ERROR("ORGMGT_00002", "Organization already exists : %s."),
         ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR("ORGMGT_00003", "Error while checking if the organization exist : %s."),
         ERROR_CODE_INSERT_ORGANIZATION_ERROR("ORGMGT_00004", "Error creating the organization : %s."),

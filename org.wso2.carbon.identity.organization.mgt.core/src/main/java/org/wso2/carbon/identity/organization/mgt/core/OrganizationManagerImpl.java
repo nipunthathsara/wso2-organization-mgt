@@ -36,6 +36,7 @@ import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,6 +67,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getLdapRootDn;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationAddObject;
@@ -88,19 +90,30 @@ public class OrganizationManagerImpl implements OrganizationManager {
         logOrganizationAddObject(organizationAdd);
         validateAddOrganizationRequest(organizationAdd);
         Organization organization = generateOrganizationFromRequest(organizationAdd);
+        Map<String, UserStoreConfig> parentConfigs = new HashMap<>();
+        if (!ROOT.equals(organization.getParentId())) {
+            parentConfigs = getUserStoreConfigs(organization.getParentId());
+        }
         organization.setId(generateUniqueID());
         organization.setTenantId(tenantId);
-        // If user store domain is not provided, defaults to PRIMARY
         if (organization.getUserStoreConfigs().get(USER_STORE_DOMAIN) == null) {
-            organization.getUserStoreConfigs().put(USER_STORE_DOMAIN, new UserStoreConfig(USER_STORE_DOMAIN, PRIMARY));
+            // If user store domain is not defined for a non-root organization, defaults to parent's domain
+            if (!ROOT.equals(organization.getParentId())) {
+                organization.getUserStoreConfigs().put(USER_STORE_DOMAIN,
+                        new UserStoreConfig(USER_STORE_DOMAIN, parentConfigs.get(USER_STORE_DOMAIN).getValue()));
+            } else {
+                // If user store domain is not defined for a root organization, defaults to PRIMARY
+                organization.getUserStoreConfigs().put(USER_STORE_DOMAIN, new UserStoreConfig(USER_STORE_DOMAIN, PRIMARY));
+            }
         }
         // If RDN is not provided, defaults to organization ID
         if (organization.getUserStoreConfigs().get(RDN) == null) {
-            organization.getUserStoreConfigs().put(RDN, new UserStoreConfig(RDN, "ou=".concat(organization.getId())));
+            organization.getUserStoreConfigs().put(RDN, new UserStoreConfig(RDN, organization.getId()));
         }
         // Construct and set DN using RDN, User store domain and the parent ID
         String dn = constructDn(
                 organization.getParentId(),
+                ROOT.equals(organization.getParentId()) ? null : parentConfigs.get(DN).getValue(),
                 organization.getUserStoreConfigs().get(RDN).getValue(),
                 organization.getUserStoreConfigs().get(USER_STORE_DOMAIN).getValue()
         );
@@ -231,6 +244,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 config.setKey(config.getKey().toUpperCase());
             } else {
                 userStoreConfigs.remove(i);
+                if (log.isDebugEnabled()) {
+                    log.debug("Dropping additional user store configs. Only 'USER_STORE_DOMAIN' and 'RDN' are allowed.");
+                }
             }
         }
         // Check if the organization name already exists for the given tenant
@@ -242,42 +258,34 @@ public class OrganizationManagerImpl implements OrganizationManager {
         if (StringUtils.isNotBlank(organizationAdd.getParentId()) &&
                 !isOrganizationExistById(organizationAdd.getParentId().trim())) {
             throw handleClientException(ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
-                    "Defined parent organization doesn't exist " + organizationAdd.getParentId().trim());
+                    "Defined parent organization doesn't exist in this tenant. " + organizationAdd.getParentId().trim());
         }
-        // TODO Check if the user store domain matches that of the parent.
         organizationAdd.setParentId(
                 StringUtils.isNotBlank(organizationAdd.getParentId()) ? organizationAdd.getParentId().trim() : ROOT);
+        // Check if the user store domain matches that of the parent, for non ROOT organizations
+        if (!ROOT.equals(organizationAdd.getParentId())) {
+            String parentUserStoreDomain = getUserStoreConfigs(organizationAdd.getParentId()).get(USER_STORE_DOMAIN).getValue();
+            for (UserStoreConfig config : organizationAdd.getUserStoreConfigs()) {
+                if (USER_STORE_DOMAIN.equals(config.getKey()) && !parentUserStoreDomain.equals(config.getValue())) {
+                    throw handleClientException(ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
+                            "Defined user store domain : " + config.getValue() + ", doesn't match that of the parent : " + parentUserStoreDomain);
+                }
+            }
+        }
     }
 
-    private String constructDn(String parentId, String rdn, String userStoreDomain)
+    private String constructDn(String parentId, String parentDn, String rdn, String userStoreDomain)
             throws OrganizationManagementException {
 
-        //TODO mind the user store domain
-        String parentDn, dn;
-        try {
-            UserRealm userRealm = OrganizationMgtDataHolder.getInstance().getRealmService().getTenantUserRealm(tenantId);
-            String userStoreClass = userRealm.getRealmConfiguration().getUserStoreClass();
-            // Check if organization management is supported by the user store
-            if (!(UNIQUE_ID_READ_WRITE_LDAP_USER_STORE_CLASS_NAME.equals(userStoreClass)
-                    || READ_WRITE_LDAP_USER_STORE_CLASS_NAME.equals(userStoreClass))) {
-                throw handleClientException(ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
-                        "Organization Mgt is only supported for Read/Write LDAP user stores. Provided domain : "
-                                + userStoreDomain);
-            }
-            if (ROOT.equals(parentId)) {
-                // If root level organization
-                parentDn = userRealm.getRealmConfiguration().getUserStoreProperty(USER_SEARCH_BASE);
-                dn = rdn.concat(",").concat(parentDn);
-            } else {
-                dn = rdn.concat(",").concat(getUserStoreConfigs(parentId).get(DN).getValue());
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("User store domain : " + userStoreDomain + ", RDN : " + rdn + ", DN : " + dn);
-            }
-            return dn;
-        } catch (UserStoreException e) {
-            throw handleServerException(ERROR_CODE_USER_STORE_ACCESS_ERROR, "Error while constructing the DN", e);
+        boolean rootOrg = ROOT.equals(parentId);
+        String dn;
+        if (rootOrg) {
+            String ldapRoot = getLdapRootDn(userStoreDomain);
+            dn = "ou=".concat(rdn).concat(",").concat(ldapRoot);
+        } else {
+            dn = "ou=".concat(rdn).concat(",").concat(parentDn);
         }
+        return dn;
     }
 
     private Organization generateOrganizationFromRequest(OrganizationAdd organizationAdd) {
