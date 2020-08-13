@@ -118,7 +118,7 @@ public class SQLConstants {
             "FROM\n" +
             "    IDN_ORG O\n" +
             "WHERE\n" +
-            "    O.ID = ? AND O.TENANT_ID = ?;";
+            "    O.TENANT_ID = ? AND O.ID = ?";
     public static final String GET_ORGANIZATION_BY_ID =
             "SELECT\n" +
             "    DISTINCT V.ID, V.NAME, V.DESCRIPTION, V.PARENT_ID, V.ACTIVE, V.LAST_MODIFIED, V.CREATED_TIME, V.HAS_ATTRIBUTES, V.ATTR_ID, V.ATTR_KEY, V.ATTR_VALUE\n" +
