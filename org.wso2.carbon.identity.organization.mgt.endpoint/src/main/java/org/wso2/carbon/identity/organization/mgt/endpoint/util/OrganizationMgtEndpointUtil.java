@@ -19,11 +19,9 @@
 package org.wso2.carbon.identity.organization.mgt.endpoint.util;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.jaxrs.ext.search.PrimitiveStatement;
 import org.apache.cxf.jaxrs.ext.search.SearchCondition;
 import org.apache.cxf.jaxrs.ext.search.SearchContext;
-import org.apache.cxf.jaxrs.ext.search.SearchParseException;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType;
@@ -32,7 +30,6 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
-import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationSearchBean;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.ComplexCondition;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
@@ -48,25 +45,22 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ConflictReq
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ForbiddenException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.InternalServerErrorException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.NotFoundException;
-import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.SearchConditionException;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SEARCH_ORGANIZATION_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.STARTS_WITH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_ACTIVE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.LIKE_SYMBOL;
 
 /**
  * This class provides util functions to the Organization Management endpoint.
  */
 public class OrganizationMgtEndpointUtil {
-
-    private static final Log LOG = LogFactory.getLog(OrganizationMgtEndpointUtil.class);
 
     public static OrganizationManager getOrganizationManager() {
 
@@ -267,14 +261,20 @@ public class OrganizationMgtEndpointUtil {
         if (!(searchCondition.getStatement() == null)) {
             PrimitiveStatement primitiveStatement = searchCondition.getStatement();
             if (!(primitiveStatement.getProperty() == null)) {
-                    return new PrimitiveCondition(
-                            primitiveStatement.getProperty(),
-                            getPrimitiveOperatorFromOdata(primitiveStatement.getCondition()),
-                            // By default the class tye would be String. Hence, explicit casting for Boolean 'active' field
-                            primitiveStatement.getProperty().equals(ORGANIZATION_SEARCH_BEAN_FIELD_ACTIVE) ?
-                                    Boolean.parseBoolean(primitiveStatement.getValue().toString()) :
-                                    primitiveStatement.getValue()
-                    );
+                Object value = primitiveStatement.getValue();
+                if (primitiveStatement.getProperty().equals(STARTS_WITH.toString())) {
+                    value = ((String) value).concat(LIKE_SYMBOL);
+                } else if (primitiveStatement.getProperty().equals(STARTS_WITH.toString())) {
+                    value = LIKE_SYMBOL.concat(((String) value));
+                }
+                return new PrimitiveCondition(
+                        primitiveStatement.getProperty(),
+                        getPrimitiveOperatorFromOdata(primitiveStatement.getCondition()),
+                        // By default the class tye would be String. Hence, explicit casting for Boolean 'active' field
+                        primitiveStatement.getProperty().equals(ORGANIZATION_SEARCH_BEAN_FIELD_ACTIVE) ?
+                                Boolean.parseBoolean(primitiveStatement.getValue().toString()) :
+                                value
+                );
             }
             return null;
         } else {

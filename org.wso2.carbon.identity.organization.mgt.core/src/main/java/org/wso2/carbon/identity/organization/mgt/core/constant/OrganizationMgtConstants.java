@@ -67,8 +67,6 @@ public class OrganizationMgtConstants {
         ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORGMGT_00017", "Error while checking if the attribute exist : %s."),
         ERROR_CODE_SEARCH_ORGANIZATION_ERROR("ORGMGT_00018", "Error while searching organizations : %s."),
 
-
-
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 
         private final String code;

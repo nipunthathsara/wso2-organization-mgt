@@ -49,7 +49,9 @@ public class ConditionType {
         LESS_THAN,
         GREATER_THAN,
         LESS_OR_EQUALS,
-        GREATER_OR_EQUALS;
+        GREATER_OR_EQUALS,
+        STARTS_WITH,
+        ENDS_WITH;
 
         public String toSQL() {
 
@@ -72,6 +74,12 @@ public class ConditionType {
                     break;
                 case LESS_OR_EQUALS:
                     op = "<=";
+                    break;
+                case STARTS_WITH:
+                    op = "LIKE";
+                    break;
+                case ENDS_WITH:
+                    op = "LIKE";
                     break;
             }
             return op;

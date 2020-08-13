@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_PAGINATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_SORTING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_PATCH_OPERATION_ERROR;
@@ -143,7 +142,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "ID - " + organizationId + " doesn't exist in this tenant - " + tenantId);
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR,
+                    "ID - " + organizationId + " doesn't exist in this tenant - " + tenantId);
         }
         validateOrganizationPatchOperations(operations, organizationId);
         for (Operation operation : operations) {
@@ -160,7 +160,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
         }
         if (!isOrganizationExistById(organizationId.trim())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "ID - " + organizationId + " doesn't exist in this tenant - " + tenantId);
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR,
+                    "ID - " + organizationId + " doesn't exist in this tenant - " + tenantId);
         }
         organizationMgtDao.deleteOrganization(tenantId, organizationId.trim());
     }
@@ -260,7 +261,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             if (!(UNIQUE_ID_READ_WRITE_LDAP_USER_STORE_CLASS_NAME.equals(userStoreClass)
                     || READ_WRITE_LDAP_USER_STORE_CLASS_NAME.equals(userStoreClass))) {
                 throw handleClientException(ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID,
-                        "Organization Mgt is only supported for Read/Write LDAP user stores. Provided domain : " + userStoreDomain);
+                        "Organization Mgt is only supported for Read/Write LDAP user stores. Provided domain : "
+                                + userStoreDomain);
             }
             if (ROOT.equals(parentId)) {
                 // If root level organization

@@ -32,9 +32,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserstoreConfigDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil;
 
 import javax.ws.rs.core.Response;
 

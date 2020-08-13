@@ -40,7 +40,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 
 /**
- * This class provides util functions for the Organization Management.
+ * This class provides utility functions for the Organization Management.
  */
 public class Utils {
 

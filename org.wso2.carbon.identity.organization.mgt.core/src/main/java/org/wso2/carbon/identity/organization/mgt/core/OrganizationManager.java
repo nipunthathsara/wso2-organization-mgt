@@ -34,8 +34,10 @@ import java.util.Map;
 public interface OrganizationManager {
 
     /**
+     * Add a new organization
+     *
      * @param organizationAdd
-     * @param isImport
+     * @param isImport 'true' if you want to create an OU in the underlying user store.
      * @return
      * @throws OrganizationManagementException
      */
@@ -43,6 +45,8 @@ public interface OrganizationManager {
             throws OrganizationManagementException;
 
     /**
+     * Retrieve the organization identified by the provided ID if such exists within the tenant.
+     *
      * @param organizationId
      * @return
      * @throws OrganizationManagementException
@@ -50,11 +54,13 @@ public interface OrganizationManager {
     Organization getOrganization(String organizationId) throws OrganizationManagementException;
 
     /**
-     * @param searchCondition
-     * @param offset
-     * @param limit
-     * @param sortBy
-     * @param sortOrder
+     * List or search organizations with pagination and sorting.
+     *
+     * @param searchCondition Search condition
+     * @param offset Number of items to be skipped
+     * @param limit Number of items to be retrieved
+     * @param sortBy Attribute to be sorted by
+     * @param sortOrder Order to be sorted by
      * @return
      * @throws OrganizationManagementException
      */
@@ -62,6 +68,8 @@ public interface OrganizationManager {
             throws OrganizationManagementException;
 
     /**
+     * Check if the provided organization name exists within the tenant.
+     *
      * @param organizationName
      * @return
      * @throws OrganizationManagementException
@@ -69,6 +77,8 @@ public interface OrganizationManager {
     boolean isOrganizationExistByName(String organizationName) throws OrganizationManagementException;
 
     /**
+     * Check if the provided organization ID exists within the tenant.
+     *
      * @param id
      * @return
      * @throws OrganizationManagementException
@@ -76,6 +86,8 @@ public interface OrganizationManager {
     boolean isOrganizationExistById(String id) throws OrganizationManagementException;
 
     /**
+     * Patch organization and its attributes.
+     *
      * @param organizationId
      * @param operations
      * @throws OrganizationManagementException
@@ -84,12 +96,16 @@ public interface OrganizationManager {
             throws OrganizationManagementException;
 
     /**
+     * Delete the organization identified by the provided ID.
+     *
      * @param organizationId
      * @throws OrganizationManagementException
      */
     void deleteOrganization(String organizationId) throws OrganizationManagementException;
 
     /**
+     * Retrieve user store configurations of the organization identified by the provided ID.
+     *
      * @param organizationId
      * @return
      * @throws OrganizationManagementException
@@ -97,6 +113,8 @@ public interface OrganizationManager {
     Map<String, UserStoreConfig> getUserStoreConfigs(String organizationId) throws OrganizationManagementException;
 
     /**
+     * Retrieve children organization IDs of the organization identified by the given ID.
+     *
      * @param organizationId
      * @return
      * @throws OrganizationManagementException
