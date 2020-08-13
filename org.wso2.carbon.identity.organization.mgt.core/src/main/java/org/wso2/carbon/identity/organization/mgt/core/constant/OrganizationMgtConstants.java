@@ -37,6 +37,15 @@ public class OrganizationMgtConstants {
     public static final String PATCH_PATH_ORG_PARENT_ID = "/parentId";
     public static final String PATCH_PATH_ORG_ATTRIBUTES = "/attributes/";
 
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_NAME = "name";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_DESCRIPTION = "description";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_ID = "parentId";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_ACTIVE = "active";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY = "attributeKey";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE = "attributeValue";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY = "userStoreConfigKey";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE = "userStoreConfigValue";
+
     public enum ErrorMessages {
 
         ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID("ORGMGT_00001", "Invalid organization creation request : %s."),
@@ -56,6 +65,8 @@ public class OrganizationMgtConstants {
         ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR("ORGMGT_00015", "Error retrieving child organization of organization ID : %s."),
         ERROR_CODE_PATCH_OPERATION_ERROR("ORGMGT_00016", "Error performing the patch operations : %s."),
         ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORGMGT_00017", "Error while checking if the attribute exist : %s."),
+        ERROR_CODE_SEARCH_ORGANIZATION_ERROR("ORGMGT_00018", "Error while searching organizations : %s."),
+
 
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");

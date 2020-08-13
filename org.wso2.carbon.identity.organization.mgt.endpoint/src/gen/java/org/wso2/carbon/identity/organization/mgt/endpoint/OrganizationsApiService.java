@@ -1,5 +1,6 @@
 package org.wso2.carbon.identity.organization.mgt.endpoint;
 
+import org.apache.cxf.jaxrs.ext.search.SearchContext;
 import org.wso2.carbon.identity.organization.mgt.endpoint.*;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.*;
 
@@ -19,7 +20,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import javax.ws.rs.core.Response;
 
 public abstract class OrganizationsApiService {
-    public abstract Response organizationsGet(String filter,Integer offset,Integer limit,String sortBy,String sortOrder);
+    public abstract Response organizationsGet(SearchContext searchContext, Integer offset, Integer limit, String sortBy, String sortOrder);
     public abstract Response organizationsImportPost(OrganizationAddDTO organization);
     public abstract Response organizationsOrganizationIdChildrenGet(String organizationId);
     public abstract Response organizationsOrganizationIdDelete(String organizationId);

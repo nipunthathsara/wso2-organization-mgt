@@ -23,6 +23,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
+import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public interface OrganizationManager {
     Organization getOrganization(String organizationId) throws OrganizationManagementException;
 
     /**
-     * @param filter
+     * @param searchCondition
      * @param offset
      * @param limit
      * @param sortBy
@@ -57,7 +58,7 @@ public interface OrganizationManager {
      * @return
      * @throws OrganizationManagementException
      */
-    List<Organization> getOrganizations(String filter, int offset, int limit, String sortBy, String sortOrder)
+    List<Organization> getOrganizations(Condition searchCondition, int offset, int limit, String sortBy, String sortOrder)
             throws OrganizationManagementException;
 
     /**

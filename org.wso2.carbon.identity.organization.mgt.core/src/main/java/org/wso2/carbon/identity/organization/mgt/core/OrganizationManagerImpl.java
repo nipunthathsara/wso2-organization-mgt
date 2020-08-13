@@ -32,6 +32,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
+import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 
@@ -125,15 +126,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     @Override
-    public List<Organization> getOrganizations(String filter, int offset, int limit, String sortBy, String sortOrder)
+    public List<Organization> getOrganizations(Condition condition, int offset, int limit, String sortBy, String sortOrder)
             throws OrganizationManagementException {
 
         // Validate pagination and sorting parameters
         sortBy = getMatchingColumnNameForSortingParameter(sortBy);
-        if (offset < 0 || (offset > -1 && limit < 0)) {
-            throw handleClientException(ERROR_CODE_INVALID_PAGINATION, "[ limit > 0, offset >= 0]");
-        }
-        return organizationMgtDao.getOrganizations(tenantId, offset, limit, sortBy, sortOrder);
+        return organizationMgtDao.getOrganizations(condition, tenantId, offset, limit, sortBy, sortOrder);
     }
 
     @Override

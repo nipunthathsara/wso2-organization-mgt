@@ -22,6 +22,7 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
+import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 
 import java.util.List;
 import java.util.Map;
@@ -75,7 +76,7 @@ public interface OrganizationMgtDao {
     Organization getOrganization(int tenantId, String organizationId) throws OrganizationManagementException;
 
     /**
-     *
+     * @param condition
      * @param tenantId
      * @param offset
      * @param limit
@@ -84,7 +85,7 @@ public interface OrganizationMgtDao {
      * @return
      * @throws OrganizationManagementException
      */
-    List<Organization> getOrganizations(int tenantId, int offset, int limit, String sortBy, String sortOrder)
+    List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy, String sortOrder)
             throws OrganizationManagementException;
 
     /**

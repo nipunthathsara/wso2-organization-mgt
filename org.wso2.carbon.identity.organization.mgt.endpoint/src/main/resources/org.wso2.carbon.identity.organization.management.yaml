@@ -124,10 +124,6 @@ paths:
         Retrieve organizations created for this tenant which matches the defined search criteria, if any.
       parameters:
         - in: query
-          name: filter
-          type: string
-          description: Search query using (name, parentId, active, lastModified, created, attribute.key, attribute.value, userStoreConfig.key, userStoreConfig.value) fields and (sw, ew, eq, ne, lt, le, gt, ge) operators.
-        - in: query
           name: offset
           type: integer
           description: Number of items to be skipped before starting to collect the result set.

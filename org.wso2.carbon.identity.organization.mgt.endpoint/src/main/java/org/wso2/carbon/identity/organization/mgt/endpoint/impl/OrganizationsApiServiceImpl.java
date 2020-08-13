@@ -2,18 +2,23 @@ package org.wso2.carbon.identity.organization.mgt.endpoint.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.cxf.jaxrs.ext.search.SearchContext;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationSearchBean;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.endpoint.*;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_PAGINATION;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_PATH;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getBasicOrganizationDTOFromOrganization;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getBasicOrganizationDTOsFromOrganizations;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationDTOFromOrganization;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationManager;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationAddFromDTO;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getSearchCondition;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getUserStoreConfigDTOsFromUserStoreConfigs;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleBadRequestResponse;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleServerErrorResponse;
@@ -72,11 +77,23 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     }
 
     @Override
-    public Response organizationsGet(String filter, Integer offset, Integer limit, String sortBy, String sortOrder) {
+    public Response organizationsGet(SearchContext searchContext, Integer offset, Integer limit, String sortBy, String sortOrder) {
 
         try {
+            if ((limit != null && limit < 1) || (offset != null && offset < 0)) {
+                handleClientException(ERROR_CODE_INVALID_PAGINATION,
+                        "Invalid pagination arguments. 'limit' should be greater than 0 and 'offset' should be greater than -1");
+            }
+            // If pagination parameters not defined in the request, set them to -1
+            limit = (limit == null) ? -1 : limit;
+            offset = (offset == null) ? -1 : offset;
             List<Organization> organizations = getOrganizationManager()
-                    .getOrganizations(filter, offset, limit, sortBy, sortOrder);
+                    .getOrganizations(
+                            getSearchCondition(searchContext, OrganizationSearchBean.class),
+                            offset,
+                            limit,
+                            sortBy,
+                            sortOrder);
             return Response.ok().entity(getBasicOrganizationDTOsFromOrganizations(organizations)).build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, LOG);

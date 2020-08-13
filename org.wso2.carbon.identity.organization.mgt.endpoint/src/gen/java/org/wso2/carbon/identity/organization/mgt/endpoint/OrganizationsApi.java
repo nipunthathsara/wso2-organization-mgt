@@ -1,5 +1,6 @@
 package org.wso2.carbon.identity.organization.mgt.endpoint;
 
+import org.apache.cxf.jaxrs.ext.search.SearchContext;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.*;
 import org.wso2.carbon.identity.organization.mgt.endpoint.OrganizationsApiService;
 import org.wso2.carbon.identity.organization.mgt.endpoint.factories.OrganizationsApiServiceFactory;
@@ -20,6 +21,7 @@ import java.io.InputStream;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.*;
 
@@ -45,13 +47,13 @@ public class OrganizationsApi  {
         
         @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
 
-    public Response organizationsGet(@ApiParam(value = "Search query using (name, parentId, active, lastModified, created, userStoreConfig.key, userStoreConfig.value) fields and (eq, ne, lt, le, gt, ge) operators.") @QueryParam("filter")  String filter,
-    @ApiParam(value = "Number of items to be skipped before starting to collect the result set.") @QueryParam("offset")  Integer offset,
-    @ApiParam(value = "Max number of items to be returned.") @QueryParam("limit")  Integer limit,
-    @ApiParam(value = "Criteria to sort by. (name, lastModified, created)") @QueryParam("sortBy")  String sortBy,
-    @ApiParam(value = "Ascending or Descending order. (ASC, DESC)") @QueryParam("sortOrder")  String sortOrder)
+    public Response organizationsGet(@Context SearchContext searchContext,
+                                     @ApiParam(value = "Number of items to be skipped before starting to collect the result set.") @QueryParam("offset")  Integer offset,
+                                     @ApiParam(value = "Max number of items to be returned.") @QueryParam("limit")  Integer limit,
+                                     @ApiParam(value = "Criteria to sort by. (name, lastModified, created)") @QueryParam("sortBy")  String sortBy,
+                                     @ApiParam(value = "Ascending or Descending order. (ASC, DESC)") @QueryParam("sortOrder")  String sortOrder)
     {
-    return delegate.organizationsGet(filter,offset,limit,sortBy,sortOrder);
+    return delegate.organizationsGet(searchContext, offset,limit,sortBy,sortOrder);
     }
     @POST
     @Path("/import")
@@ -137,7 +139,7 @@ public class OrganizationsApi  {
     @Path("/{organization-id}")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "This API is used to update an existing organization, identified by the organization Id.\n", notes = "This API is used to add, delete or update the defined field of the organization identified by the organization Id.\n", response = void.class)
+    @io.swagger.annotations.ApiOperation(value = "This API is used to patch an existing organization, identified by the organization Id.\n", notes = "This API is used to add, delete or update the defined field of the organization identified by the organization Id.\n", response = void.class)
     @io.swagger.annotations.ApiResponses(value = { 
         @io.swagger.annotations.ApiResponse(code = 204, message = "Ok"),
         

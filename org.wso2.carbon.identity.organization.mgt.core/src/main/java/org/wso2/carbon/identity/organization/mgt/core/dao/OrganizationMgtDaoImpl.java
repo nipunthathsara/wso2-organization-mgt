@@ -24,10 +24,15 @@ import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditionValidationException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationSearchBean;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
+import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
+import org.wso2.carbon.identity.organization.mgt.core.search.PlaceholderSQL;
+import org.wso2.carbon.identity.organization.mgt.core.search.PrimitiveConditionValidator;
 import org.wso2.carbon.identity.organization.mgt.core.util.JdbcUtils;
 import org.wso2.carbon.identity.organization.mgt.core.util.Utils;
 
@@ -52,6 +57,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_USER_STORE_CONFIGS_BY_ORG_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SEARCH_ORGANIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ACTIVE;
@@ -139,34 +145,33 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     @Override
-    public List<Organization> getOrganizations(int tenantId, int offset, int limit, String sortBy, String sortOrder)
-            throws OrganizationManagementException {
+    public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit,
+                                               String sortBy, String sortOrder) throws OrganizationManagementException {
 
-        boolean paginationReq = offset >= 0 && limit > 0;
-        // Ascending if not specified otherwise.
-        sortOrder = sortOrder != null && "DESC".equals(sortOrder.trim().toUpperCase()) ? "DESC" : "ASC";
-        boolean sortingReq = sortBy != null;
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(GET_ALL_ORGANIZATION_IDS);
-        if (sortingReq) {
-            sb.append(String.format(ORDER_BY, sortBy, sortOrder));
-        }
-        if (paginationReq) {
-            sb.append(String.format(PAGINATION, offset, limit));
-        }
-        String query = sb.toString();
-
+        PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
         // Get organization IDs
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
         List<String> orgIds;
         List<Organization> organizations = new ArrayList<>();
         try {
-            orgIds = jdbcTemplate.executeQuery(query,
+            orgIds = jdbcTemplate.executeQuery(placeholderSQL.getQuery(),
                     (resultSet, rowNumber) ->
                             resultSet.getString(VIEW_ID),
                     preparedStatement -> {
-                        preparedStatement.setInt(1, tenantId);
+                        int parameterIndex = 0;
+                        // Populate tenant ID
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        // Populate generated conditions if any
+                        for (int count = 0; placeholderSQL.getData() != null && count < placeholderSQL.getData().size(); count++) {
+                            if (placeholderSQL.getData().get(count).getClass().equals(Integer.class)) {
+                                preparedStatement.setInt(++parameterIndex, (Integer) placeholderSQL.getData().get(count));
+                            } else if (placeholderSQL.getData().get(count).getClass().equals(Boolean.class)) {
+                                int bool = ((Boolean)(placeholderSQL.getData().get(count))) ? 1 : 0;
+                                preparedStatement.setInt(++parameterIndex, bool);
+                            } else {
+                                preparedStatement.setString(++parameterIndex, (String) placeholderSQL.getData().get(count));
+                            }
+                        }
                     });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR,
@@ -177,7 +182,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
 
         // Get organizations by IDs
-        query = GET_ORGANIZATIONS_BY_IDS;
+        String query = GET_ORGANIZATIONS_BY_IDS;
         StringJoiner sj = new StringJoiner(",");
         for (String id : orgIds) {
             sj.add("'" + id + "'");
@@ -201,7 +206,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     });
             return organizations;
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR, "Error while constructing organizations by IDs", e);
+            throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR,
+                    "Error while constructing organizations by IDs", e);
         }
     }
 
@@ -526,5 +532,44 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             }
             throw handleClientException(ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR, "Query length exceeded the maximum limit.");
         }
+    }
+
+    private PlaceholderSQL buildQuery(Condition condition, int offset, int limit,
+                                      String sortBy, String sortOrder) throws OrganizationManagementException {
+
+        boolean paginationReq = offset > -1 && limit > 0;
+        boolean searchReq = condition != null;
+        // Ascending if not specified otherwise.
+        sortOrder = sortOrder != null && "DESC".equals(sortOrder.trim().toUpperCase()) ? "DESC" : "ASC";
+        boolean sortingReq = sortBy != null;
+
+        PlaceholderSQL placeholderSQL;
+        try {
+            placeholderSQL = searchReq ? condition.buildQuery(
+                    new PrimitiveConditionValidator(new OrganizationSearchBean())) : new PlaceholderSQL();
+        } catch (PrimitiveConditionValidationException e) {
+            log.error("Error passing the condition ", e);
+            throw handleClientException(ERROR_CODE_SEARCH_ORGANIZATION_ERROR, "Error passing condition");
+        }
+
+        StringBuilder sb = new StringBuilder();
+        // Base query
+        sb.append(GET_ALL_ORGANIZATION_IDS);
+        if (searchReq) {
+            // Append generated search conditions
+            sb.append(" AND ").append(placeholderSQL.getQuery());
+        }
+        if (sortingReq) {
+            sb.append(String.format(ORDER_BY, sortBy, sortOrder));
+        }
+        if (paginationReq) {
+            sb.append(String.format(PAGINATION, offset, limit));
+        }
+        placeholderSQL.setQuery(sb.toString());
+        if (log.isDebugEnabled()) {
+            log.debug("Built query : " + placeholderSQL.getQuery());
+        }
+        validateQueryLength(placeholderSQL.getQuery());
+        return placeholderSQL;
     }
 }
