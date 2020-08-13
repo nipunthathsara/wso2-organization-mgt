@@ -201,6 +201,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
     @Override
     public List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException {
 
+        if (StringUtils.isBlank(organizationId)) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
+        }
+        organizationId = organizationId.trim();
         if (organizationMgtDao.isOrganizationExistById(tenantId, organizationId)) {
             return organizationMgtDao.getChildOrganizationIds(organizationId);
         } else {
