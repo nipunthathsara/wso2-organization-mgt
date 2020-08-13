@@ -514,7 +514,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 organization.setCreated(collector.getCreated().toString());
                 organization.setHasAttributes(collector.hasAttributes());
             }
-            if (organization.hasAttributes() && !organization.getAttributes().containsKey(collector.getAttributeKey())) {
+            if (organization.hasAttributes() && collector.getAttributeKey() != null
+                    && !organization.getAttributes().containsKey(collector.getAttributeKey())) {
                 organization.getAttributes()
                         .put(collector.getAttributeKey(),
                                 new Attribute(collector.getAttributeKey(), collector.getAttributeValue()));

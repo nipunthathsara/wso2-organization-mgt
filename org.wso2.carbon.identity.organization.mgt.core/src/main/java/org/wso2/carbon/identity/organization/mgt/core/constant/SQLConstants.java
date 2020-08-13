@@ -125,7 +125,7 @@ public class SQLConstants {
             "FROM\n" +
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +
-            "    V.TENANT_ID = ? AND V.ID = ? AND V.ATTR_ID IS NOT NULL";
+            "    V.TENANT_ID = ? AND V.ID = ?";
     public static final String FIND_CHILD_ORG_IDS =
             "SELECT\n" +
             "    O.ID\n" +
