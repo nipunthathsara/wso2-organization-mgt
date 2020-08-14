@@ -319,9 +319,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 return VIEW_NAME;
             case "description":
                 return VIEW_DESCRIPTION;
-            case "createdTime":
+            case "createdtime":
                 return VIEW_CREATED_TIME;
-            case "lastModified":
+            case "lastmodified":
                 return VIEW_LAST_MODIFIED;
             default:
                 throw handleClientException(ERROR_CODE_INVALID_SORTING,

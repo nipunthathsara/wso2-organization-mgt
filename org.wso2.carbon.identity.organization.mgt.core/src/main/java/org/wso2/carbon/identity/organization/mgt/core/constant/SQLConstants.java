@@ -135,11 +135,11 @@ public class SQLConstants {
             "    O.PARENT_ID = ?";
     public static final String GET_ALL_ORGANIZATION_IDS =
             "SELECT\n" +
-            "    DISTINCT V.ID\n" +
+            "    DISTINCT ID, NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED\n" +
             "FROM\n" +
-            "    ORG_MGT_VIEW V\n" +
+            "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
-            "    V.TENANT_ID = ?";
+            "    TENANT_ID = ?";
     public static final String ORDER_BY =
             "\nORDER BY" +
             "   \n%s %s";

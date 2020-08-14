@@ -20,6 +20,7 @@ package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tools.ant.taskdefs.condition.Or;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
@@ -40,6 +41,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -148,6 +150,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit,
                                                String sortBy, String sortOrder) throws OrganizationManagementException {
 
+        // TODO buggy when not sending pagination but sort (sorting field has to be in the selcted fields)
         PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
         // Get organization IDs
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
@@ -166,7 +169,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                             if (placeholderSQL.getData().get(count).getClass().equals(Integer.class)) {
                                 preparedStatement.setInt(++parameterIndex, (Integer) placeholderSQL.getData().get(count));
                             } else if (placeholderSQL.getData().get(count).getClass().equals(Boolean.class)) {
-                                int bool = ((Boolean)(placeholderSQL.getData().get(count))) ? 1 : 0;
+                                int bool = ((Boolean) (placeholderSQL.getData().get(count))) ? 1 : 0;
                                 preparedStatement.setInt(++parameterIndex, bool);
                             } else {
                                 preparedStatement.setString(++parameterIndex, (String) placeholderSQL.getData().get(count));
@@ -204,7 +207,9 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         organization.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME, calendar).toString());
                         return organization;
                     });
-            return organizations;
+            // When sorting is required, organization IDs were fetched sorted from the DB. But the collected organizations may not.
+            // Therefore, sort the organization as per the order of their IDs.
+            return sortBy != null ? sortCollectedOrganizations(organizations, orgIds) : organizations;
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR,
                     "Error while constructing organizations by IDs", e);
@@ -572,5 +577,17 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
         validateQueryLength(placeholderSQL.getQuery());
         return placeholderSQL;
+    }
+
+    private List<Organization> sortCollectedOrganizations(List<Organization> organizations,
+                                                          List<String> organizationIds) {
+
+        Map<String, Organization> organizationMap = organizations.stream()
+                .collect(Collectors.toMap(Organization::getId, organization -> organization));
+        organizations.clear();
+        for (String id : organizationIds) {
+            organizations.add(organizationMap.get(id));
+        }
+        return organizations;
     }
 }
