@@ -39,6 +39,7 @@ import org.wso2.carbon.user.api.UserStoreException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
@@ -160,9 +161,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         validateOrganizationPatchOperations(operations, organizationId);
         for (Operation operation : operations) {
-            if (operation.equals(PATCH_OP_ADD)) {
-
-            }
+            organizationMgtDao.patchOrganization(tenantId, organizationId, operation);
         }
     }
 
@@ -338,40 +337,49 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Patch operation is not defined");
             }
             String op = operation.getOp().trim().toLowerCase();
-            if (!(PATCH_OP_ADD.equals(operation.getOp()) || PATCH_OP_REMOVE.equals(operation.getOp())
-                    || PATCH_OP_REPLACE.equals(operation.getOp()))) {
+            if (!(PATCH_OP_ADD.equals(op) || PATCH_OP_REMOVE.equals(op)
+                    || PATCH_OP_REPLACE.equals(op))) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
                         "Patch op must be either ['add', 'replace', 'remove']");
             }
+
             // Validate path
             if (StringUtils.isBlank(operation.getPath())) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Patch operation path is not defined");
             }
             String path = operation.getPath().trim();
-            if (!(path.equalsIgnoreCase(PATCH_PATH_ORG_NAME)) ||
-                    path.equalsIgnoreCase(PATCH_PATH_ORG_DESCRIPTION) ||
-                    path.equalsIgnoreCase(PATCH_PATH_ORG_ACTIVE) ||
-                    path.equalsIgnoreCase(PATCH_PATH_ORG_PARENT_ID) ||
-                    path.toLowerCase().startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
+            // Set path to lower case
+            if (path.toLowerCase().startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
+                // Convert only the '/attributes/' part to lower case to treat the attribute name case sensitively
+                path = path.replaceAll("(?i)" + Pattern.quote(PATCH_PATH_ORG_ATTRIBUTES), PATCH_PATH_ORG_ATTRIBUTES);
+            } else if (path.equalsIgnoreCase(PATCH_PATH_ORG_PARENT_ID)) {
+                path = PATCH_PATH_ORG_PARENT_ID;
+            } else {
+                path = path.toLowerCase();
+            }
+            // Is valid path
+            if (!(path.equals(PATCH_PATH_ORG_NAME) ||
+                    path.equals(PATCH_PATH_ORG_DESCRIPTION) ||
+                    path.equals(PATCH_PATH_ORG_ACTIVE) ||
+                    path.equals(PATCH_PATH_ORG_PARENT_ID) ||
+                    path.startsWith(PATCH_PATH_ORG_ATTRIBUTES))) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Invalid Patch operation path : " + path);
             }
+
             // Validate value
-            String value = null;
+            String value;
             // Value is mandatory for Add and Replace operations
             if (StringUtils.isBlank(operation.getValue()) && !PATCH_OP_REMOVE.equals(op)) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Patch operation value is not defined");
             } else {
-                value = operation.getValue().trim();
+                // Avoid NPEs down the road
+                value = operation.getValue() != null ? operation.getValue().trim() : "";
             }
             // You can only remove attributes
             if (PATCH_OP_REMOVE.equals(op) && !path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Can not remove mandatory field : " + path);
             }
-            // Treat attribute paths(attribute names) case sensitive
-            if (!path.toLowerCase().startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
-                path = path.toLowerCase();
-            }
-            // Primary fields can only be Replaced
+            // Primary fields can only be 'Replaced'
             if (!path.startsWith(PATCH_PATH_ORG_ATTRIBUTES) && !op.equals(PATCH_OP_REPLACE)) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
                         "Primary organization fields can only be replaced. Provided op : " + op + ", Path : " + path);
@@ -382,7 +390,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
                         "ACTIVE field could only contain 'true' or 'false'. Provided : " + value);
             }
-            // Check if new parent exist before patching the PARENT field
+            // Check if the new parent exist before patching the PARENT field
             if (path.equals(PATCH_PATH_ORG_PARENT_ID) && !isOrganizationExistById(value)) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
                         "Provided parent ID does not exist : " + value);
@@ -397,7 +405,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 // Attribute key can not be empty
                 if (StringUtils.isBlank(attributeKey)) {
                     throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
-                            "Attribute key not define in the path : " + path);
+                            "Attribute key is not defined in the path : " + path);
                 }
                 boolean attributeExist = organizationMgtDao.isAttributeExistByKey(tenantId, organizationId, attributeKey);
                 // If attribute key to be added already exists, update its value

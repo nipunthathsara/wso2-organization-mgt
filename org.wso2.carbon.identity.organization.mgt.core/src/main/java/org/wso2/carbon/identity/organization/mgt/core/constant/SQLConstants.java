@@ -46,6 +46,20 @@ public class SQLConstants {
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND ID = ? AND ATTR_KEY = ?";
+    public static final String CHECK_ORG_HAS_ATTRIBUTES =
+            "SELECT\n" +
+            "    COUNT(1)\n" +
+            "FROM\n" +
+            "    IDN_ORG_ATTRIBUTES\n" +
+            "WHERE\n" +
+            "    ORG_ID = ?";
+    public static final String UPDATE_HAS_ATTRIBUTES_FIELD =
+            "UPDATE\n" +
+            "    IDN_ORG\n" +
+            "SET\n" +
+            "    HAS_ATTRIBUTES = ?\n" +
+            "WHERE\n" +
+            "    ID = ?";
     public static final String COUNT_COLUMN_NAME = "COUNT(1)";
     public static final String VIEW_ID = "ID";
     public static final String VIEW_TENANT_ID = "TENANT_ID";
@@ -113,6 +127,12 @@ public class SQLConstants {
             "INSERT\n" +
             "    (A.ID, A.ORG_ID, A.ATTR_KEY, A.ATTR_VALUE)\n" +
             "    VALUES (N.ID, N.ORG_ID, N.ATTR_KEY, N.ATTR_VALUE)";
+    public static final String REMOVE_ATTRIBUTE =
+            "DELETE\n" +
+            "FROM\n" +
+            "    IDN_ORG_ATTRIBUTES\n" +
+            "WHERE\n" +
+            "    ORG_ID = ? AND ATTR_KEY = ?";
     public static final String DELETE_ORGANIZATION_BY_ID =
             "DELETE\n" +
             "FROM\n" +
@@ -168,5 +188,6 @@ public class SQLConstants {
             "SET ";
     public static final String PATCH_ORGANIZATION_CONCLUDE =
             " = ?\n" +
-            "WHERE ID = ?";
+            "WHERE\n" +
+            "    ID = ?";
 }

@@ -70,6 +70,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ATTRIBUTE_EXIST_BY_KEY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORG_HAS_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
@@ -88,6 +89,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PAGINATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_ORGANIZATION_CONCLUDE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.REMOVE_ATTRIBUTE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UPDATE_HAS_ATTRIBUTES_FIELD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ACTIVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_KEY;
@@ -256,7 +259,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
         try {
-            // Delete organization from IDN_ORG table and cascade the deletion to other tables
+            // Delete organization from IDN_ORG table and cascade the deletion to other two tables
             jdbcTemplate.executeUpdate(DELETE_ORGANIZATION_BY_ID,
                     preparedStatement -> {
                         int parameterIndex = 0;
@@ -356,13 +359,16 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         String path = operation.getPath();
         JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
-        if (path.toLowerCase().startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
+        if (path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
             // Patch an attribute
+            String attributeKey = path.replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim();
+            operation.setPath(attributeKey);
             try {
                 patchAttribute(jdbcTemplate, organizationId, operation);
             } catch (DataAccessException e) {
                 throw handleServerException(ERROR_CODE_PATCH_OPERATION_ERROR,
-                        "Error while patching attribute : " + path + ", value : " + operation.getValue() + ", op : " + operation.getOp(), e);
+                        "Error while patching attribute : " + attributeKey +
+                                ", value : " + operation.getValue() + ", op : " + operation.getOp() + ", org : " + organizationId, e);
             }
         } else {
             // Updating a primary field
@@ -379,6 +385,9 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             }
             sb.append(PATCH_ORGANIZATION_CONCLUDE);
             String query = sb.toString();
+            if (log.isDebugEnabled()) {
+                log.debug("Organization patch query : " + query);
+            }
             try {
                 jdbcTemplate.executeUpdate(query,
                         preparedStatement -> {
@@ -392,7 +401,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         });
             } catch (DataAccessException e) {
                 throw handleServerException(ERROR_CODE_PATCH_OPERATION_ERROR,
-                        "Error while updating the primary field : " + path + ", value : " + operation.getValue(), e);
+                        "Error while updating the primary field : " + path +
+                                ", value : " + operation.getValue() + ", org : " + organizationId, e);
             }
         }
     }
@@ -415,20 +425,70 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             return attrCount > 0;
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR,
-                    "Attribute key - " + attributeKey, e);
+                    "Error while checking if the the Attribute key exist : " + attributeKey, e);
         }
     }
 
     private void patchAttribute(JdbcTemplate template, String organizationId, Operation operation)
-            throws DataAccessException {
+            throws DataAccessException, OrganizationManagementException {
 
         String attributeKey = operation.getPath().replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim();
+        // Insert or update attribute
         if (operation.getOp().equals(PATCH_OP_ADD) || operation.getOp().equals(PATCH_OP_REPLACE)) {
-            insertOrUpdateAttribute(template, organizationId, attributeKey, operation.getValue());
+            template.executeInsert(INSERT_OR_UPDATE_ATTRIBUTE,
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        // On update, unique ID and Org ID will not be updated
+                        preparedStatement.setString(++parameterIndex, generateUniqueID());
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                        preparedStatement.setString(++parameterIndex, attributeKey);
+                        preparedStatement.setString(++parameterIndex, operation.getValue());
+                    },
+                    new Attribute(),
+                    false
+            );
         } else {
-            //TODO delete attribute
+            // Remove attribute
+            template.executeUpdate(REMOVE_ATTRIBUTE,
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                        preparedStatement.setString(++parameterIndex, operation.getPath());
+                    }
+            );
+        }
+        validateHasAttributesField(template, organizationId);
+    }
+
+    private void validateHasAttributesField(JdbcTemplate template, String organizationId)
+            throws OrganizationManagementException {
+        int attrCount;
+        try {
+            attrCount = template.fetchSingleRecord(CHECK_ORG_HAS_ATTRIBUTES,
+                    (resultSet, rowNumber) ->
+                            resultSet.getInt(COUNT_COLUMN_NAME),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                    });
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR,
+                    "Error while checking if the organization has any attributes : " + organizationId, e);
+        }
+        try {
+            template.executeUpdate(UPDATE_HAS_ATTRIBUTES_FIELD,
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, attrCount > 0 ? 1 : 0);
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                    }
+            );
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR,
+                    "Error while updating HAS_ATTRIBUTES field of the organization: " + organizationId, e);
         }
     }
+
 
     private void insertOrganizationAttributes(JdbcTemplate template, Organization organization)
             throws DataAccessException, OrganizationManagementClientException {
@@ -445,23 +505,6 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     }
                 },
                 organization,
-                false
-        );
-    }
-
-    private void insertOrUpdateAttribute(JdbcTemplate template, String organizationId, String attributeKey,
-                                         String attributeValue) throws DataAccessException {
-
-        template.executeInsert(INSERT_OR_UPDATE_ATTRIBUTE,
-                preparedStatement -> {
-                    int parameterIndex = 0;
-                    // On update, unique ID and Org ID will not be updated
-                    preparedStatement.setString(++parameterIndex, generateUniqueID());
-                    preparedStatement.setString(++parameterIndex, organizationId);
-                    preparedStatement.setString(++parameterIndex, attributeKey);
-                    preparedStatement.setString(++parameterIndex, attributeValue);
-                },
-                new Attribute(),
                 false
         );
     }
