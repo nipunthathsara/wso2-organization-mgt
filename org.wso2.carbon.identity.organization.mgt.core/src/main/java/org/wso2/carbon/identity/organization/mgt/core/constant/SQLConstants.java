@@ -142,12 +142,12 @@ public class SQLConstants {
             "    TENANT_ID = ?";
     public static final String ORDER_BY =
             "\nORDER BY" +
-            "   \n%s %s";
+            "\n   %s %s";
     public static final String PAGINATION =
             "\nOFFSET" +
-            "   \n%s ROWS" +
+            "\n   %s ROWS" +
             "\nFETCH NEXT" +
-            "   \n%s ROWS ONLY";
+            "\n   %s ROWS ONLY";
     public static final String GET_ORGANIZATIONS_BY_IDS =
             "SELECT\n" +
             "    DISTINCT V.ID,\n" +

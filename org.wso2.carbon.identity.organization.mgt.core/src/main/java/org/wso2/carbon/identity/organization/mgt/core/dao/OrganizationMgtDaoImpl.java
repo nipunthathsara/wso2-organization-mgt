@@ -561,8 +561,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         StringBuilder sb = new StringBuilder();
         // Base query
         sb.append(GET_ALL_ORGANIZATION_IDS);
+        // Append generated search conditions
         if (searchReq) {
-            // Append generated search conditions
             sb.append(" AND ").append(placeholderSQL.getQuery());
         }
         if (sortingReq) {
