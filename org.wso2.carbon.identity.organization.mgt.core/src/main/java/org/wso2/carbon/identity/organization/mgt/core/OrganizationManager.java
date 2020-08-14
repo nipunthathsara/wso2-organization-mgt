@@ -113,6 +113,15 @@ public interface OrganizationManager {
     Map<String, UserStoreConfig> getUserStoreConfigs(String organizationId) throws OrganizationManagementException;
 
     /**
+     * Patch user store configurations of the organization identified by the provided ID.
+     *
+     * @param organizationId
+     * @param operations
+     * @throws OrganizationManagementException
+     */
+    void patchUserStoreConfigs(String organizationId, List<Operation> operations) throws OrganizationManagementException;
+
+    /**
      * Retrieve children organization IDs of the organization identified by the given ID.
      *
      * @param organizationId

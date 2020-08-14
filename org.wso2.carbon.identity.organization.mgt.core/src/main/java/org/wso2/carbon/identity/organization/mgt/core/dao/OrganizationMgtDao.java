@@ -108,12 +108,22 @@ public interface OrganizationMgtDao {
 
     /**
      * Add, remove or replace organization field, attribute or user store configuration.
-     * @param tenantId
+     *
      * @param organizationId
      * @param operation
      * @throws OrganizationManagementException
      */
-    void patchOrganization(int tenantId, String organizationId, Operation operation)
+    void patchOrganization(String organizationId, Operation operation)
+            throws OrganizationManagementException;
+
+    /**
+     * Patch user store configurations of the organization identified by the provided ID.
+     *
+     * @param organizationId
+     * @param operation
+     * @throws OrganizationManagementException
+     */
+    void patchUserStoreConfigs(String organizationId, Operation operation)
             throws OrganizationManagementException;
 
     /**

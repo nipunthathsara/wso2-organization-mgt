@@ -33,8 +33,6 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
-import org.wso2.carbon.user.api.UserRealm;
-import org.wso2.carbon.user.api.UserStoreException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,8 +45,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_SORTING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_PATCH_OPERATION_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_PATCH_USER_STORE_CONFIGS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_ACCESS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
@@ -59,9 +57,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PRIMARY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.READ_WRITE_LDAP_USER_STORE_CLASS_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.UNIQUE_ID_READ_WRITE_LDAP_USER_STORE_CLASS_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION;
@@ -70,10 +66,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getLdapRootDn;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationAddObject;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationObject;
-import static org.wso2.carbon.user.core.ldap.LDAPConstants.USER_SEARCH_BASE;
 
 /**
  * This class implements the {@link OrganizationManager} interface.
@@ -161,7 +155,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         validateOrganizationPatchOperations(operations, organizationId);
         for (Operation operation : operations) {
-            organizationMgtDao.patchOrganization(tenantId, organizationId, operation);
+            organizationMgtDao.patchOrganization(organizationId, operation);
         }
     }
 
@@ -194,7 +188,16 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public Map<String, UserStoreConfig> getUserStoreConfigs(String organizationId)
             throws OrganizationManagementException {
 
-        return organizationMgtDao.getUserStoreConfigsByOrgId(tenantId, organizationId);
+        if (StringUtils.isBlank(organizationId)) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
+        }
+        organizationId = organizationId.trim();
+        if (organizationMgtDao.isOrganizationExistById(tenantId, organizationId)) {
+            return organizationMgtDao.getUserStoreConfigsByOrgId(tenantId, organizationId);
+        } else {
+            throw handleClientException(ERROR_CODE_PATCH_USER_STORE_CONFIGS_ERROR,
+                    "Organization ID doesn't exist in this tenant : " + organizationId);
+        }
     }
 
     @Override
@@ -209,6 +212,24 @@ public class OrganizationManagerImpl implements OrganizationManager {
         } else {
             throw handleClientException(ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR,
                     organizationId + ". This organization ID doesn't exist in this tenant");
+        }
+    }
+
+    @Override
+    public void patchUserStoreConfigs(String organizationId, List<Operation> operations)
+            throws OrganizationManagementException {
+
+        if (StringUtils.isBlank(organizationId)) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR, "Provided organization ID is empty");
+        }
+        organizationId = organizationId.trim();
+        if (!isOrganizationExistById(organizationId)) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR,
+                    "ID - " + organizationId + " doesn't exist in this tenant - " + tenantId);
+        }
+        validateUserStoreConfigPatchOperations(operations, organizationId);
+        for (Operation operation : operations) {
+            organizationMgtDao.patchUserStoreConfigs(organizationId, operation);
         }
     }
 
@@ -422,6 +443,42 @@ public class OrganizationManagerImpl implements OrganizationManager {
             operation.setOp(op);
             operation.setPath(path);
             operation.setValue(value);
+        }
+    }
+
+    private void validateUserStoreConfigPatchOperations(List<Operation> operations, String organizationId)
+            throws OrganizationManagementException {
+
+        for (Operation operation : operations) {
+            // Validate op
+            if (StringUtils.isBlank(operation.getOp())) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Patch operation is not defined");
+            }
+            String op = operation.getOp().trim().toLowerCase();
+            if (!PATCH_OP_REPLACE.equals(op)) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                        "Configuration patch may only contain 'replace' operation");
+            }
+
+            // Validate path
+            if (StringUtils.isBlank(operation.getPath())) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Patch operation path is not defined");
+            }
+            String path = operation.getPath().trim().toUpperCase();
+            // Only the RDN can be patched
+            if (!RDN.equalsIgnoreCase(path)) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                        "UserStore configuration patch may only have 'RDN' as path. Provided:" + path);
+            }
+            // Validate value
+            // Value is mandatory for user store config patch operations
+            if (StringUtils.isBlank(operation.getValue())) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR, "Patch operation value is not defined");
+            }
+            // TODO check if the RDN available for the parent
+            operation.setOp(PATCH_OP_REPLACE);
+            operation.setPath(path);
+            operation.setValue(operation.getValue().trim());
         }
     }
 }

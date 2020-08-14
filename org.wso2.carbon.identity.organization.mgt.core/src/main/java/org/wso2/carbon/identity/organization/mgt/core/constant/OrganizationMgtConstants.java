@@ -25,8 +25,7 @@ public class OrganizationMgtConstants {
     public static final String RDN = "RDN";
     public static final String DN = "DN";
     public static final String PRIMARY = "PRIMARY";
-    public static final String UNIQUE_ID_READ_WRITE_LDAP_USER_STORE_CLASS_NAME = "org.wso2.carbon.user.core.ldap.UniqueIDReadWriteLDAPUserStoreManager";
-    public static final String READ_WRITE_LDAP_USER_STORE_CLASS_NAME = "org.wso2.carbon.user.core.ldap.ReadWriteLDAPUserStoreManager";
+    public static final String DN_PLACE_HOLDER = "ou=%s,";
 
     public static final String PATCH_OP_ADD = "add";
     public static final String PATCH_OP_REMOVE = "remove";
@@ -57,7 +56,6 @@ public class OrganizationMgtConstants {
         ERROR_CODE_DELETE_ORGANIZATION_ERROR("ORGMGT_00007", "Error while deleting the organization : %s."),
         ERROR_CODE_RETRIEVE_USER_STORE_CONFIGS_BY_ORG_ID_ERROR("ORGMGT_00008", "Error retrieving user store configs by organization Id : %s."),
         ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR("ORGMGT_00009", "Error retrieving organization by Id : %s."),
-        ERROR_CODE_ORG_ID_NOT_FOUND("ORGMGT_00010", "Organization ID not found within this tenant : %s."),
         ERROR_CODE_INVALID_SORTING("ORGMGT_00011", "Invalid sorting arguments : %s."),
         ERROR_CODE_INVALID_PAGINATION("ORGMGT_00012", "Invalid pagination arguments : %s."),
         ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR("ORGMGT_00013", "Error retrieving organizations : %s."),
@@ -66,6 +64,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_PATCH_OPERATION_ERROR("ORGMGT_00016", "Error performing the patch operations : %s."),
         ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORGMGT_00017", "Error while checking if the attribute exist : %s."),
         ERROR_CODE_SEARCH_ORGANIZATION_ERROR("ORGMGT_00018", "Error while searching organizations : %s."),
+        ERROR_CODE_PATCH_USER_STORE_CONFIGS_ERROR("ORGMGT_00019", "Error patching user store configurations : %s."),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

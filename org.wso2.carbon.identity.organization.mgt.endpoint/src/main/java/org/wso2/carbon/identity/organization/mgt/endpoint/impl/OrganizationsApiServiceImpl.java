@@ -186,8 +186,21 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     @Override
     public Response organizationsOrganizationIdUserstoreConfigsPatch(String organizationId,
                                                                      List<OperationDTO> operations) {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+
+        try {
+            getOrganizationManager().patchUserStoreConfigs(
+                    organizationId,
+                    operations.stream().map(op -> new Operation(op.getOp(), op.getPath(), op.getValue()))
+                            .collect(Collectors.toList())
+            );
+            return Response.ok().build();
+        } catch (OrganizationManagementClientException e) {
+            return handleBadRequestResponse(e, LOG);
+        } catch (OrganizationManagementException e) {
+            return handleServerErrorResponse(e, LOG);
+        } catch (Throwable throwable) {
+            return handleUnexpectedServerError(throwable, LOG);
+        }
     }
 
     private URI getResourceURI(Organization organization) throws URISyntaxException {

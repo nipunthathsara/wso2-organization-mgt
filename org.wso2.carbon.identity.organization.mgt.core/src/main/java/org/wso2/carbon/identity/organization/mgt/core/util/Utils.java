@@ -22,18 +22,16 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
-import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
+import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
-import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.user.api.RealmConfiguration;
-import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
-import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.ldap.ReadOnlyLDAPUserStoreManager;
 import org.wso2.carbon.user.core.ldap.ReadWriteLDAPUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadOnlyLDAPUserStoreManager;
@@ -199,17 +197,8 @@ public class Utils {
                 ? 4194304 : Integer.parseInt(MAX_QUERY_LENGTH_IN_BYTES_SQL);
     }
 
-    public static String getUserStoreType(String userStoreDomain) throws OrganizationManagementException {
+    public static JdbcTemplate getNewTemplate() {
 
-        int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
-        try {
-            UserRealm userRealm = OrganizationMgtDataHolder.getInstance().getRealmService()
-                    .getTenantUserRealm(tenantId);
-            UserStoreManager userStoreManager = (UserStoreManager) userRealm.getUserStoreManager();
-        } catch (UserStoreException e) {
-            throw handleServerException(ERROR_CODE_USER_STORE_ACCESS_ERROR,
-                    "Error obtaining user realm for the tenant " + tenantId, e);
-        }
-        return null;
+        return new JdbcTemplate(IdentityDatabaseUtil.getDataSource());
     }
 }

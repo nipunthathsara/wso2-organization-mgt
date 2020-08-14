@@ -20,7 +20,7 @@ package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tools.ant.taskdefs.condition.Or;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
@@ -34,14 +34,12 @@ import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import org.wso2.carbon.identity.organization.mgt.core.search.PlaceholderSQL;
 import org.wso2.carbon.identity.organization.mgt.core.search.PrimitiveConditionValidator;
-import org.wso2.carbon.identity.organization.mgt.core.util.JdbcUtils;
 import org.wso2.carbon.identity.organization.mgt.core.util.Utils;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -49,6 +47,8 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static java.time.ZoneOffset.UTC;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN_PLACE_HOLDER;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_DELETE_ORGANIZATION_ERROR;
@@ -67,6 +67,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DESCRIPTION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ATTRIBUTE_EXIST_BY_KEY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_NAME;
@@ -89,6 +90,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PAGINATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_ORGANIZATION_CONCLUDE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_USER_STORE_CONFIG;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.REMOVE_ATTRIBUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UPDATE_HAS_ATTRIBUTES_FIELD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ACTIVE;
@@ -107,6 +109,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getMaximumQueryLengthInBytes;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewTemplate;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 
@@ -119,7 +122,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     public void addOrganization(int tenantId, Organization organization) throws OrganizationManagementException {
 
         Timestamp currentTime = new java.sql.Timestamp(new Date().getTime());
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             jdbcTemplate.executeInsert(INSERT_ORGANIZATION,
                     preparedStatement -> {
@@ -153,10 +156,9 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit,
                                                String sortBy, String sortOrder) throws OrganizationManagementException {
 
-        // TODO buggy when not sending pagination but sort (sorting field has to be in the selcted fields)
         PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
         // Get organization IDs
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         List<String> orgIds;
         List<Organization> organizations = new ArrayList<>();
         try {
@@ -222,7 +224,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @Override
     public Organization getOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
 
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
             organizationRowDataCollectors = jdbcTemplate.executeQuery(GET_ORGANIZATION_BY_ID,
@@ -257,7 +259,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @Override
     public void deleteOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
 
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             // Delete organization from IDN_ORG table and cascade the deletion to other two tables
             jdbcTemplate.executeUpdate(DELETE_ORGANIZATION_BY_ID,
@@ -274,7 +276,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @Override
     public List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException {
 
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             List<String> childOrganizationIds = jdbcTemplate.executeQuery(FIND_CHILD_ORG_IDS,
                     (resultSet, rowNumber) -> resultSet.getString(VIEW_ID),
@@ -290,7 +292,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @Override
     public Map<String, UserStoreConfig> getUserStoreConfigsByOrgId(int tenantId, String organizationId) throws OrganizationManagementException {
 
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             List<UserStoreConfig> userStoreConfigs = jdbcTemplate.executeQuery(GET_USER_STORE_CONFIGS_BY_ORG_ID,
                     (resultSet, rowNumber) -> {
@@ -315,7 +317,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @Override
     public boolean isOrganizationExistByName(int tenantId, String name) throws OrganizationManagementException {
 
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             int orgCount = jdbcTemplate.fetchSingleRecord(CHECK_ORGANIZATION_EXIST_BY_NAME,
                     (resultSet, rowNumber) ->
@@ -335,7 +337,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @Override
     public boolean isOrganizationExistById(int tenantId, String id) throws OrganizationManagementException {
 
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             int orgCount = jdbcTemplate.fetchSingleRecord(CHECK_ORGANIZATION_EXIST_BY_ID,
                     (resultSet, rowNumber) ->
@@ -354,11 +356,11 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     @Override
-    public void patchOrganization(int tenantId, String organizationId, Operation operation)
+    public void patchOrganization(String organizationId, Operation operation)
             throws OrganizationManagementException {
 
         String path = operation.getPath();
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         if (path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
             // Patch an attribute
             String attributeKey = path.replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim();
@@ -408,10 +410,48 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     @Override
+    public void patchUserStoreConfigs(String organizationId, Operation operation)
+            throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        if (RDN.equals(operation.getPath())) {
+            // Set both RDN and DN appropriately
+            Map<String, UserStoreConfig> userStoreConfigs = getUserStoreConfigsByOrgId(
+                    PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(),
+                    organizationId);
+            String dn = userStoreConfigs.get(DN).getValue();
+            dn = dn.replace(String.format(DN_PLACE_HOLDER, userStoreConfigs.get(RDN).getValue()),
+                    String.format(DN_PLACE_HOLDER, operation.getValue()));
+            if (log.isDebugEnabled()) {
+                log.debug("New DN of the organization ID : " + organizationId + " is : " + dn);
+            }
+            try {
+                updateUserStoreConfig(jdbcTemplate, organizationId, RDN, operation.getValue());
+                updateUserStoreConfig(jdbcTemplate, organizationId, DN, dn);
+            } catch (DataAccessException e) {
+                throw handleServerException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                        "Error while updating user store configs for the organization ID : " + organizationId, e);
+            }
+        }
+    }
+
+    private void updateUserStoreConfig(JdbcTemplate template, String organizationId, String key, String value)
+            throws DataAccessException {
+
+        template.executeUpdate(PATCH_USER_STORE_CONFIG,
+                preparedStatement -> {
+                    int parameterIndex = 0;
+                    preparedStatement.setString(++parameterIndex, value);
+                    preparedStatement.setString(++parameterIndex, organizationId);
+                    preparedStatement.setString(++parameterIndex, key);
+                });
+    }
+
+    @Override
     public boolean isAttributeExistByKey(int tenantId, String organizationId, String attributeKey)
             throws OrganizationManagementException {
 
-        JdbcTemplate jdbcTemplate = JdbcUtils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             int attrCount = jdbcTemplate.fetchSingleRecord(CHECK_ATTRIBUTE_EXIST_BY_KEY,
                     (resultSet, rowNumber) ->

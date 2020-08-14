@@ -22,7 +22,6 @@ import org.wso2.carbon.identity.core.util.IdentityUtil;
 
 public class SQLConstants {
 
-    // TODO Using the same config from the configuration store here.
     public static final String MAX_QUERY_LENGTH_IN_BYTES_SQL =
             IdentityUtil.getProperty("ConfigurationStore.MaximumQueryLengthInBytes");
     public static final String CHECK_ORGANIZATION_EXIST_BY_NAME =
@@ -190,4 +189,11 @@ public class SQLConstants {
             " = ?\n" +
             "WHERE\n" +
             "    ID = ?";
+    public static final String PATCH_USER_STORE_CONFIG =
+            "UPDATE\n" +
+            "    IDN_ORG_USERSTORE_CONFIGS\n" +
+            "SET\n" +
+            "    ATTR_VALUE = ?\n" +
+            "WHERE\n" +
+            "    ORG_ID = ? AND ATTR_KEY = ?";
 }
