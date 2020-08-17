@@ -73,11 +73,50 @@ paths:
       description: |
         This API is used to create the organization defined in the user input.
       x-wso2-request: |
-        curl -X POST "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations" -H "accept: application/json" -H "Content-Type: application/json" -d '{"name": "Phoenix", "description": "Phoenix organization", "attributes": [{"key": "legacy", "value": "true"}], "userstoreConfigs": [{"key": "RDN", "value": "phoenix"}, {"key": "USER_STORE_DOMAIN", "value": "CUSTOMER_USER_STORE"}]}' -k
+        curl -X POST "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations" -H "accept: application/json" -H "Content-Type: application/json" -d '{"name": "string", "description": "string", "parentId": "string", "attributes": [{"key": "string", "value": "string"}], "userstoreConfigs": [{"key": "string", "value": "string"}]}' -k
       x-wso2-curl: |
-        curl -X POST "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations" -H "accept: application/json" -H "Content-Type: application/json" -d '{"name": "Phoenix", "description": "Phoenix organization", "attributes": [{"key": "legacy", "value": "true"}], "userstoreConfigs": [{"key": "RDN", "value": "phoenix"}, {"key": "USER_STORE_DOMAIN", "value": "CUSTOMER_USER_STORE"}]}' -k
+        curl -X POST \
+          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations \
+          -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
+          -H 'Content-Type: application/json' \
+          -H 'Postman-Token: 406d58dd-e8f4-4b62-a9be-d6e20af07e2b' \
+          -H 'accept: application/json' \
+          -H 'cache-control: no-cache' \
+          -d '{
+            "name": "Hesei",
+            "description": "Partner organization",
+            "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+            "attributes": [
+                {
+                    "key": "Type",
+                    "value": "partner"
+                },
+                {
+                    "key": "Exp",
+                    "value": "2021"
+                }
+            ],
+            "userstoreConfigs": [
+                {
+                    "key": "RDN",
+                    "value": "hesei"
+                },
+                {
+                    "key": "USER_STORE_DOMAIN",
+                    "value": "WSO2.COM"
+                }
+            ]
+        }'
       x-wso2-response: |
-        {"id":"c5ff5889-8c1b-4699-a0c8-a401db589823","name":"Phoenix","description":"Phoenix organization","parentId":"ROOT","active":true,"lastModified":"2020-08-10T18:33:03.635Z","created":"2020-08-10T18:33:03.635Z"}
+        {
+            "id": "9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
+            "name": "Hesei",
+            "description": "Partner organization",
+            "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+            "active": true,
+            "lastModified": "2020-08-17T16:00:55.156Z",
+            "created": "2020-08-17T16:00:55.156Z"
+        }
       summary: |
         Create a new organization.
       # post parameters:
@@ -115,11 +154,26 @@ paths:
       description: |
         This API is used to search and retrieve organizations created for this tenant which matches the defined search criteria, if any.
       x-wso2-request: |
-        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations?offset=0&limit=2&sortBy=name&sortOrder=DESC" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations?$filter=<URL_ENCODED_SEARCH_QUERY>offset=<OFFSET>&limit=<LIMIT>&sortBy=<SORT_BY_FIELD>&sortOrder=<SORT_ORDER>" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
       x-wso2-curl: |
-        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations?offset=0&limit=2&sortBy=name&sortOrder=DESC" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X GET \
+          'https://localhost:9443/api/identity/organization-mgt/v1.0/organizations?offset=0&limit=1&$filter=name%20eq%20%27Hesei%27%20and%20description%20eq%20%27Partner%20organization%27&sortBy=lastModified&sortOrder=ASC' \
+          -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
+          -H 'Postman-Token: 0df008ca-f586-497f-92b1-ffc96ebc32e7' \
+          -H 'accept: application/json' \
+          -H 'cache-control: no-cache'
       x-wso2-response: |
-        [{"id":"c5ff5889-8c1b-4699-a0c8-a401db589823","name":"Phoenix","description":"Phoenix organization","parentId":"ROOT","active":true,"lastModified":"2020-08-10T18:33:03.635Z","created":"2020-08-10T18:33:03.635Z"}, {"id":"d5ff5889-8c1b-4699-a0c8-a401db589824","name":"Genesis","description":"Genesis organization","parentId":"c5ff5889-8c1b-4699-a0c8-a401db589823","active":true,"lastModified":"2020-08-10T18:33:03.635Z","created":"2020-08-10T18:33:03.635Z"}]
+        [
+            {
+                "id": "9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
+                "name": "Hesei",
+                "description": "Partner organization",
+                "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+                "active": true,
+                "lastModified": "2020-08-17 21:30:55.156",
+                "created": "2020-08-17 21:30:55.156"
+            }
+        ]
       summary: |
         Retrieve organizations created for this tenant which matches the defined search criteria, if any.
       parameters:
@@ -165,11 +219,34 @@ paths:
       description: |
         This API is used to get an existing organization identified by the organization Id.
       x-wso2-request: |
-        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/<ORGANIZATION_ID>" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
       x-wso2-curl: |
-        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X GET \
+          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/9b7ae6c6-292d-4e10-a184-29fd828bdf6d \
+          -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
+          -H 'Postman-Token: 0299c25d-08ac-444d-a0c7-a61bf47c5e5c' \
+          -H 'accept: application/json' \
+          -H 'cache-control: no-cache'
       x-wso2-response: |
-        {"id":"c5ff5889-8c1b-4699-a0c8-a401db589823","name":"Phoenix","description":"Phoenix organization","parentId":"ROOT","active":true,"lastModified":"2020-08-11 00:03:03.635","created":"2020-08-11 00:03:03.635","attributes":[{"key":"legacy","value":"true"}]}
+        {
+            "id": "9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
+            "name": "Hesei",
+            "description": "Partner organization",
+            "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+            "active": true,
+            "lastModified": "2020-08-17 21:30:55.156",
+            "created": "2020-08-17 21:30:55.156",
+            "attributes": [
+                {
+                    "key": "Type",
+                    "value": "partner"
+                },
+                {
+                    "key": "Exp",
+                    "value": "2021"
+                }
+            ]
+        }
       summary: |
         Get an existing organization identified by the organization Id.
       parameters:
@@ -203,15 +280,33 @@ paths:
         - Organization
     patch:
       description: |
-        This API is used to add, delete or update the defined field of the organization identified by the organization Id.
+        This API is used to 'replace' the defined field of the organization identified by the organization Id.
       x-wso2-request: |
-        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op":"add", "path":"/attributes", "value":{"key":"legacy", "value":"true"}}]'
-        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op":"remove", "path":"/attributes/legacy"}, {"op":"remove", "path":"/attributes/onboarded"}]'
-        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op":"replace", "path":"/attributes/legacy", "value":{"key":"legacy", "value":"false"}}]'
+        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/<ORGANIZATION_ID>" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op": "string", "path": "string", "value": "string"}]'
       x-wso2-curl: |
-        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op":"add", "path":"/attributes", "value":{"key":"legacy", "value":"true"}}]'
-        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op":"remove", "path":"/attributes/legacy"}, {"op":"remove", "path":"/attributes/onboarded"}]'
-        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op":"replace", "path":"/attributes/legacy", "value":{"key":"legacy", "value":"false"}}]'
+        curl -X PATCH \
+          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/9b7ae6c6-292d-4e10-a184-29fd828bdf6d \
+          -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
+          -H 'Content-Type: application/json' \
+          -H 'Postman-Token: 7288a1b2-ba89-4c52-87e4-76eb1875816a' \
+          -H 'accept: application/json' \
+          -H 'cache-control: no-cache' \
+          -d '[
+            {
+                "op": "add",
+                "path": "/attributes/validate",
+                "value": "true"
+            },
+            {
+                "op": "remove",
+                "path": "/attributes/Exp"
+            },
+            {
+                "op": "replace",
+                "path": "/active",
+                "value": "false"
+            }
+        ]'
       x-wso2-response: |
         {}
       summary: |
@@ -251,9 +346,14 @@ paths:
       description: |
         This API is used to delete an organization, identified by the organization ID.
       x-wso2-request: |
-        curl -X DELETE "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X DELETE "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/<ORGANIZATION_ID>" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
       x-wso2-curl: |
-        curl -X DELETE "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X DELETE \
+          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/9b7ae6c6-292d-4e10-a184-29fd828bdf6d \
+          -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
+          -H 'Postman-Token: b3d11ef5-b993-40d0-a823-2805b27b55db' \
+          -H 'accept: application/json' \
+          -H 'cache-control: no-cache'
       x-wso2-response: |
         {}
       summary: |
@@ -290,11 +390,29 @@ paths:
       description: |
         This API is used to retrieve user store configurations of an organization identified by the organization Id.
       x-wso2-request: |
-        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823/userstore-configs" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/<ORGANIZATION_ID>/userstore-configs" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
       x-wso2-curl: |
-        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823/userstore-configs" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X GET \
+          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/9b7ae6c6-292d-4e10-a184-29fd828bdf6d/userstore-configs \
+          -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
+          -H 'Postman-Token: d4864a47-100f-4a8d-a889-9ebe54f9dd62' \
+          -H 'accept: application/json' \
+          -H 'cache-control: no-cache'
       x-wso2-response: |
-        [{"key":"USER_STORE_DOMAIN","value":"CUSTOMER_USER_STORE"},{"key":"DN","value":"phoenix,ou=Users,dc=wso2,dc=org"},{"key":"RDN","value":"phoenix"}]
+        [
+            {
+                "key": "USER_STORE_DOMAIN",
+                "value": "wso2.com"
+            },
+            {
+                "key": "DN",
+                "value": "ou=hesei,ou=phoenix,ou=Users,dc=wso2,dc=org"
+            },
+            {
+                "key": "RDN",
+                "value": "hesei"
+            }
+        ]
       summary: |
         Get user store configurations of an organization identified by the organization Id.
       parameters:
@@ -332,11 +450,22 @@ paths:
       description: |
         This API is used to patch user store configurations of an organization, identified by the organization Id.
       x-wso2-request: |
-        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823/userstore-configs" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op":"add", "path":"/RDN", "value":{"key":"RDN", "value":"pheonix"}}]'
-        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823/userstore-configs" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op":"replace", "path":"/RDN", "value":{"key":"RDN", "value":"genesis"}}]'
+        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/<ORGANIZATION_ID>/userstore-configs" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op": "string", "path": "string", "value": "string"}]'
       x-wso2-curl: |
-        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823/userstore-configs" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op":"add", "path":"/RDN", "value":{"key":"RDN", "value":"pheonix"}}]'
-        curl -X PATCH "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823/userstore-configs" -H "accept: application/json" -H "Content-Type: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -d '[{"op":"replace", "path":"/RDN", "value":{"key":"RDN", "value":"genesis"}}]'
+        curl -X PATCH \
+          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/036bbbbd-74a4-4c6a-9192-13a156bf50c0/userstore-configs \
+          -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
+          -H 'Content-Type: application/json' \
+          -H 'Postman-Token: afae33c3-348e-49a0-a28c-9dc180b1d2ad' \
+          -H 'accept: application/json' \
+          -H 'cache-control: no-cache' \
+          -d '[
+            {
+                "op": "replace",
+                "path": "RDN",
+                "value": "Pheonix"
+            }
+        ]'
       x-wso2-response: |
         {}
       summary: |
@@ -381,9 +510,14 @@ paths:
       description: |
         This API is used to retrieve children of an organization identified by the organization Id.
       x-wso2-request: |
-        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823/children" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/<ORGANIZATION_ID>/children" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
       x-wso2-curl: |
-        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/c5ff5889-8c1b-4699-a0c8-a401db589823/children" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X GET \
+          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/9b7ae6c6-292d-4e10-a184-29fd828bdf6d/children \
+          -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
+          -H 'Postman-Token: 95593cbb-54d7-4d03-a3f5-d45c6c61692b' \
+          -H 'accept: application/json' \
+          -H 'cache-control: no-cache'
       x-wso2-response: |
         ["a5ff5889-8c1b-4699-a0c8-a401db589823","b5ff5889-8c1b-4699-a0c8-a401db589824","c5ff5889-8c1b-4699-a0c8-a401db589825"]
       summary: |
@@ -426,9 +560,48 @@ paths:
       x-wso2-request: |
         curl -X POST "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations" -H "accept: application/json" -H "Content-Type: application/json" -d '{"name": "Phoenix", "description": "Phoenix organization", "attributes": [{"key": "legacy", "value": "true"}], "userstoreConfigs": [{"key": "RDN", "value": "phoenix"}, {"key": "USER_STORE_DOMAIN", "value": "CUSTOMER_USER_STORE"}]}' -k
       x-wso2-curl: |
-        curl -X POST "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations" -H "accept: application/json" -H "Content-Type: application/json" -d '{"name": "Phoenix", "description": "Phoenix organization", "attributes": [{"key": "legacy", "value": "true"}], "userstoreConfigs": [{"key": "RDN", "value": "phoenix"}, {"key": "USER_STORE_DOMAIN", "value": "CUSTOMER_USER_STORE"}]}' -k
+        curl -X POST \
+          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/import \
+          -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
+          -H 'Content-Type: application/json' \
+          -H 'Postman-Token: 406d58dd-e8f4-4b62-a9be-d6e20af07e2b' \
+          -H 'accept: application/json' \
+          -H 'cache-control: no-cache' \
+          -d '{
+            "name": "Hesei",
+            "description": "Partner organization",
+            "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+            "attributes": [
+                {
+                    "key": "Type",
+                    "value": "partner"
+                },
+                {
+                    "key": "Exp",
+                    "value": "2021"
+                }
+            ],
+            "userstoreConfigs": [
+                {
+                    "key": "RDN",
+                    "value": "hesei"
+                },
+                {
+                    "key": "USER_STORE_DOMAIN",
+                    "value": "WSO2.COM"
+                }
+            ]
+        }'
       x-wso2-response: |
-        {"id":"c5ff5889-8c1b-4699-a0c8-a401db589823","name":"Phoenix","description":"Phoenix organization","parentId":"ROOT","active":true,"lastModified":"2020-08-10T18:33:03.635Z","created":"2020-08-10T18:33:03.635Z"}
+        {
+            "id": "9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
+            "name": "Hesei",
+            "description": "Partner organization",
+            "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+            "active": true,
+            "lastModified": "2020-08-17T16:00:55.156Z",
+            "created": "2020-08-17T16:00:55.156Z"
+        }
       summary: |
         Create an organization without changing the underlying LDAP.
       # post parameters:
@@ -551,7 +724,6 @@ definitions:
     type: object
     required:
       - key
-      - value
     properties:
       key:
         type: string
@@ -578,7 +750,6 @@ definitions:
     required:
       - op
       - path
-      - value
     properties:
       op:
         type: string
