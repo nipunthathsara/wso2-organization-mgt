@@ -31,7 +31,6 @@ public class AttributeDTO {
     @NotNull
     private String key = null;
 
-    @NotNull
     private String value = null;
 
     @ApiModelProperty(required = true, value = "")
@@ -44,7 +43,7 @@ public class AttributeDTO {
         this.key = key;
     }
 
-    @ApiModelProperty(required = true, value = "")
+    @ApiModelProperty(value = "")
     @JsonProperty("value")
     public String getValue() {
         return value;

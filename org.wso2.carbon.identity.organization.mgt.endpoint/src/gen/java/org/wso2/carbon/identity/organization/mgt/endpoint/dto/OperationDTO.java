@@ -33,7 +33,6 @@ public class OperationDTO {
     @NotNull
     private String path = null;
 
-    @NotNull
     private String value = null;
 
     @ApiModelProperty(required = true, value = "")
@@ -56,7 +55,7 @@ public class OperationDTO {
         this.path = path;
     }
 
-    @ApiModelProperty(required = true, value = "")
+    @ApiModelProperty(value = "")
     @JsonProperty("value")
     public String getValue() {
         return value;
