@@ -411,6 +411,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
                         "ACTIVE field could only contain 'true' or 'false'. Provided : " + value);
             }
+            // You can't deactivate an organization having any ACTIVE child
+            if (path.equals(PATCH_PATH_ORG_ACTIVE) && value.equals("false") && !canDeactivate(organizationId)) {
+                throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                        "Error deactivating organization as it has one or more ACTIVE organization/s" + organizationId);
+            }
             // Check if the new parent exist before patching the PARENT field
             if (path.equals(PATCH_PATH_ORG_PARENT_ID) && !isOrganizationExistById(value)) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
@@ -480,5 +485,29 @@ public class OrganizationManagerImpl implements OrganizationManager {
             operation.setPath(path);
             operation.setValue(operation.getValue().trim());
         }
+    }
+
+    /**
+     * To deactivate an organization, it shouldn't have any 'ACTIVE' organizations down in the hierarchy.
+     *
+     * @param organizationId
+     * @return
+     * @throws OrganizationManagementException
+     */
+    private boolean canDeactivate(String organizationId) throws OrganizationManagementException {
+
+        List<String> children = getChildOrganizationIds(organizationId);
+        for (String child : children) {
+            Organization organization = getOrganization(child);
+            if (organization.isActive()) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Active child organization : " + organization.getId());
+                }
+                return false;
+            } else {
+                return canDeactivate(organization.getId());
+            }
+        }
+        return true;
     }
 }
