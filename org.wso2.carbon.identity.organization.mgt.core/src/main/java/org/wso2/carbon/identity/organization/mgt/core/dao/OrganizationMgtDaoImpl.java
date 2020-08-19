@@ -56,6 +56,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_PATCH_OPERATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_QUERY_LENGTH_EXCEEDED_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ORGANIZATION_ID_BY_NAME_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_USER_STORE_CONFIGS_BY_ORG_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR;
@@ -77,6 +78,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATIONS_BY_IDS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_ID_BY_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_STORE_CONFIGS_BY_ORG_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTE;
@@ -406,6 +408,26 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         "Error while updating the primary field : " + path +
                                 ", value : " + operation.getValue() + ", org : " + organizationId, e);
             }
+        }
+    }
+
+    @Override
+    public String getOrganizationIdByName(int tenantId, String organizationName)
+            throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        try {
+            return jdbcTemplate.fetchSingleRecord(GET_ORGANIZATION_ID_BY_NAME,
+                    (resultSet, rowNumber) ->
+                            resultSet.getString(VIEW_ID),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, organizationName);
+                    });
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATION_ID_BY_NAME_ERROR,
+                    organizationName + ", Tenant id : " + tenantId, e);
         }
     }
 

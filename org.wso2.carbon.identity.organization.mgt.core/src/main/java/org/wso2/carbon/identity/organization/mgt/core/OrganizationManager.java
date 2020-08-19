@@ -45,13 +45,22 @@ public interface OrganizationManager {
             throws OrganizationManagementException;
 
     /**
-     * Retrieve the organization identified by the provided ID if such exists within the tenant.
+     * Retrieve the organization identified by the provided ID, if such exists within the tenant.
      *
      * @param organizationId
      * @return
      * @throws OrganizationManagementException
      */
     Organization getOrganization(String organizationId) throws OrganizationManagementException;
+
+    /**
+     * Retrieve the ID of the organization identified by the provided name, if such exists within the tenant.
+     *
+     * @param organizationName
+     * @return
+     * @throws OrganizationManagementException
+     */
+    String getOrganizationIdByName(String organizationName) throws OrganizationManagementException;
 
     /**
      * List or search organizations with pagination and sorting.

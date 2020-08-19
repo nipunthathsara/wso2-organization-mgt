@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_NAME_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_SORTING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_REQUEST_INVALID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_PATCH_OPERATION_ERROR;
@@ -127,9 +128,24 @@ public class OrganizationManagerImpl implements OrganizationManager {
         Organization organization = organizationMgtDao.getOrganization(tenantId, organizationId.trim());
         if (organization == null) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ID_ERROR,
-                    "Organization id" + organizationId + " doesn't exist");
+                    "Organization id " + organizationId + " doesn't exist");
         }
         return organization;
+    }
+
+    @Override
+    public String getOrganizationIdByName(String organizationName) throws OrganizationManagementException {
+
+        if (StringUtils.isBlank(organizationName)) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_NAME_ERROR, "Provided organization name is empty");
+        }
+        organizationName = organizationName.trim();
+        String organizationId = organizationMgtDao.getOrganizationIdByName(tenantId, organizationName);
+        if (organizationId == null) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_NAME_ERROR,
+                    "Organization name " + organizationName + " doesn't exist");
+        }
+        return organizationId;
     }
 
     @Override
@@ -235,6 +251,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
     private void validateAddOrganizationRequest(OrganizationAdd organizationAdd)
             throws OrganizationManagementException {
+        // TODO check ACTIVE parent before add child
 
         // Check required fields.
         if (StringUtils.isBlank(organizationAdd.getName())) {
@@ -414,7 +431,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             // You can't deactivate an organization having any ACTIVE child
             if (path.equals(PATCH_PATH_ORG_ACTIVE) && value.equals("false") && !canDeactivate(organizationId)) {
                 throw handleClientException(ERROR_CODE_PATCH_OPERATION_ERROR,
-                        "Error deactivating organization as it has one or more ACTIVE organization/s" + organizationId);
+                        "Error deactivating organization : " + organizationId + " as it has one or more ACTIVE organization/s");
             }
             // Check if the new parent exist before patching the PARENT field
             if (path.equals(PATCH_PATH_ORG_PARENT_ID) && !isOrganizationExistById(value)) {

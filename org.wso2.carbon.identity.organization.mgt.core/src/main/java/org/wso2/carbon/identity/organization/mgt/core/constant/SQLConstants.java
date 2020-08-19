@@ -59,6 +59,13 @@ public class SQLConstants {
             "    HAS_ATTRIBUTES = ?\n" +
             "WHERE\n" +
             "    ID = ?";
+    public static final String GET_ORGANIZATION_ID_BY_NAME =
+            "SELECT\n" +
+            "    ID\n" +
+            "FROM\n" +
+            "    IDN_ORG\n" +
+            "WHERE\n" +
+            "    TENANT_ID = ? AND NAME = ?";
     public static final String COUNT_COLUMN_NAME = "COUNT(1)";
     public static final String VIEW_ID = "ID";
     public static final String VIEW_TENANT_ID = "TENANT_ID";
