@@ -102,6 +102,11 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.wso2.carbon.custom.userstore.manager</groupId>-->
+<!--            <artifactId>wso2-organization-userstore-manager</artifactId>-->
+<!--            <version>1.0</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

@@ -34,7 +34,6 @@ import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import org.wso2.carbon.identity.organization.mgt.core.search.PlaceholderSQL;
 import org.wso2.carbon.identity.organization.mgt.core.search.PrimitiveConditionValidator;
-import org.wso2.carbon.identity.organization.mgt.core.util.Utils;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -50,17 +49,18 @@ import static java.time.ZoneOffset.UTC;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN_PLACE_HOLDER;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_DELETE_ORGANIZATION_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INSERT_ORGANIZATION_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_PATCH_OPERATION_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_QUERY_LENGTH_EXCEEDED_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ORGANIZATION_ID_BY_NAME_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_USER_STORE_CONFIGS_BY_ORG_ID_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SEARCH_ORGANIZATION_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_ID_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_NAME_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_DELETE_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_BY_ID_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_CHILDREN_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_CONFIGS_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ACTIVE;
@@ -149,8 +149,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             organization.setCreated(currentTime.toInstant().toString());
             organization.setLastModified(currentTime.toInstant().toString());
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_INSERT_ORGANIZATION_ERROR, "Name - " + organization.getName()
-                    + " Tenant Id - " + organization.getTenantId(), e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_ADD_ERROR, "Organization name " + organization.getName()
+                    + ", Tenant Id " + organization.getTenantId(), e);
         }
     }
 
@@ -184,8 +184,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         }
                     });
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR,
-                    "Error while retrieving organization IDs. ", e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
+                    "Error while retrieving organization IDs.", e);
         }
         if (orgIds.isEmpty()) {
             return organizations;
@@ -218,7 +218,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             // Therefore, sort the organization as per the order of their IDs.
             return sortBy != null ? sortCollectedOrganizations(organizations, orgIds) : organizations;
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR,
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
                     "Error while constructing organizations by IDs", e);
         }
     }
@@ -254,7 +254,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             return (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?
                     null : buildOrganizationFromRawData(organizationRowDataCollectors);
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATION_BY_ID_ERROR, organizationId, e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_BY_ID_ERROR, organizationId, e);
         }
     }
 
@@ -271,7 +271,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         preparedStatement.setString(++parameterIndex, organizationId);
                     });
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_DELETE_ORGANIZATION_ERROR, "Id - " + organizationId, e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_DELETE_ERROR, "Organization Id " + organizationId, e);
         }
     }
 
@@ -287,7 +287,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     });
             return childOrganizationIds;
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_RETRIEVING_CHILD_ORGANIZATION_IDS_ERROR, organizationId, e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_CHILDREN_ERROR, "Organization Id " + organizationId, e);
         }
     }
 
@@ -312,7 +312,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             return userStoreConfigs.stream().collect(Collectors.toMap(UserStoreConfig::getKey, config -> config));
 
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_RETRIEVE_USER_STORE_CONFIGS_BY_ORG_ID_ERROR, organizationId, e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_CONFIGS_ERROR, organizationId, e);
         }
     }
 
@@ -331,8 +331,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     });
             return orgCount > 0;
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR,
-                    "Name - " + name + " Tenant id - " + tenantId, e);
+            throw handleServerException(ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_NAME_ERROR,
+                    "Organization name " + name + ", Tenant id " + tenantId, e);
         }
     }
 
@@ -352,8 +352,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             );
             return orgCount > 0;
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_CHECK_ORGANIZATION_EXIST_ERROR,
-                    "Id - " + id + " Tenant id - " + tenantId, e);
+            throw handleServerException(ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_ID_ERROR,
+                    "Organization ID " + id + ", Tenant id " + tenantId, e);
         }
     }
 
@@ -370,7 +370,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             try {
                 patchAttribute(jdbcTemplate, organizationId, operation);
             } catch (DataAccessException e) {
-                throw handleServerException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
                         "Error while patching attribute : " + attributeKey +
                                 ", value : " + operation.getValue() + ", op : " + operation.getOp() + ", org : " + organizationId, e);
             }
@@ -404,7 +404,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                             preparedStatement.setString(++parameterIndex, organizationId);
                         });
             } catch (DataAccessException e) {
-                throw handleServerException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
                         "Error while updating the primary field : " + path +
                                 ", value : " + operation.getValue() + ", org : " + organizationId, e);
             }
@@ -426,8 +426,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         preparedStatement.setString(++parameterIndex, organizationName);
                     });
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_RETRIEVE_ORGANIZATION_ID_BY_NAME_ERROR,
-                    organizationName + ", Tenant id : " + tenantId, e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR,
+                    "Organization name " + organizationName + ", tenant id " + tenantId, e);
         }
     }
 
@@ -451,7 +451,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 updateUserStoreConfig(jdbcTemplate, organizationId, RDN, operation.getValue());
                 updateUserStoreConfig(jdbcTemplate, organizationId, DN, dn);
             } catch (DataAccessException e) {
-                throw handleServerException(ERROR_CODE_PATCH_OPERATION_ERROR,
+                throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
                         "Error while updating user store configs for the organization ID : " + organizationId, e);
             }
         }
@@ -535,7 +535,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR,
-                    "Error while checking if the organization has any attributes : " + organizationId, e);
+                    "Error while checking if the organization has any attributes for the organization Id " + organizationId, e);
         }
         try {
             template.executeUpdate(UPDATE_HAS_ATTRIBUTES_FIELD,
@@ -547,7 +547,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             );
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR,
-                    "Error while updating HAS_ATTRIBUTES field of the organization: " + organizationId, e);
+                    "Error while updating HAS_ATTRIBUTES field of the organization Id " + organizationId, e);
         }
     }
 
@@ -605,7 +605,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         organization.getAttributes().size() + " exceeds the maximum query length: " +
                         MAX_QUERY_LENGTH_IN_BYTES_SQL);
             }
-            throw Utils.handleClientException(ERROR_CODE_QUERY_LENGTH_EXCEEDED_ERROR, null);
+            throw handleClientException(ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED, "Too much attributes for the creation request. Try patch.");
         }
         return sb.toString();
     }
@@ -641,7 +641,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         "query length: " + query.length() + " exceeds the maximum limit: " +
                         MAX_QUERY_LENGTH_IN_BYTES_SQL);
             }
-            throw handleClientException(ERROR_CODE_RETRIEVE_ORGANIZATIONS_ERROR, "Query length exceeded the maximum limit.");
+            throw handleClientException(ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED, "Query length exceeded the maximum limit.");
         }
     }
 
@@ -660,7 +660,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     new PrimitiveConditionValidator(new OrganizationSearchBean())) : new PlaceholderSQL();
         } catch (PrimitiveConditionValidationException e) {
             log.error("Error passing the condition ", e);
-            throw handleClientException(ERROR_CODE_SEARCH_ORGANIZATION_ERROR, "Error passing condition");
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST, "Error passing the condition");
         }
 
         StringBuilder sb = new StringBuilder();

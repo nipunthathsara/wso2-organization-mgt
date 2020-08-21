@@ -11,7 +11,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationSearchBe
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.endpoint.*;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_PAGINATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_PATH;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getBasicOrganizationDTOFromOrganization;
@@ -82,7 +82,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
         try {
             if ((limit != null && limit < 1) || (offset != null && offset < 0)) {
-                handleClientException(ERROR_CODE_INVALID_PAGINATION,
+                handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
                         "Invalid pagination arguments. 'limit' should be greater than 0 and 'offset' should be greater than -1");
             }
             // If pagination parameters not defined in the request, set them to -1

@@ -32,8 +32,6 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserStoreException;
-import org.wso2.carbon.user.core.ldap.ReadOnlyLDAPUserStoreManager;
-import org.wso2.carbon.user.core.ldap.ReadWriteLDAPUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadOnlyLDAPUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadWriteLDAPUserStoreManager;
 
@@ -42,8 +40,9 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_ACCESS_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.DOMAIN_NAME;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.userSearchBase;
@@ -79,6 +78,18 @@ public class Utils {
         return new OrganizationManagementServerException(message, error.getCode(), e);
     }
 
+    public static OrganizationManagementServerException handleServerException(
+            OrganizationMgtConstants.ErrorMessages error, String data) {
+
+        String message;
+        if (StringUtils.isNotBlank(data)) {
+            message = String.format(error.getMessage(), data);
+        } else {
+            message = error.getMessage();
+        }
+        return new OrganizationManagementServerException(message, error.getCode());
+    }
+
     public static String generateUniqueID() {
 
         return UUID.randomUUID().toString();
@@ -96,7 +107,7 @@ public class Utils {
         }
         // Check if user domain exists
         if (matchingRealmConfig == null) {
-            throw handleClientException(ERROR_CODE_USER_STORE_ACCESS_ERROR,
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS,
                     "Provided user store domain is not valid : " + userStoreDomain);
         }
         // Check if the underlying user store supports
@@ -106,17 +117,15 @@ public class Utils {
         } catch (ClassNotFoundException e) {
             throw handleServerException(ERROR_CODE_UNEXPECTED, "Error while loading user store manager class", e);
         }
-        if (!(ReadWriteLDAPUserStoreManager.class.isAssignableFrom(className) ||
-                ReadOnlyLDAPUserStoreManager.class.isAssignableFrom(className) ||
-                UniqueIDReadWriteLDAPUserStoreManager.class.isAssignableFrom(className) ||
+        if (!(UniqueIDReadWriteLDAPUserStoreManager.class.isAssignableFrom(className) ||
                 UniqueIDReadOnlyLDAPUserStoreManager.class.isAssignableFrom(className))) {
-            throw handleClientException(ERROR_CODE_USER_STORE_ACCESS_ERROR,
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS,
                     "Provided user store domain does not support organization management : " + userStoreDomain);
         }
         return matchingRealmConfig.getUserStoreProperties().get(userSearchBase);
     }
 
-    public static List<RealmConfiguration> getRealmConfigurations() {
+    public static List<RealmConfiguration> getRealmConfigurations() throws OrganizationManagementException {
 
         RealmConfiguration realmConfig;
         List<RealmConfiguration> realmConfigurations = new ArrayList<>();
@@ -132,7 +141,7 @@ public class Utils {
                 }
             } while (realmConfig != null);
         } catch (UserStoreException e) {
-            e.printStackTrace();
+            throw handleServerException(ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR, "Error while obtaining realm configurations", e);
         }
         return realmConfigurations;
     }
