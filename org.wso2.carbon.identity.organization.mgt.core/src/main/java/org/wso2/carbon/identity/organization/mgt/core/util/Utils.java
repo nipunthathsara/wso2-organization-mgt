@@ -28,9 +28,11 @@ import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtCo
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
+import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.user.api.RealmConfiguration;
+import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadOnlyLDAPUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadWriteLDAPUserStoreManager;
@@ -95,9 +97,9 @@ public class Utils {
         return UUID.randomUUID().toString();
     }
 
-    public static String getLdapRootDn(String userStoreDomain) throws OrganizationManagementException {
+    public static String getLdapRootDn(String userStoreDomain, int tenantId) throws OrganizationManagementException {
 
-        List<RealmConfiguration> realmConfigurations = getRealmConfigurations();
+        List<RealmConfiguration> realmConfigurations = getRealmConfigurations(tenantId);
         RealmConfiguration matchingRealmConfig = null;
         for (RealmConfiguration realmConfig : realmConfigurations) {
             if (realmConfig.getUserStoreProperties().get(DOMAIN_NAME).equalsIgnoreCase(userStoreDomain)) {
@@ -125,16 +127,18 @@ public class Utils {
         return matchingRealmConfig.getUserStoreProperties().get(userSearchBase);
     }
 
-    public static List<RealmConfiguration> getRealmConfigurations() throws OrganizationManagementException {
+    public static List<RealmConfiguration> getRealmConfigurations(int tenantId) throws OrganizationManagementException {
 
         RealmConfiguration realmConfig;
         List<RealmConfiguration> realmConfigurations = new ArrayList<>();
         try {
             // Add PRIMARY user store
-            realmConfig = CarbonContext.getThreadLocalCarbonContext().getUserRealm().getRealmConfiguration();
+            realmConfig = OrganizationMgtDataHolder.getInstance().getRealmService()
+                    .getTenantUserRealm(tenantId).getRealmConfiguration();
+//            realmConfig = CarbonContext.getThreadLocalCarbonContext().getUserRealm().getRealmConfiguration();
             realmConfigurations.add(realmConfig);
             do {
-                // Check for secondary user stores
+                // Check for the tenant's secondary user stores
                 realmConfig = realmConfig.getSecondaryRealmConfig();
                 if (realmConfig != null) {
                     realmConfigurations.add(realmConfig);

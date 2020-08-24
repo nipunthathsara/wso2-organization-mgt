@@ -22,9 +22,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.custom.userstore.manager.CustomUserStoreManager;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
@@ -32,6 +34,9 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
+import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.core.UserRealm;
+import org.wso2.carbon.user.core.UserStoreManager;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +53,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
@@ -117,6 +123,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
         );
         organization.getUserStoreConfigs().put(DN, new UserStoreConfig(DN, dn));
         logOrganizationObject(organization);
+        if (!isImport) {
+            createLdapDirectory(tenantId, organization.getUserStoreConfigs().get(USER_STORE_DOMAIN).getValue(), dn);
+        }
         organizationMgtDao.addOrganization(tenantId, organization);
         return organization;
     }
@@ -281,12 +290,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
                         "User store config attribute keys or values cannot be empty.");
             }
             // Sanitize input
-            config.setKey(config.getKey().trim());
+            config.setKey(config.getKey().trim().toUpperCase());
             config.setValue(config.getValue().trim());
-            // User store configs may only contain RDN and USER_STORE_DOMAIN (DN to be constructed later)
-            if (config.getKey().equalsIgnoreCase(RDN) || config.getKey().equalsIgnoreCase(USER_STORE_DOMAIN)) {
-                config.setKey(config.getKey().toUpperCase());
-            } else {
+            // Set user store domain value to upper case
+            if(config.getKey().equals(USER_STORE_DOMAIN)) {
+                config.setValue(config.getValue().toUpperCase());
+            }
+            // User store configs may only contain RDN and USER_STORE_DOMAIN. (DN to be constructed later)
+            if (!(config.getKey().equals(RDN) || config.getKey().equals(USER_STORE_DOMAIN))) {
                 userStoreConfigs.remove(i);
                 if (log.isDebugEnabled()) {
                     log.debug("Dropping additional user store configs. Only 'USER_STORE_DOMAIN' and 'RDN' are allowed.");
@@ -325,7 +336,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         boolean rootOrg = ROOT.equals(parentId);
         String dn;
         if (rootOrg) {
-            String ldapRoot = getLdapRootDn(userStoreDomain);
+            String ldapRoot = getLdapRootDn(userStoreDomain, tenantId);
             dn = "ou=".concat(rdn).concat(",").concat(ldapRoot);
         } else {
             dn = "ou=".concat(rdn).concat(",").concat(parentDn);
@@ -530,5 +541,38 @@ public class OrganizationManagerImpl implements OrganizationManager {
             }
         }
         return true;
+    }
+
+    private void createLdapDirectory(int tenantId, String userStoreDomain, String dn)
+            throws OrganizationManagementServerException {
+
+        try {
+            UserRealm tenantUserRealm = ((UserRealm) OrganizationMgtDataHolder.getInstance().getRealmService()
+                    .getTenantUserRealm(tenantId));
+            if (tenantUserRealm == null) {
+                throw handleServerException(ERROR_CODE_ORGANIZATION_ADD_ERROR,
+                        "Error obtaining tenant realm for the tenant id : " + tenantId);
+            }
+            if (tenantUserRealm.getUserStoreManager() == null ||
+                    tenantUserRealm.getUserStoreManager().getSecondaryUserStoreManager(userStoreDomain) == null) {
+                throw handleServerException(ERROR_CODE_ORGANIZATION_ADD_ERROR,
+                        "Error obtaining user store manager for the domain : " + userStoreDomain + ", tenant id : " + tenantId);
+            }
+            UserStoreManager userStoreManager = tenantUserRealm.getUserStoreManager()
+                    .getSecondaryUserStoreManager(userStoreDomain);
+            if ( userStoreManager instanceof CustomUserStoreManager) {
+                ((CustomUserStoreManager) userStoreManager).createOu(dn);
+                if (log.isDebugEnabled()) {
+                    log.debug("Created subdirectory : " + dn + ", in the user store domain : " + userStoreDomain);
+                }
+            } else {
+                throw handleServerException(ERROR_CODE_ORGANIZATION_ADD_ERROR,
+                        "User store manager doesn't support adding LDAP directories. Tenant id : "
+                                + tenantId + ", Domain : " + userStoreDomain );
+            }
+        } catch (UserStoreException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_ADD_ERROR,
+                    "Error creating the DN : " + dn + " in the user store domain : " + userStoreDomain, e);
+        }
     }
 }
