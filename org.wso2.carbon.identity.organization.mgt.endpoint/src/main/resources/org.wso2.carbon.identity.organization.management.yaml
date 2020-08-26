@@ -73,7 +73,7 @@ paths:
       description: |
         This API is used to create the organization defined in the user input.
       x-wso2-request: |
-        curl -X POST "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations" -H "accept: application/json" -H "Content-Type: application/json" -d '{"name": "string", "description": "string", "parentId": "string", "attributes": [{"key": "string", "value": "string"}], "userstoreConfigs": [{"key": "string", "value": "string"}]}' -k
+        curl -X POST "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations" -H "accept: application/json" -H "Content-Type: application/json" -d '{"name": "string", "displayName": "string", "description": "string", "parentId": "string", "attributes": [{"key": "string", "value": "string"}], "userStoreConfigs": [{"key": "string", "value": "string"}]}' -k
       x-wso2-curl: |
         curl -X POST \
           https://localhost:9443/api/identity/organization-mgt/v1.0/organizations \
@@ -84,6 +84,7 @@ paths:
           -H 'cache-control: no-cache' \
           -d '{
             "name": "Hesei",
+            "displayName": "Hesei constructions",
             "description": "Partner organization",
             "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
             "attributes": [
@@ -96,7 +97,7 @@ paths:
                     "value": "2021"
                 }
             ],
-            "userstoreConfigs": [
+            "userStoreConfigs": [
                 {
                     "key": "RDN",
                     "value": "hesei"
@@ -109,13 +110,25 @@ paths:
         }'
       x-wso2-response: |
         {
-            "id": "9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
-            "name": "Hesei",
-            "description": "Partner organization",
-            "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-            "active": true,
-            "lastModified": "2020-08-17T16:00:55.156Z",
-            "created": "2020-08-17T16:00:55.156Z"
+           "id":"9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
+           "name":"Hesei",
+           "displayName":"Hesei constructions",
+           "description":"Partner organization",
+           "parent":{
+              "id":"2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+              "$ref":"/t/api/identity/organization-mgt/v1.0/organizations/2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+              "name":"MAGA",
+              "displayName":"MAGA Constructor"
+           },
+           "status":"ACTIVE",
+           "meta":{
+              "created":"2020-08-17T16:00:55.156Z",
+              "lastModified":"2020-08-17T16:00:55.156Z",
+              "createdBy":{
+                 "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
+                 "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
+              }
+           }
         }
       summary: |
         Create a new organization.
@@ -164,15 +177,28 @@ paths:
           -H 'cache-control: no-cache'
       x-wso2-response: |
         [
-            {
-                "id": "9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
-                "name": "Hesei",
-                "description": "Partner organization",
-                "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-                "active": true,
-                "lastModified": "2020-08-17 21:30:55.156",
-                "created": "2020-08-17 21:30:55.156"
-            }
+           {
+              "id":"9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
+              "name":"Hesei",
+              "displayName":"Hesei constructions",
+              "description":"Partner organization",
+              "status": "ACTIVE",
+              "parent":{
+                 "id":"2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+                 "$ref":"/t/api/identity/organization-mgt/v1.0/organizations/2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+                 "name":"MAGA",
+                 "displayName":"MAGA Constructor"
+              },
+              "status":"ACTIVE",
+              "meta":{
+                 "created":"2020-08-17T16:00:55.156Z",
+                 "lastModified":"2020-08-17T16:00:55.156Z",
+                 "createdBy":{
+                    "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
+                    "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
+                 }
+              }
+           }
         ]
       summary: |
         Retrieve organizations created for this tenant which matches the defined search criteria, if any.
@@ -188,10 +214,12 @@ paths:
         - in: query
           name: sortBy
           type: string
+          enum: [name, lastModified, created]
           description: Criteria to sort by. (name, lastModified, created)
         - in: query
           name: sortOrder
           type: string
+          enum: [ASC, DESC]
           description: Ascending or Descending order. (ASC, DESC)
       responses:
         200:
@@ -229,23 +257,36 @@ paths:
           -H 'cache-control: no-cache'
       x-wso2-response: |
         {
-            "id": "9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
-            "name": "Hesei",
-            "description": "Partner organization",
-            "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-            "active": true,
-            "lastModified": "2020-08-17 21:30:55.156",
-            "created": "2020-08-17 21:30:55.156",
-            "attributes": [
-                {
-                    "key": "Type",
-                    "value": "partner"
-                },
-                {
-                    "key": "Exp",
-                    "value": "2021"
-                }
-            ]
+           "id":"9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
+           "name":"Hesei",
+           "displayName":"Hesei constructions",
+           "description":"Partner organization",
+           "status": "ACTIVE",
+           "parent":{
+              "id":"2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+              "$ref":"/t/api/identity/organization-mgt/v1.0/organizations/2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+              "name":"MAGA",
+              "displayName":"MAGA Constructor"
+           },
+           "status":"ACTIVE",
+           "meta":{
+              "created":"2020-08-17T16:00:55.156Z",
+              "lastModified":"2020-08-17T16:00:55.156Z",
+              "createdBy":{
+                 "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
+                 "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
+              }
+           },
+           "attributes":[
+              {
+                 "key":"Type",
+                 "value":"partner"
+              },
+              {
+                 "key":"Exp",
+                 "value":"2021"
+              }
+           ]
         }
       summary: |
         Get an existing organization identified by the organization Id.
@@ -427,7 +468,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/UserstoreConfig'
+              $ref: '#/definitions/UserStoreConfig'
         400:
           description: Bad Request
           schema:
@@ -558,10 +599,10 @@ paths:
       description: |
         This API is used to create an organization to represent an exisitng organization of the underlying user store. Hence, this will not create any OU in the LDAP.
       x-wso2-request: |
-        curl -X POST "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations" -H "accept: application/json" -H "Content-Type: application/json" -d '{"name": "Phoenix", "description": "Phoenix organization", "attributes": [{"key": "legacy", "value": "true"}], "userstoreConfigs": [{"key": "RDN", "value": "phoenix"}, {"key": "USER_STORE_DOMAIN", "value": "CUSTOMER_USER_STORE"}]}' -k
+        curl -X POST "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations" -H "accept: application/json" -H "Content-Type: application/json" -d '{"name": "string", "displayName": "string", "description": "string", "parentId": "string", "attributes": [{"key": "string", "value": "string"}], "userStoreConfigs": [{"key": "string", "value": "string"}]}' -k
       x-wso2-curl: |
         curl -X POST \
-          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/import \
+          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations \
           -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
           -H 'Content-Type: application/json' \
           -H 'Postman-Token: 406d58dd-e8f4-4b62-a9be-d6e20af07e2b' \
@@ -569,6 +610,7 @@ paths:
           -H 'cache-control: no-cache' \
           -d '{
             "name": "Hesei",
+            "displayName": "Hesei constructions",
             "description": "Partner organization",
             "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
             "attributes": [
@@ -581,7 +623,7 @@ paths:
                     "value": "2021"
                 }
             ],
-            "userstoreConfigs": [
+            "userStoreConfigs": [
                 {
                     "key": "RDN",
                     "value": "hesei"
@@ -594,13 +636,25 @@ paths:
         }'
       x-wso2-response: |
         {
-            "id": "9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
-            "name": "Hesei",
-            "description": "Partner organization",
-            "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-            "active": true,
-            "lastModified": "2020-08-17T16:00:55.156Z",
-            "created": "2020-08-17T16:00:55.156Z"
+           "id":"9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
+           "name":"Hesei",
+           "displayName":"Hesei constructions",
+           "description":"Partner organization",
+           "parent":{
+              "id":"2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+              "$ref":"/t/api/identity/organization-mgt/v1.0/organizations/2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+              "name":"MAGA",
+              "displayName":"MAGA Constructor"
+           },
+           "status":"ACTIVE",
+           "meta":{
+              "created":"2020-08-17T16:00:55.156Z",
+              "lastModified":"2020-08-17T16:00:55.156Z",
+              "createdBy":{
+                 "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
+                 "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
+              }
+           }
         }
       summary: |
         Create an organization without changing the underlying LDAP.
@@ -647,6 +701,8 @@ definitions:
     properties:
       name:
         type: string
+      displayName:
+        type: string
       description:
         type: string
       parentId:
@@ -655,10 +711,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Attribute'
-      userstoreConfigs:
+      userStoreConfigs:
         type: array
         items:
-          $ref: '#/definitions/UserstoreConfig'
+          $ref: '#/definitions/UserStoreConfig'
   #-----------------------------------------------------
   # BasicOrganization Object
   #-----------------------------------------------------
@@ -667,25 +723,25 @@ definitions:
     required:
       - id
       - name
-      - parentId
-      - active
-      - lastModified
-      - created
+      - parent
+      - status
+      - meta
     properties:
       id:
         type: string
       name:
         type: string
+      displayName:
+        type: string
       description:
         type: string
-      parentId:
+      parent:
+        $ref: '#/definitions/Parent'
+      status:
         type: string
-      active:
-        type: boolean
-      lastModified:
-        type: string
-      created:
-        type: string
+        enum: [ACTIVE, DISABLED]
+      meta:
+        $ref: '#/definitions/Meta'
   #-----------------------------------------------------
   # Organization Object
   #-----------------------------------------------------
@@ -694,29 +750,79 @@ definitions:
     required:
       - id
       - name
-      - parentId
-      - active
-      - lastModified
-      - created
+      - status
+      - meta
+      - parent
     properties:
       id:
         type: string
       name:
         type: string
+      displayName:
+        type: string
       description:
         type: string
-      parentId:
+      status:
         type: string
-      active:
-        type: boolean
-      lastModified:
-        type: string
-      created:
-        type: string
+        enum: [ACTIVE, DISABLED]
+      parent:
+        $ref: '#/definitions/Parent'
+      meta:
+        $ref: '#/definitions/Meta'
       attributes:
         type: array
         items:
           $ref: '#/definitions/Attribute'
+  #-----------------------------------------------------
+  # Organization Parent Object
+  #-----------------------------------------------------
+  Parent:
+    type: object
+    required:
+      - id
+      - $ref
+      - name
+    properties:
+      id:
+        type: string
+      $ref:
+        type: string
+      name:
+        type: string
+      displayName:
+        type: string
+  #-----------------------------------------------------
+  # Organization Meta Object
+  #-----------------------------------------------------
+  Meta:
+    type: object
+    required:
+      - created
+      - lastModified
+      - createdBy
+      - lastModifiedBy
+    properties:
+      created:
+        type: string
+      lastModified:
+        type: string
+      createdBy:
+        $ref: '#/definitions/MetaCreatedBy'
+  #-----------------------------------------------------
+  # Organization MetaCreatedBy Object
+  #-----------------------------------------------------
+  MetaCreatedBy:
+    type: object
+    required:
+      - id
+      - $ref
+    properties:
+      id:
+        type: string
+      $ref:
+        type: string
+      username:
+        type: string
   #-----------------------------------------------------
   # Organization Attribute Object
   #-----------------------------------------------------
@@ -730,9 +836,9 @@ definitions:
       value:
         type: string
   #-----------------------------------------------------
-  # Organization UserstoreConfig Object
+  # Organization UserStoreConfig Object
   #-----------------------------------------------------
-  UserstoreConfig:
+  UserStoreConfig:
     type: object
     required:
       - key
@@ -740,6 +846,7 @@ definitions:
     properties:
       key:
         type: string
+        enum: [USER_STORE_DOMAIN, RDN, DN]
       value:
         type: string
   #-----------------------------------------------------
