@@ -127,6 +127,10 @@ paths:
               "createdBy":{
                  "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
                  "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
+              },
+              "lastModifiedBy":{
+                 "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
+                 "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
               }
            }
         }
@@ -182,7 +186,6 @@ paths:
               "name":"Hesei",
               "displayName":"Hesei constructions",
               "description":"Partner organization",
-              "status": "ACTIVE",
               "parent":{
                  "id":"2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
                  "$ref":"/t/api/identity/organization-mgt/v1.0/organizations/2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
@@ -191,12 +194,16 @@ paths:
               },
               "status":"ACTIVE",
               "meta":{
-                 "created":"2020-08-17T16:00:55.156Z",
-                 "lastModified":"2020-08-17T16:00:55.156Z",
-                 "createdBy":{
-                    "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
-                    "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
-                 }
+                  "created":"2020-08-17T16:00:55.156Z",
+                  "lastModified":"2020-08-17T16:00:55.156Z",
+                  "createdBy":{
+                     "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
+                     "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
+                  },
+                  "lastModifiedBy":{
+                     "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
+                     "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
+                  }
               }
            }
         ]
@@ -206,11 +213,11 @@ paths:
         - in: query
           name: offset
           type: integer
-          description: Number of items to be skipped before starting to collect the result set.
+          description: Number of items to be skipped before starting to collect the result set. (Should be 0 or positive)
         - in: query
           name: limit
           type: integer
-          description: Max number of items to be returned.
+          description: Max number of items to be returned. (Should be greater than 0)
         - in: query
           name: sortBy
           type: string
@@ -261,7 +268,6 @@ paths:
            "name":"Hesei",
            "displayName":"Hesei constructions",
            "description":"Partner organization",
-           "status": "ACTIVE",
            "parent":{
               "id":"2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
               "$ref":"/t/api/identity/organization-mgt/v1.0/organizations/2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
@@ -270,12 +276,18 @@ paths:
            },
            "status":"ACTIVE",
            "meta":{
-              "created":"2020-08-17T16:00:55.156Z",
-              "lastModified":"2020-08-17T16:00:55.156Z",
-              "createdBy":{
-                 "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
-                 "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
-              }
+                  "created":"2020-08-17T16:00:55.156Z",
+                  "lastModified":"2020-08-17T16:00:55.156Z",
+                  "createdBy":{
+                     "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
+                     "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5",
+                     "username":"john"
+                  },
+                  "lastModifiedBy":{
+                     "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
+                     "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5",
+                     "username":"john"
+                  }
            },
            "attributes":[
               {
@@ -807,11 +819,13 @@ definitions:
       lastModified:
         type: string
       createdBy:
-        $ref: '#/definitions/MetaCreatedBy'
+        $ref: '#/definitions/MetaUser'
+      lastModifiedBy:
+        $ref: '#/definitions/MetaUser'
   #-----------------------------------------------------
-  # Organization MetaCreatedBy Object
+  # Organization MetaUser Object
   #-----------------------------------------------------
-  MetaCreatedBy:
+  MetaUser:
     type: object
     required:
       - id

@@ -1,6 +1,7 @@
 # wso2-organization-mgt
-Hierarchical organization management REST API
+Hierarchical organization management REST API - IS version 5.10.0 (Oracle)
 
+Execute the below script against the Identity Data source.
 ```oracle-sql
 CREATE TABLE IDN_ORG (
     ID VARCHAR2(255) NOT NULL,
@@ -41,6 +42,13 @@ CREATE TABLE IDN_ORG_USERSTORE_CONFIGS (
 /
 CREATE VIEW ORG_MGT_VIEW AS
 SELECT
+    K.*,
+--    To cater search by parent organization's name
+    CASE WHEN K.PARENT_ID = 'ROOT' THEN 'ROOT' WHEN K.PARENT_ID != 'ROOT' THEN N.NAME END AS PARENT_NAME,
+--    To cater search by parent organization's display name
+    CASE WHEN K.PARENT_ID = 'ROOT' THEN 'ROOT' WHEN K.PARENT_ID != 'ROOT' THEN N.DISPLAY_NAME END AS PARENT_DISPLAY_NAME
+FROM
+(SELECT
     O.ID,
     O.TENANT_ID,
     O.NAME,
@@ -68,7 +76,10 @@ ON
 LEFT JOIN
     IDN_ORG_USERSTORE_CONFIGS C
 ON
-    O.ID = C.ORG_ID
+    O.ID = C.ORG_ID) K, 
+IDN_ORG N
+WHERE
+    N.ID = K.PARENT_ID OR N.PARENT_ID = 'ROOT'
 ```
 
 ```
