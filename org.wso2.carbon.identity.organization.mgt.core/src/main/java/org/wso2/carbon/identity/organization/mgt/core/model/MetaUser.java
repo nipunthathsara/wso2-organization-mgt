@@ -25,7 +25,7 @@ public class MetaUser {
 
     private String id;
     private String $ref;
-    private String name;
+    private String username;
 
     public String getId() {
         return id;
@@ -43,11 +43,11 @@ public class MetaUser {
         this.$ref = $ref;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

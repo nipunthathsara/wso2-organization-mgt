@@ -28,7 +28,6 @@ import org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
-import org.wso2.carbon.identity.organization.mgt.core.model.MetaUser;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
@@ -118,15 +117,33 @@ public class OrganizationMgtEndpointUtil {
     public static OrganizationDTO getOrganizationDTOFromOrganization(Organization organization) {
 
         OrganizationDTO organizationDTO = new OrganizationDTO();
-//        organizationDTO.setId(organization.getId());
-//        organizationDTO.setName(organization.getName());
-//        organizationDTO.setDescription(organization.getDescription());
-//        organizationDTO.setParentId(organization.getParentId());
-//        organizationDTO.setActive(organization.isActive());
-//        organizationDTO.setCreated(organization.getCreated());
-//        organizationDTO.setLastModified(organization.getLastModified());
-//        organizationDTO.setAttributes(organization.getAttributes().values().stream()
-//                .map(OrganizationMgtEndpointUtil::getAttributeDTOFromAttribute).collect(Collectors.toList()));
+        organizationDTO.setId(organization.getId());
+        organizationDTO.setName(organization.getName());
+        organizationDTO.setDisplayName(organization.getDisplayName());
+        organizationDTO.setDescription(organization.getDescription());
+        organizationDTO.setStatus(OrganizationDTO.StatusEnum.valueOf(organization.getStatus().toString()));
+        // Set parent
+        ParentDTO parentDTO = new ParentDTO();
+        parentDTO.setId(organization.getParent().getId());
+        parentDTO.setName(organization.getParent().getName());
+        parentDTO.setDisplayName(organization.getParent().getDisplayName());
+        parentDTO.setRef(organization.getParent().get$ref());
+        organizationDTO.setParent(parentDTO);
+        // Set metadata
+        MetaDTO metaDTO = new MetaDTO();
+        metaDTO.setCreatedBy(new MetaUserDTO());
+        metaDTO.setLastModifiedBy(new MetaUserDTO());
+        metaDTO.setCreated(organization.getMetadata().getCreated());
+        metaDTO.setLastModified(organization.getMetadata().getLastModified());
+        metaDTO.getCreatedBy().setId(organization.getMetadata().getCreatedBy().getId());
+        metaDTO.getCreatedBy().setRef(organization.getMetadata().getCreatedBy().get$ref());
+        metaDTO.getCreatedBy().setUsername(organization.getMetadata().getCreatedBy().getUsername());
+        metaDTO.getLastModifiedBy().setId(organization.getMetadata().getLastModifiedBy().getId());
+        metaDTO.getLastModifiedBy().setRef(organization.getMetadata().getLastModifiedBy().get$ref());
+        metaDTO.getLastModifiedBy().setUsername(organization.getMetadata().getLastModifiedBy().getUsername());
+        organizationDTO.setMeta(metaDTO);
+        organizationDTO.setAttributes(organization.getAttributes().values().stream()
+                .map(OrganizationMgtEndpointUtil::getAttributeDTOFromAttribute).collect(Collectors.toList()));
         return organizationDTO;
     }
 

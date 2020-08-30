@@ -21,7 +21,6 @@ package org.wso2.carbon.identity.organization.mgt.core.util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
@@ -32,7 +31,6 @@ import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDa
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.user.api.RealmConfiguration;
-import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadOnlyLDAPUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadWriteLDAPUserStoreManager;
@@ -196,10 +194,10 @@ public class Utils {
         sb.append("\nCreated time : " + organization.getMetadata().getCreated());
         sb.append("\nLast modified time : " + organization.getMetadata().getLastModified());
         sb.append("\nCreated by id : " + organization.getMetadata().getCreatedBy().getId());
-        sb.append("\nCreated by username : " + organization.getMetadata().getCreatedBy().getName());
+        sb.append("\nCreated by username : " + organization.getMetadata().getCreatedBy().getUsername());
         sb.append("\nCreated by $ref : " + organization.getMetadata().getCreatedBy().get$ref());
         sb.append("\nLast modified by id : " + organization.getMetadata().getLastModifiedBy().getId());
-        sb.append("\nLast modified by username : " + organization.getMetadata().getLastModifiedBy().getName());
+        sb.append("\nLast modified by username : " + organization.getMetadata().getLastModifiedBy().getUsername());
         sb.append("\nLast modified by $ref : " + organization.getMetadata().getLastModifiedBy().get$ref());
         sb.append("\nUser store configs : ");
         StringJoiner configJoiner = new StringJoiner(",");

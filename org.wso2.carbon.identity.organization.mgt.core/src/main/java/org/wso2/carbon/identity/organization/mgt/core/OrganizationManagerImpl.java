@@ -26,7 +26,6 @@ import org.wso2.carbon.custom.userstore.manager.CustomUserStoreManager;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
-import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
@@ -37,7 +36,6 @@ import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreManager;
-import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -115,6 +113,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     tenantId,
                     organization.getUserStoreConfigs().get(USER_STORE_DOMAIN).getValue(),
                     organization.getUserStoreConfigs().get(DN).getValue());
+            if (log.isDebugEnabled()) {
+                log.debug("Creating LDAP subdirectory for the organization id : " + organization.getId());
+            }
         }
         organizationMgtDao.addOrganization(tenantId, organization);
         return organization;
@@ -131,6 +132,15 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST,
                     "Organization id " + organizationId + " doesn't exist in this tenant : " + tenantId);
         }
+        // Set derivable attributes
+        if (organization.getParent().getId() != ROOT) {
+            organization.getParent().set$ref(
+                    String.format(ORGANIZATION_RESOURCE_BASE_PATH, tenantDomain, organization.getParent().getId()));
+        }
+        organization.getMetadata().getCreatedBy().set$ref(
+                String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, organization.getMetadata().getCreatedBy().getId()));
+        organization.getMetadata().getLastModifiedBy().set$ref(
+                String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, organization.getMetadata().getLastModifiedBy().getId()));
         //TODO set meta users' username
         return organization;
     }
@@ -296,7 +306,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             config.setKey(config.getKey().trim().toUpperCase());
             config.setValue(config.getValue().trim());
             // Set user store domain value to upper case
-            if(config.getKey().equals(USER_STORE_DOMAIN)) {
+            if (config.getKey().equals(USER_STORE_DOMAIN)) {
                 config.setValue(config.getValue().toUpperCase());
             }
             // User store configs may only contain RDN and USER_STORE_DOMAIN. (DN to be derived and added later)
@@ -324,7 +334,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organizationAdd.getParent().setId(parentId);
         // Load the parent organization, if not 'ROOT'
         Organization parentOrg = null;
-        if(parentId != ROOT) {
+        if (parentId != ROOT) {
             parentOrg = getOrganization(parentId);
             // populate parent's properties in the 'OrganizationAdd' object to avoid duplicate DB calls down the lane
             organizationAdd.getParent().setName(parentOrg.getName());
@@ -617,7 +627,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             }
             UserStoreManager userStoreManager = tenantUserRealm.getUserStoreManager()
                     .getSecondaryUserStoreManager(userStoreDomain);
-            if ( userStoreManager instanceof CustomUserStoreManager) {
+            if (userStoreManager instanceof CustomUserStoreManager) {
                 ((CustomUserStoreManager) userStoreManager).createOu(dn);
                 if (log.isDebugEnabled()) {
                     log.debug("Created subdirectory : " + dn + ", in the user store domain : " + userStoreDomain);

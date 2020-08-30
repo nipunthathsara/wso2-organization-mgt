@@ -641,11 +641,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 organization.getMetadata().setCreated(collector.getCreated().toString());
                 organization.getMetadata().setLastModified(collector.getLastModified().toString());
                 organization.getMetadata().getCreatedBy().setId(collector.getCreatedBy());
-                organization.getMetadata().getCreatedBy().set$ref(
-                        SCIM2_USER_RESOURCE_BASE_PATH.concat(collector.getCreatedBy()));
                 organization.getMetadata().getLastModifiedBy().setId(collector.getLastModifiedBy());
-                organization.getMetadata().getLastModifiedBy().set$ref(
-                        SCIM2_USER_RESOURCE_BASE_PATH.concat(collector.getLastModifiedBy()));
                 organization.setHasAttributes(collector.hasAttributes());
             }
             if (organization.hasAttributes() && collector.getAttributeKey() != null
