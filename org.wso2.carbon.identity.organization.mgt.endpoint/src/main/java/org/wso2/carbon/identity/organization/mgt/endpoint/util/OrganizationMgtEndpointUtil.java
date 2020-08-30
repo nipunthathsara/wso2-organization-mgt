@@ -94,10 +94,12 @@ public class OrganizationMgtEndpointUtil {
         basicOrganizationDTO.setDisplayName(organization.getDisplayName());
         basicOrganizationDTO.setDescription(organization.getDescription());
         basicOrganizationDTO.setStatus(BasicOrganizationDTO.StatusEnum.valueOf(organization.getStatus().toString()));
+        // Set parent
         ParentDTO parentDTO = new ParentDTO();
         parentDTO.setId(organization.getParent().getId());
         parentDTO.setName(organization.getParent().getName());
         parentDTO.setDisplayName(organization.getParent().getDisplayName());
+        parentDTO.setRef(organization.getParent().get$ref());
         basicOrganizationDTO.setParent(parentDTO);
         // Set metadata
         MetaDTO metaDTO = new MetaDTO();

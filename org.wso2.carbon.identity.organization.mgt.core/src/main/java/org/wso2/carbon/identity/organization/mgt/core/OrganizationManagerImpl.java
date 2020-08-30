@@ -601,7 +601,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     private void createLdapDirectory(int tenantId, String userStoreDomain, String dn)
-            throws OrganizationManagementServerException {
+            throws OrganizationManagementException {
 
         try {
             UserRealm tenantUserRealm = ((UserRealm) OrganizationMgtDataHolder.getInstance().getRealmService()
@@ -623,9 +623,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     log.debug("Created subdirectory : " + dn + ", in the user store domain : " + userStoreDomain);
                 }
             } else {
-                throw handleServerException(ERROR_CODE_ORGANIZATION_ADD_ERROR,
+                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
                         "User store manager doesn't support adding LDAP directories. Tenant id : "
-                                + tenantId + ", Domain : " + userStoreDomain );
+                                + tenantId + ", Domain : " + userStoreDomain);
             }
         } catch (UserStoreException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_ADD_ERROR,
