@@ -160,8 +160,9 @@ public class Utils {
         StringJoiner configJoiner = new StringJoiner(",");
         sb.append("Logging OrganizationAdd object");
         sb.append("\nName : " + organizationAdd.getName());
+        sb.append("\nDisplay name : " + organizationAdd.getDisplayName());
         sb.append("\nDescription : " + organizationAdd.getDescription());
-        sb.append("\nParentId : " + organizationAdd.getParentId());
+        sb.append("\nParent id : " + organizationAdd.getParent().getId());
         // Attributes cannot be null
         organizationAdd.getAttributes().forEach(entry ->
                 attributesJoiner.add(entry.toString())
@@ -183,13 +184,24 @@ public class Utils {
         StringBuilder sb = new StringBuilder();
         sb.append("Logging Organization object");
         sb.append("\nId : " + organization.getId());
+        sb.append("\nTenant id : " + organization.getTenantId());
         sb.append("\nName : " + organization.getName());
-        sb.append("\nTenantId : " + organization.getTenantId());
-        sb.append("\nParentId : " + organization.getParentId());
-        sb.append("\nActive : " + organization.isActive());
-        sb.append("\nCreated Time : " + organization.getCreated());
-        sb.append("\nLast Modified Time : " + organization.getLastModified());
-        sb.append("\nUser Store Configs : ");
+        sb.append("\nDisplay name : " + organization.getDisplayName());
+        sb.append("\nDescription : " + organization.getDescription());
+        sb.append("\nParent id : " + organization.getParent().getId());
+        sb.append("\nParent name : " + organization.getParent().getName());
+        sb.append("\nParent display name : " + organization.getParent().getDisplayName());
+        sb.append("\nParent $ref : " + organization.getParent().get$ref());
+        sb.append("\nStatus : " + organization.getStatus().toString());
+        sb.append("\nCreated time : " + organization.getMetadata().getCreated());
+        sb.append("\nLast modified time : " + organization.getMetadata().getLastModified());
+        sb.append("\nCreated by id : " + organization.getMetadata().getCreatedBy().getId());
+        sb.append("\nCreated by username : " + organization.getMetadata().getCreatedBy().getName());
+        sb.append("\nCreated by $ref : " + organization.getMetadata().getCreatedBy().get$ref());
+        sb.append("\nLast modified by id : " + organization.getMetadata().getLastModifiedBy().getId());
+        sb.append("\nLast modified by username : " + organization.getMetadata().getLastModifiedBy().getName());
+        sb.append("\nLast modified by $ref : " + organization.getMetadata().getLastModifiedBy().get$ref());
+        sb.append("\nUser store configs : ");
         StringJoiner configJoiner = new StringJoiner(",");
         organization.getUserStoreConfigs().entrySet().stream().forEach(
                 entry -> configJoiner.add(entry.getValue().toString())

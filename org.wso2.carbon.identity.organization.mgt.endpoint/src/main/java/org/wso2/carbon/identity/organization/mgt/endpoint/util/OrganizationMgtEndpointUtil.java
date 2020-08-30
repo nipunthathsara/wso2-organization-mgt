@@ -28,6 +28,7 @@ import org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
+import org.wso2.carbon.identity.organization.mgt.core.model.MetaUser;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
@@ -37,9 +38,12 @@ import org.wso2.carbon.identity.organization.mgt.core.search.PrimitiveCondition;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.AttributeDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.BasicOrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.MetaDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.MetaUserDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserstoreConfigDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ParentDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserStoreConfigDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.BadRequestException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ConflictRequestException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ForbiddenException;
@@ -72,11 +76,12 @@ public class OrganizationMgtEndpointUtil {
 
         OrganizationAdd organizationAdd = new OrganizationAdd();
         organizationAdd.setName(organizationAddDTO.getName());
+        organizationAdd.setDisplayName(organizationAddDTO.getDisplayName());
         organizationAdd.setDescription(organizationAddDTO.getDescription());
-        organizationAdd.setParentId(organizationAddDTO.getParentId());
+        organizationAdd.getParent().setId(organizationAddDTO.getParentId());
         organizationAdd.setAttributes(organizationAddDTO.getAttributes()
                 .stream().map(OrganizationMgtEndpointUtil::getAttributeFromDTO).collect(Collectors.toList()));
-        organizationAdd.setUserStoreConfigs(organizationAddDTO.getUserstoreConfigs()
+        organizationAdd.setUserStoreConfigs(organizationAddDTO.getUserStoreConfigs()
                 .stream().map(OrganizationMgtEndpointUtil::getUserStoreConfigsFromDTO).collect(Collectors.toList()));
         return organizationAdd;
     }
@@ -86,26 +91,40 @@ public class OrganizationMgtEndpointUtil {
         BasicOrganizationDTO basicOrganizationDTO = new BasicOrganizationDTO();
         basicOrganizationDTO.setId(organization.getId());
         basicOrganizationDTO.setName(organization.getName());
+        basicOrganizationDTO.setDisplayName(organization.getDisplayName());
         basicOrganizationDTO.setDescription(organization.getDescription());
-        basicOrganizationDTO.setParentId(organization.getParentId());
-        basicOrganizationDTO.setActive(organization.isActive());
-        basicOrganizationDTO.setCreated(organization.getCreated());
-        basicOrganizationDTO.setLastModified(organization.getLastModified());
+        basicOrganizationDTO.setStatus(BasicOrganizationDTO.StatusEnum.valueOf(organization.getStatus().toString()));
+        ParentDTO parentDTO = new ParentDTO();
+        parentDTO.setId(organization.getParent().getId());
+        parentDTO.setName(organization.getParent().getName());
+        parentDTO.setDisplayName(organization.getParent().getDisplayName());
+        basicOrganizationDTO.setParent(parentDTO);
+        // Set metadata
+        MetaDTO metaDTO = new MetaDTO();
+        metaDTO.setCreatedBy(new MetaUserDTO());
+        metaDTO.setLastModifiedBy(new MetaUserDTO());
+        metaDTO.setCreated(organization.getMetadata().getCreated());
+        metaDTO.setLastModified(organization.getMetadata().getLastModified());
+        metaDTO.getCreatedBy().setId(organization.getMetadata().getCreatedBy().getId());
+        metaDTO.getCreatedBy().setRef(organization.getMetadata().getCreatedBy().get$ref());
+        metaDTO.getLastModifiedBy().setId(organization.getMetadata().getLastModifiedBy().getId());
+        metaDTO.getLastModifiedBy().setRef(organization.getMetadata().getLastModifiedBy().get$ref());
+        basicOrganizationDTO.setMeta(metaDTO);
         return basicOrganizationDTO;
     }
 
     public static OrganizationDTO getOrganizationDTOFromOrganization(Organization organization) {
 
         OrganizationDTO organizationDTO = new OrganizationDTO();
-        organizationDTO.setId(organization.getId());
-        organizationDTO.setName(organization.getName());
-        organizationDTO.setDescription(organization.getDescription());
-        organizationDTO.setParentId(organization.getParentId());
-        organizationDTO.setActive(organization.isActive());
-        organizationDTO.setCreated(organization.getCreated());
-        organizationDTO.setLastModified(organization.getLastModified());
-        organizationDTO.setAttributes(organization.getAttributes().values().stream()
-                .map(OrganizationMgtEndpointUtil::getAttributeDTOFromAttribute).collect(Collectors.toList()));
+//        organizationDTO.setId(organization.getId());
+//        organizationDTO.setName(organization.getName());
+//        organizationDTO.setDescription(organization.getDescription());
+//        organizationDTO.setParentId(organization.getParentId());
+//        organizationDTO.setActive(organization.isActive());
+//        organizationDTO.setCreated(organization.getCreated());
+//        organizationDTO.setLastModified(organization.getLastModified());
+//        organizationDTO.setAttributes(organization.getAttributes().values().stream()
+//                .map(OrganizationMgtEndpointUtil::getAttributeDTOFromAttribute).collect(Collectors.toList()));
         return organizationDTO;
     }
 
@@ -114,39 +133,39 @@ public class OrganizationMgtEndpointUtil {
         return new Attribute(attributeDTO.getKey(), attributeDTO.getValue());
     }
 
-    public static UserStoreConfig getUserStoreConfigsFromDTO(UserstoreConfigDTO userStoreConfigDTO) {
+    public static UserStoreConfig getUserStoreConfigsFromDTO(UserStoreConfigDTO userStoreConfigDTO) {
 
-        return new UserStoreConfig(userStoreConfigDTO.getKey(), userStoreConfigDTO.getValue());
+        return new UserStoreConfig(userStoreConfigDTO.getKey().toString(), userStoreConfigDTO.getValue());
     }
 
-    public static List<UserstoreConfigDTO> getUserStoreConfigDTOsFromUserStoreConfigs(Collection<UserStoreConfig> configs) {
+    public static List<UserStoreConfigDTO> getUserStoreConfigDTOsFromUserStoreConfigs(Collection<UserStoreConfig> configs) {
 
-        List<UserstoreConfigDTO> configDTOs = new ArrayList<>();
-        for (UserStoreConfig config : configs) {
-            UserstoreConfigDTO configDTO = new UserstoreConfigDTO();
-            configDTO.setKey(config.getKey());
-            configDTO.setValue(config.getValue());
-            configDTOs.add(configDTO);
-        }
+        List<UserStoreConfigDTO> configDTOs = new ArrayList<>();
+//        for (UserStoreConfig config : configs) {
+//            UserStoreConfigDTO configDTO = new UserStoreConfigDTO();
+//            configDTO.setKey(config.getKey());
+//            configDTO.setValue(config.getValue());
+//            configDTOs.add(configDTO);
+//        }
         return configDTOs;
     }
 
     public static List<BasicOrganizationDTO> getBasicOrganizationDTOsFromOrganizations(List<Organization> organizations) {
 
         List<BasicOrganizationDTO> basicOrganizationDTOs = new ArrayList<>();
-        for (Organization organization : organizations) {
-            BasicOrganizationDTO basicOrganization = new BasicOrganizationDTO();
-            basicOrganization.setId(organization.getId());
-            basicOrganization.setName(organization.getName());
-            if (organization.getDescription() != null) {
-                basicOrganization.setDescription(organization.getDescription());
-            }
-            basicOrganization.setParentId(organization.getParentId());
-            basicOrganization.setActive(organization.isActive());
-            basicOrganization.setLastModified(organization.getLastModified());
-            basicOrganization.setCreated(organization.getCreated());
-            basicOrganizationDTOs.add(basicOrganization);
-        }
+//        for (Organization organization : organizations) {
+//            BasicOrganizationDTO basicOrganization = new BasicOrganizationDTO();
+//            basicOrganization.setId(organization.getId());
+//            basicOrganization.setName(organization.getName());
+//            if (organization.getDescription() != null) {
+//                basicOrganization.setDescription(organization.getDescription());
+//            }
+//            basicOrganization.setParentId(organization.getParentId());
+//            basicOrganization.setActive(organization.isActive());
+//            basicOrganization.setLastModified(organization.getLastModified());
+//            basicOrganization.setCreated(organization.getCreated());
+//            basicOrganizationDTOs.add(basicOrganization);
+//        }
         return basicOrganizationDTOs;
     }
 

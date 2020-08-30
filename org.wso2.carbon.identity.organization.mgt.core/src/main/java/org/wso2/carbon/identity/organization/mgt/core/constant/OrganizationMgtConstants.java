@@ -26,6 +26,8 @@ public class OrganizationMgtConstants {
     public static final String DN = "DN";
     public static final String PRIMARY = "PRIMARY";
     public static final String DN_PLACE_HOLDER = "ou=%s,";
+    public static final String SCIM2_USER_RESOURCE_BASE_PATH = "/t/%s/scim2/Users/%s";
+    public static final String ORGANIZATION_RESOURCE_BASE_PATH = "/t/%s/api/identity/organization-mgt/v1.0/organizations/%s";
 
     public static final String PATCH_OP_ADD = "add";
     public static final String PATCH_OP_REMOVE = "remove";

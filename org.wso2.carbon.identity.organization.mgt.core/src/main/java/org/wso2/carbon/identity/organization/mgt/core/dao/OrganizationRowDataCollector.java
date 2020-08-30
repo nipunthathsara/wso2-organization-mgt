@@ -18,6 +18,8 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
+import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+
 import java.sql.Timestamp;
 
 /**
@@ -26,13 +28,18 @@ import java.sql.Timestamp;
 public class OrganizationRowDataCollector {
 
     private String id;
-    private String name;
-    private String description;
     private int tenantId;
+    private String name;
+    private String displayName;
+    private String description;
     private String parentId;
-    private boolean active;
-    private Timestamp lastModified;
+    private String parentName;
+    private String parentDisplayName;
+    private Organization.OrgStatus status;
     private Timestamp created;
+    private Timestamp lastModified;
+    private String createdBy;
+    private String lastModifiedBy;
     private boolean hasAttributes;
     private String attributeId;
     private String attributeKey;
@@ -49,12 +56,28 @@ public class OrganizationRowDataCollector {
         this.id = id;
     }
 
+    public int getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(int tenantId) {
+        this.tenantId = tenantId;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public String getDescription() {
@@ -65,14 +88,6 @@ public class OrganizationRowDataCollector {
         this.description = description;
     }
 
-    public int getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(int tenantId) {
-        this.tenantId = tenantId;
-    }
-
     public String getParentId() {
         return parentId;
     }
@@ -81,12 +96,36 @@ public class OrganizationRowDataCollector {
         this.parentId = parentId;
     }
 
-    public boolean isActive() {
-        return active;
+    public String getParentName() {
+        return parentName;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setParentName(String parentName) {
+        this.parentName = parentName;
+    }
+
+    public String getParentDisplayName() {
+        return parentDisplayName;
+    }
+
+    public void setParentDisplayName(String parentDisplayName) {
+        this.parentDisplayName = parentDisplayName;
+    }
+
+    public Organization.OrgStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(Organization.OrgStatus status) {
+        this.status = status;
+    }
+
+    public Timestamp getCreated() {
+        return created;
+    }
+
+    public void setCreated(Timestamp created) {
+        this.created = created;
     }
 
     public Timestamp getLastModified() {
@@ -97,12 +136,20 @@ public class OrganizationRowDataCollector {
         this.lastModified = lastModified;
     }
 
-    public Timestamp getCreated() {
-        return created;
+    public String getCreatedBy() {
+        return createdBy;
     }
 
-    public void setCreated(Timestamp created) {
-        this.created = created;
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getLastModifiedBy() {
+        return lastModifiedBy;
+    }
+
+    public void setLastModifiedBy(String lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
     }
 
     public boolean hasAttributes() {

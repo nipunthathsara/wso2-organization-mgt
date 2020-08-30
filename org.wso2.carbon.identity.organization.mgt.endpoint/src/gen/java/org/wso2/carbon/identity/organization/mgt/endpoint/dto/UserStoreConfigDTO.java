@@ -11,46 +11,34 @@ import javax.validation.constraints.NotNull;
 
 
 @ApiModel(description = "")
-public class OperationDTO  {
+public class UserStoreConfigDTO  {
   
+  
+  public enum KeyEnum {
+     USER_STORE_DOMAIN,  RDN,  DN, 
+  };
+  @NotNull
+  private KeyEnum key = null;
   
   @NotNull
-  private String op = null;
-  
-  @NotNull
-  private String path = null;
-  
-  
   private String value = null;
 
   
   /**
    **/
   @ApiModelProperty(required = true, value = "")
-  @JsonProperty("op")
-  public String getOp() {
-    return op;
+  @JsonProperty("key")
+  public KeyEnum getKey() {
+    return key;
   }
-  public void setOp(String op) {
-    this.op = op;
+  public void setKey(KeyEnum key) {
+    this.key = key;
   }
 
   
   /**
    **/
   @ApiModelProperty(required = true, value = "")
-  @JsonProperty("path")
-  public String getPath() {
-    return path;
-  }
-  public void setPath(String path) {
-    this.path = path;
-  }
-
-  
-  /**
-   **/
-  @ApiModelProperty(value = "")
   @JsonProperty("value")
   public String getValue() {
     return value;
@@ -64,10 +52,9 @@ public class OperationDTO  {
   @Override
   public String toString()  {
     StringBuilder sb = new StringBuilder();
-    sb.append("class OperationDTO {\n");
+    sb.append("class UserStoreConfigDTO {\n");
     
-    sb.append("  op: ").append(op).append("\n");
-    sb.append("  path: ").append(path).append("\n");
+    sb.append("  key: ").append(key).append("\n");
     sb.append("  value: ").append(value).append("\n");
     sb.append("}\n");
     return sb.toString();

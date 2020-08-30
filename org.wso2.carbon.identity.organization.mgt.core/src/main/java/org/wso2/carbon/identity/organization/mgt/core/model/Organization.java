@@ -27,16 +27,18 @@ import java.util.Map;
 public class Organization {
 
     private String id;
-    private String name;
-    private String description;
     private int tenantId;
-    private String parentId;
-    private boolean active;
-    private String lastModified;
-    private String created;
+    private String name;
+    private String displayName;
+    private String description;
+    private Parent parent = new Parent();
+    private OrgStatus status;
+    private Metadata metadata = new Metadata();
     private boolean hasAttributes;
     private Map<String, Attribute> attributes = new HashMap<>();
     private Map<String, UserStoreConfig> userStoreConfigs = new HashMap<>();
+
+    public enum OrgStatus {ACTIVE, DISABLED}
 
     public String getId() {
         return id;
@@ -44,22 +46,6 @@ public class Organization {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public int getTenantId() {
@@ -70,36 +56,52 @@ public class Organization {
         this.tenantId = tenantId;
     }
 
-    public String getParentId() {
-        return parentId;
+    public String getName() {
+        return name;
     }
 
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public boolean isActive() {
-        return active;
+    public String getDisplayName() {
+        return displayName;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
-    public String getLastModified() {
-        return lastModified;
+    public String getDescription() {
+        return description;
     }
 
-    public void setLastModified(String lastModified) {
-        this.lastModified = lastModified;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public String getCreated() {
-        return created;
+    public Parent getParent() {
+        return parent;
     }
 
-    public void setCreated(String created) {
-        this.created = created;
+    public void setParent(Parent parent) {
+        this.parent = parent;
+    }
+
+    public OrgStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrgStatus status) {
+        this.status = status;
+    }
+
+    public Metadata getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Metadata metadata) {
+        this.metadata = metadata;
     }
 
     public boolean hasAttributes() {

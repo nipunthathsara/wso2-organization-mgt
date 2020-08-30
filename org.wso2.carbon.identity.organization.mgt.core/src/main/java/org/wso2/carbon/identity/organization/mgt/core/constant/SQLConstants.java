@@ -66,22 +66,27 @@ public class SQLConstants {
             "    IDN_ORG\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND NAME = ?";
-    public static final String COUNT_COLUMN_NAME = "COUNT(1)";
-    public static final String VIEW_ID = "ID";
-    public static final String VIEW_TENANT_ID = "TENANT_ID";
-    public static final String VIEW_NAME = "NAME";
-    public static final String VIEW_DESCRIPTION = "DESCRIPTION";
-    public static final String VIEW_CREATED_TIME = "CREATED_TIME";
-    public static final String VIEW_LAST_MODIFIED = "LAST_MODIFIED";
-    public static final String VIEW_HAS_ATTRIBUTES = "HAS_ATTRIBUTES";
-    public static final String VIEW_ACTIVE = "ACTIVE";
-    public static final String VIEW_PARENT_ID = "PARENT_ID";
-    public static final String VIEW_ATTR_ID = "ATTR_ID";
-    public static final String VIEW_ATTR_KEY = "ATTR_KEY";
-    public static final String VIEW_ATTR_VALUE = "ATTR_VALUE";
-    public static final String VIEW_CONFIG_ID = "CONFIG_ID";
-    public static final String VIEW_CONFIG_KEY = "CONFIG_KEY";
-    public static final String VIEW_CONFIG_VALUE = "CONFIG_VALUE";
+    public static final String COUNT_COLUMN = "COUNT(1)";
+    public static final String VIEW_ID_COLUMN = "ID";
+    public static final String VIEW_TENANT_ID__COLUMN = "TENANT_ID";
+    public static final String VIEW_NAME_COLUMN = "NAME";
+    public static final String VIEW_DISPLAY_NAME_COLUMN = "DISPLAY_NAME";
+    public static final String VIEW_DESCRIPTION_COLUMN = "DESCRIPTION";
+    public static final String VIEW_CREATED_TIME_COLUMN = "CREATED_TIME";
+    public static final String VIEW_LAST_MODIFIED_COLUMN = "LAST_MODIFIED";
+    public static final String VIEW_CREATED_BY_COLUMN = "CREATED_BY";
+    public static final String VIEW_LAST_MODIFIED_BY_COLUMN = "LAST_MODIFIED_BY";
+    public static final String VIEW_HAS_ATTRIBUTES_COLUMN = "HAS_ATTRIBUTES";
+    public static final String VIEW_STATUS_COLUMN = "STATUS";
+    public static final String VIEW_PARENT_ID_COLUMN = "PARENT_ID";
+    public static final String VIEW_PARENT_NAME_COLUMN = "PARENT_NAME";
+    public static final String VIEW_PARENT_DISPLAY_NAME_COLUMN = "PARENT_DISPLAY_NAME";
+    public static final String VIEW_ATTR_ID_COLUMN = "ATTR_ID";
+    public static final String VIEW_ATTR_KEY_COLUMN = "ATTR_KEY";
+    public static final String VIEW_ATTR_VALUE_COLUMN = "ATTR_VALUE";
+    public static final String VIEW_CONFIG_ID_COLUMN = "CONFIG_ID";
+    public static final String VIEW_CONFIG_KEY_COLUMN = "CONFIG_KEY";
+    public static final String VIEW_CONFIG_VALUE_COLUMN = "CONFIG_VALUE";
     public static final String LIKE_SYMBOL = "%";
     // View returns null for non matching entries upon join. Hence, NULL check.
     // View returns duplicate CONFIG_IDs if the  #attributes > #configs. Hence, DISTINCT
@@ -95,9 +100,9 @@ public class SQLConstants {
     public static final String INSERT_ORGANIZATION =
             "INSERT INTO \n" +
             "    IDN_ORG\n" +
-            "    (ID, TENANT_ID, NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, HAS_ATTRIBUTES, ACTIVE, PARENT_ID)\n" +
+            "    (ID, TENANT_ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, LAST_MODIFIED_BY, HAS_ATTRIBUTES, STATUS, PARENT_ID)\n" +
             "VALUES\n" +
-            "    (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            "    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String INSERT_ATTRIBUTES =
             "INSERT ALL\n";
     public static final String INSERT_ATTRIBUTE =
@@ -147,7 +152,9 @@ public class SQLConstants {
             "    O.TENANT_ID = ? AND O.ID = ?";
     public static final String GET_ORGANIZATION_BY_ID =
             "SELECT\n" +
-            "    DISTINCT V.ID, V.NAME, V.DESCRIPTION, V.PARENT_ID, V.ACTIVE, V.LAST_MODIFIED, V.CREATED_TIME, V.HAS_ATTRIBUTES, V.ATTR_ID, V.ATTR_KEY, V.ATTR_VALUE\n" +
+            "    DISTINCT V.ID, V.NAME, V.DISPLAY_NAME, V.DESCRIPTION, V.PARENT_ID, V.PARENT_NAME, V.PARENT_DISPLAY_NAME,\n" +
+            "    V.STATUS, V.CREATED_TIME, V.LAST_MODIFIED, V.CREATED_BY, V.LAST_MODIFIED_BY, V.HAS_ATTRIBUTES, V.ATTR_ID,\n" +
+            "    V.ATTR_KEY, V.ATTR_VALUE\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +

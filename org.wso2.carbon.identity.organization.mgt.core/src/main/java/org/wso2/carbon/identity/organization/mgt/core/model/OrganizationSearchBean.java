@@ -30,14 +30,14 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ACTIVE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_KEY;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_VALUE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_KEY;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_VALUE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_STATUS_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_KEY_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_VALUE_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_KEY_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_VALUE_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_ID_COLUMN;
 
 public class OrganizationSearchBean implements SearchBean {
 
@@ -62,28 +62,28 @@ public class OrganizationSearchBean implements SearchBean {
         String dbQualifiedFieldName = null;
         switch (fieldName) {
             case ORGANIZATION_SEARCH_BEAN_FIELD_NAME:
-                dbQualifiedFieldName = VIEW_NAME;
+                dbQualifiedFieldName = VIEW_NAME_COLUMN;
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_DESCRIPTION:
-                dbQualifiedFieldName = VIEW_DESCRIPTION;
+                dbQualifiedFieldName = VIEW_DESCRIPTION_COLUMN;
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_ID:
-                dbQualifiedFieldName = VIEW_PARENT_ID;
+                dbQualifiedFieldName = VIEW_PARENT_ID_COLUMN;
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_ACTIVE:
-                dbQualifiedFieldName = VIEW_ACTIVE;
+                dbQualifiedFieldName = VIEW_STATUS_COLUMN;
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY:
-                dbQualifiedFieldName = VIEW_ATTR_KEY;
+                dbQualifiedFieldName = VIEW_ATTR_KEY_COLUMN;
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE:
-                dbQualifiedFieldName = VIEW_ATTR_VALUE;
+                dbQualifiedFieldName = VIEW_ATTR_VALUE_COLUMN;
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY:
-                dbQualifiedFieldName = VIEW_CONFIG_KEY;
+                dbQualifiedFieldName = VIEW_CONFIG_KEY_COLUMN;
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE:
-                dbQualifiedFieldName = VIEW_CONFIG_VALUE;
+                dbQualifiedFieldName = VIEW_CONFIG_VALUE_COLUMN;
                 break;
         }
         return dbQualifiedFieldName;

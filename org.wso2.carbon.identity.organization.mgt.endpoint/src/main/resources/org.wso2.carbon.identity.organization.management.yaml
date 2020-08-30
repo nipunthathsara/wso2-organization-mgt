@@ -747,11 +747,11 @@ definitions:
         type: string
       description:
         type: string
-      parent:
-        $ref: '#/definitions/Parent'
       status:
         type: string
         enum: [ACTIVE, DISABLED]
+      parent:
+        $ref: '#/definitions/Parent'
       meta:
         $ref: '#/definitions/Meta'
   #-----------------------------------------------------
@@ -792,7 +792,6 @@ definitions:
     type: object
     required:
       - id
-      - $ref
       - name
     properties:
       id:

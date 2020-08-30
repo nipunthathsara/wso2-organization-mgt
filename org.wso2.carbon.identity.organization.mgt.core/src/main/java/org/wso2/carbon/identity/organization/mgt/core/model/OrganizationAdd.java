@@ -22,13 +22,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class represents the Organization data retrieved in the Organization create request.
+ * This class represents the organization data retrieved in the 'organization create' request.
  */
 public class OrganizationAdd {
 
     private String name;
+    private String displayName;
     private String description;
-    private String parentId;
+    // Using 'Parent' instead of 'String parentId' here for performance improvement down the lane
+    private Parent parent = new Parent();
     private List<Attribute> attributes = new ArrayList<>();
     private List<UserStoreConfig> userStoreConfigs = new ArrayList<>();
 
@@ -40,12 +42,12 @@ public class OrganizationAdd {
         this.name = name;
     }
 
-    public String getParentId() {
-        return parentId;
+    public String getDisplayName() {
+        return displayName;
     }
 
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public String getDescription() {
@@ -54,6 +56,14 @@ public class OrganizationAdd {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Parent getParent() {
+        return parent;
+    }
+
+    public void setParent(Parent parent) {
+        this.parent = parent;
     }
 
     public List<Attribute> getAttributes() {

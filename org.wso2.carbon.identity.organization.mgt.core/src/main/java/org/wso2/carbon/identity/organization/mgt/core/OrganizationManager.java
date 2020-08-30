@@ -37,7 +37,7 @@ public interface OrganizationManager {
      * Add a new organization
      *
      * @param organizationAdd
-     * @param isImport 'true' if you want to create an OU in the underlying user store.
+     * @param isImport 'true' if you don't want to create an OU in the underlying user store.
      * @return
      * @throws OrganizationManagementException
      */
