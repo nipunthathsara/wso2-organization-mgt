@@ -168,7 +168,7 @@ public class SQLConstants {
             "    O.PARENT_ID = ?";
     public static final String GET_ALL_ORGANIZATION_IDS =
             "SELECT\n" +
-            "    DISTINCT ID, NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED\n" +
+            "    DISTINCT ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, LAST_MODIFIED_BY, STATUS, PARENT_NAME, PARENT_DISPLAY_NAME\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
@@ -185,12 +185,16 @@ public class SQLConstants {
             "SELECT\n" +
             "    DISTINCT V.ID,\n" +
             "    V.NAME,\n" +
+            "    V.DISPLAY_NAME,\n" +
             "    V.DESCRIPTION,\n" +
+            "    V.STATUS,\n" +
+            "    V.PARENT_ID, \n" +
+            "    V.PARENT_NAME, \n" +
+            "    V.PARENT_DISPLAY_NAME,\n" +
             "    V.CREATED_TIME,\n" +
             "    V.LAST_MODIFIED,\n" +
-            "    V.HAS_ATTRIBUTES,\n" +
-            "    V.ACTIVE,\n" +
-            "    V.PARENT_ID \n" +
+            "    V.CREATED_BY,\n" +
+            "    V.LAST_MODIFIED_BY\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +

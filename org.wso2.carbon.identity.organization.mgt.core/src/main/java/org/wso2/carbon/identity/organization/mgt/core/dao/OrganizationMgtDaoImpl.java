@@ -166,71 +166,73 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @Override
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit,
                                                String sortBy, String sortOrder) throws OrganizationManagementException {
-        return null;
 
-//        PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
-//        // Get organization IDs
-//        JdbcTemplate jdbcTemplate = getNewTemplate();
-//        List<String> orgIds;
-//        List<Organization> organizations = new ArrayList<>();
-//        try {
-//            orgIds = jdbcTemplate.executeQuery(placeholderSQL.getQuery(),
-//                    (resultSet, rowNumber) ->
-//                            resultSet.getString(VIEW_ID_COLUMN),
-//                    preparedStatement -> {
-//                        int parameterIndex = 0;
-//                        // Populate tenant ID
-//                        preparedStatement.setInt(++parameterIndex, tenantId);
-//                        // Populate generated conditions if any
-//                        for (int count = 0; placeholderSQL.getData() != null && count < placeholderSQL.getData().size(); count++) {
-//                            if (placeholderSQL.getData().get(count).getClass().equals(Integer.class)) {
-//                                preparedStatement.setInt(++parameterIndex, (Integer) placeholderSQL.getData().get(count));
-//                            } else if (placeholderSQL.getData().get(count).getClass().equals(Boolean.class)) {
-//                                int bool = ((Boolean) (placeholderSQL.getData().get(count))) ? 1 : 0;
-//                                preparedStatement.setInt(++parameterIndex, bool);
-//                            } else {
-//                                preparedStatement.setString(++parameterIndex, (String) placeholderSQL.getData().get(count));
-//                            }
-//                        }
-//                    });
-//        } catch (DataAccessException e) {
-//            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
-//                    "Error while retrieving organization IDs.", e);
-//        }
-//        if (orgIds.isEmpty()) {
-//            return organizations;
-//        }
-//
-//        // Get organizations by IDs
-//        String query = GET_ORGANIZATIONS_BY_IDS;
-//        StringJoiner sj = new StringJoiner(",");
-//        for (String id : orgIds) {
-//            sj.add("'" + id + "'");
-//        }
-//        // Can not perform this in a prepared statement due to character escaping.
-//        // This query only expects a list of organization IDs(server generated) to be retrieved. Hence, no security vulnerability.
-//        query = query.replace("?", sj.toString());
-//        validateQueryLength(query);
-//        try {
-//            organizations = jdbcTemplate.executeQuery(query,
-//                    (resultSet, rowNumber) -> {
-//                        Organization organization = new Organization();
-//                        organization.setId(resultSet.getString(VIEW_ID_COLUMN));
-//                        organization.setName(resultSet.getString(VIEW_NAME_COLUMN));
-//                        organization.setDescription(resultSet.getString(VIEW_DESCRIPTION_COLUMN));
-//                        organization.setParentId(resultSet.getString(VIEW_PARENT_ID_COLUMN));
-//                        organization.setActive(resultSet.getInt(VIEW_STATUS_COLUMN) == 1 ? true : false);
-//                        organization.setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED_COLUMN, calendar).toString());
-//                        organization.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME_COLUMN, calendar).toString());
-//                        return organization;
-//                    });
-//            // When sorting is required, organization IDs were fetched sorted from the DB. But the collected organizations may not.
-//            // Therefore, sort the organization as per the order of their IDs.
-//            return sortBy != null ? sortCollectedOrganizations(organizations, orgIds) : organizations;
-//        } catch (DataAccessException e) {
-//            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
-//                    "Error while constructing organizations by IDs", e);
-//        }
+        // TODO DB view incorrectly returns the parent name and parent display name fields. This causes a return in duplicate org IDs.
+        PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
+        // Get organization IDs
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        List<String> orgIds;
+        List<Organization> organizations = new ArrayList<>();
+        try {
+            orgIds = jdbcTemplate.executeQuery(placeholderSQL.getQuery(),
+                    (resultSet, rowNumber) ->
+                            resultSet.getString(VIEW_ID_COLUMN),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        // Populate tenant ID
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        // Populate generated conditions if any
+                        for (int count = 0; placeholderSQL.getData() != null && count < placeholderSQL.getData().size(); count++) {
+                            if (placeholderSQL.getData().get(count).getClass().equals(Integer.class)) {
+                                preparedStatement.setInt(++parameterIndex, (Integer) placeholderSQL.getData().get(count));
+                            } else {
+                                preparedStatement.setString(++parameterIndex, (String) placeholderSQL.getData().get(count));
+                            }
+                        }
+                    });
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
+                    "Error while retrieving organization IDs.", e);
+        }
+        if (orgIds.isEmpty()) {
+            return organizations;
+        }
+
+        // Get organizations by IDs
+        String query = GET_ORGANIZATIONS_BY_IDS;
+        StringJoiner sj = new StringJoiner(",");
+        for (String id : orgIds) {
+            sj.add("'" + id + "'");
+        }
+        // Can not perform this in a prepared statement due to character escaping.
+        // This query only expects a list of organization IDs(server generated) to be retrieved. Hence, no security vulnerability.
+        query = query.replace("?", sj.toString());
+        validateQueryLength(query);
+        try {
+            organizations = jdbcTemplate.executeQuery(query,
+                    (resultSet, rowNumber) -> {
+                        Organization organization = new Organization();
+                        organization.setId(resultSet.getString(VIEW_ID_COLUMN));
+                        organization.setName(resultSet.getString(VIEW_NAME_COLUMN));
+                        organization.setDisplayName(resultSet.getString(VIEW_DISPLAY_NAME_COLUMN));
+                        organization.setDescription(resultSet.getString(VIEW_DESCRIPTION_COLUMN));
+                        organization.getParent().setId(resultSet.getString(VIEW_PARENT_ID_COLUMN));
+                        organization.getParent().setName(resultSet.getString(VIEW_PARENT_NAME_COLUMN));
+                        organization.getParent().setDisplayName(resultSet.getString(VIEW_PARENT_DISPLAY_NAME_COLUMN));
+                        organization.setStatus(Organization.OrgStatus.valueOf(resultSet.getString(VIEW_STATUS_COLUMN)));
+                        organization.getMetadata().setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED_COLUMN, calendar).toString());
+                        organization.getMetadata().setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME_COLUMN, calendar).toString());
+                        organization.getMetadata().getCreatedBy().setId(resultSet.getString(VIEW_CREATED_BY_COLUMN));
+                        organization.getMetadata().getLastModifiedBy().setId(resultSet.getString(VIEW_LAST_MODIFIED_BY_COLUMN));
+                        return organization;
+                    });
+            // When sorting is required, organization IDs were fetched sorted from the DB. But the collected organizations may not.
+            // Therefore, sort the organization as per the order of their IDs.
+            return sortBy != null ? sortCollectedOrganizations(organizations, orgIds) : organizations;
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
+                    "Error while constructing organizations by IDs", e);
+        }
     }
 
     @Override

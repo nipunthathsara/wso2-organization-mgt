@@ -221,8 +221,8 @@ paths:
         - in: query
           name: sortBy
           type: string
-          enum: [name, lastModified, created]
-          description: Criteria to sort by. (name, lastModified, created)
+          enum: [name, description, displayName, status, lastModified, created, parentName, parentDisplayName]
+          description: Criteria to sort by. (name, description, displayName, status, lastModified, created, parentName, parentDisplayName)
         - in: query
           name: sortOrder
           type: string

@@ -39,9 +39,16 @@ public class OrganizationMgtConstants {
     public static final String PATCH_PATH_ORG_ATTRIBUTES = "/attributes/";
 
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_NAME = "name";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_DISPLAY_NAME = "displayName";
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_DESCRIPTION = "description";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_STATUS = "status";
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_ID = "parentId";
-    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_ACTIVE = "active";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_NAME = "parentName";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_DISPLAY_NAME = "parentDisplayName";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_CREATED = "created";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED = "lastModified";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_CREATED_BY_ID = "createdBy";
+    public static final String ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED_BY_ID = "lastModifiedBy";
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY = "attributeKey";
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE = "attributeValue";
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY = "userStoreConfigKey";

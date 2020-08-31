@@ -72,8 +72,12 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DISPLAY_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_DISPLAY_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_STATUS_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getLdapRootDn;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
@@ -90,7 +94,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
     private OrganizationMgtDao organizationMgtDao = OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao();
     private int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
     private String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
-    // TODO get scim id of the logged in user here.
+    // TODO get SCIM id of the logged in user here.
     private String authenticatedUserId = "dummyId";
 
     @Override
@@ -112,7 +116,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             createLdapDirectory(
                     tenantId,
                     organization.getUserStoreConfigs().get(USER_STORE_DOMAIN).getValue(),
-                    organization.getUserStoreConfigs().get(DN).getValue());
+                    organization.getUserStoreConfigs().get(DN).getValue()
+            );
             if (log.isDebugEnabled()) {
                 log.debug("Creating LDAP subdirectory for the organization id : " + organization.getId());
             }
@@ -146,6 +151,28 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     @Override
+    public List<Organization> getOrganizations(Condition condition, int offset, int limit, String sortBy, String sortOrder)
+            throws OrganizationManagementException {
+
+        // Validate pagination and sorting parameters
+        sortBy = getMatchingColumnNameForSortingParameter(sortBy);
+        List<Organization> organizations = organizationMgtDao
+                .getOrganizations(condition, tenantId, offset, limit, sortBy, sortOrder);
+        // Populate derivable information of the organizations
+        for (Organization organization : organizations) {
+            if (organization.getParent().getId() != ROOT) {
+                organization.getParent().set$ref(
+                        String.format(ORGANIZATION_RESOURCE_BASE_PATH, tenantDomain, organization.getParent().getId()));
+            }
+            organization.getMetadata().getCreatedBy().set$ref(
+                    String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, organization.getMetadata().getCreatedBy().getId()));
+            organization.getMetadata().getLastModifiedBy().set$ref(
+                    String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, organization.getMetadata().getLastModifiedBy().getId()));
+        }
+        return organizations;
+    }
+
+    @Override
     public String getOrganizationIdByName(String organizationName) throws OrganizationManagementException {
 
         // Throwing server exceptions as this method has not being exposed via an endpoint.
@@ -159,15 +186,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     "Organization name " + organizationName + " doesn't exist in this tenant " + tenantId);
         }
         return organizationId;
-    }
-
-    @Override
-    public List<Organization> getOrganizations(Condition condition, int offset, int limit, String sortBy, String sortOrder)
-            throws OrganizationManagementException {
-
-        // Validate pagination and sorting parameters
-        sortBy = getMatchingColumnNameForSortingParameter(sortBy);
-        return organizationMgtDao.getOrganizations(condition, tenantId, offset, limit, sortBy, sortOrder);
     }
 
     @Override
@@ -436,15 +454,24 @@ public class OrganizationManagerImpl implements OrganizationManager {
         switch (sortBy.trim().toLowerCase()) {
             case "name":
                 return VIEW_NAME_COLUMN;
+            case "displayname":
+                return VIEW_DISPLAY_NAME_COLUMN;
             case "description":
                 return VIEW_DESCRIPTION_COLUMN;
             case "createdtime":
                 return VIEW_CREATED_TIME_COLUMN;
             case "lastmodified":
                 return VIEW_LAST_MODIFIED_COLUMN;
+            case "status":
+                return VIEW_STATUS_COLUMN;
+            case "parentname":
+                return VIEW_PARENT_NAME_COLUMN;
+            case "parentdisplayname":
+                return VIEW_PARENT_DISPLAY_NAME_COLUMN;
             default:
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
-                        "Invalid sort parameter. 'sortOrder' [ASC | DESC] and 'sortBy' [name | description | createdTime | lastModified ]");
+                        "Invalid sort parameter. 'sortOrder' [ASC | DESC] and 'sortBy' [name | description |" +
+                                " displayName | status | lastModified | created | parentName | parentDisplayName]");
         }
     }
 

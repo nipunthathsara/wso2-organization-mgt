@@ -55,9 +55,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.lang.Enum.valueOf;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.STARTS_WITH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_ACTIVE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_STATUS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.LIKE_SYMBOL;
 
 /**
@@ -172,19 +174,33 @@ public class OrganizationMgtEndpointUtil {
     public static List<BasicOrganizationDTO> getBasicOrganizationDTOsFromOrganizations(List<Organization> organizations) {
 
         List<BasicOrganizationDTO> basicOrganizationDTOs = new ArrayList<>();
-//        for (Organization organization : organizations) {
-//            BasicOrganizationDTO basicOrganization = new BasicOrganizationDTO();
-//            basicOrganization.setId(organization.getId());
-//            basicOrganization.setName(organization.getName());
-//            if (organization.getDescription() != null) {
-//                basicOrganization.setDescription(organization.getDescription());
-//            }
-//            basicOrganization.setParentId(organization.getParentId());
-//            basicOrganization.setActive(organization.isActive());
-//            basicOrganization.setLastModified(organization.getLastModified());
-//            basicOrganization.setCreated(organization.getCreated());
-//            basicOrganizationDTOs.add(basicOrganization);
-//        }
+        for (Organization org : organizations) {
+            BasicOrganizationDTO basicOrg = new BasicOrganizationDTO();
+            basicOrg.setId(org.getId());
+            basicOrg.setName(org.getName());
+            basicOrg.setDisplayName(org.getDisplayName());
+            basicOrg.setDescription(org.getDescription());
+            basicOrg.setStatus(BasicOrganizationDTO.StatusEnum.valueOf(org.getStatus().toString()));
+            // Set parent
+            ParentDTO parentDTO = new ParentDTO();
+            parentDTO.setId(org.getParent().getId());
+            parentDTO.setName(org.getParent().getName());
+            parentDTO.setDisplayName(org.getParent().getDisplayName());
+            parentDTO.setRef(org.getParent().get$ref());
+            basicOrg.setParent(parentDTO);
+            // Set metadata
+            MetaDTO metaDTO = new MetaDTO();
+            metaDTO.setCreatedBy(new MetaUserDTO());
+            metaDTO.setLastModifiedBy(new MetaUserDTO());
+            metaDTO.setCreated(org.getMetadata().getCreated());
+            metaDTO.setLastModified(org.getMetadata().getLastModified());
+            metaDTO.getCreatedBy().setId(org.getMetadata().getCreatedBy().getId());
+            metaDTO.getCreatedBy().setRef(org.getMetadata().getCreatedBy().get$ref());
+            metaDTO.getLastModifiedBy().setId(org.getMetadata().getLastModifiedBy().getId());
+            metaDTO.getLastModifiedBy().setRef(org.getMetadata().getLastModifiedBy().get$ref());
+            basicOrg.setMeta(metaDTO);
+            basicOrganizationDTOs.add(basicOrg);
+        }
         return basicOrganizationDTOs;
     }
 
@@ -308,10 +324,7 @@ public class OrganizationMgtEndpointUtil {
                 return new PrimitiveCondition(
                         primitiveStatement.getProperty(),
                         getPrimitiveOperatorFromOdata(primitiveStatement.getCondition()),
-                        // By default the class tye would be String. Hence, explicit casting for Boolean 'active' field
-                        primitiveStatement.getProperty().equals(ORGANIZATION_SEARCH_BEAN_FIELD_ACTIVE) ?
-                                Boolean.parseBoolean(primitiveStatement.getValue().toString()) :
-                                value
+                        primitiveStatement.getValue()
                 );
             }
             return null;
