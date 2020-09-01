@@ -166,6 +166,7 @@ public class SQLConstants {
             "    IDN_ORG O\n" +
             "WHERE\n" +
             "    O.PARENT_ID = ?";
+    // ORDER BY with DISTINCT requires to have the columns in the SELECT clause.
     public static final String GET_ALL_ORGANIZATION_IDS =
             "SELECT\n" +
             "    DISTINCT ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, LAST_MODIFIED_BY, STATUS, PARENT_NAME, PARENT_DISPLAY_NAME\n" +

@@ -138,7 +138,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     "Organization id " + organizationId + " doesn't exist in this tenant : " + tenantId);
         }
         // Set derivable attributes
-        if (organization.getParent().getId() != ROOT) {
+        if (!ROOT.equals(organization.getParent().getId())) {
             organization.getParent().set$ref(
                     String.format(ORGANIZATION_RESOURCE_BASE_PATH, tenantDomain, organization.getParent().getId()));
         }
@@ -160,7 +160,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 .getOrganizations(condition, tenantId, offset, limit, sortBy, sortOrder);
         // Populate derivable information of the organizations
         for (Organization organization : organizations) {
-            if (organization.getParent().getId() != ROOT) {
+            if (!ROOT.equals(organization.getParent().getId())) {
                 organization.getParent().set$ref(
                         String.format(ORGANIZATION_RESOURCE_BASE_PATH, tenantDomain, organization.getParent().getId()));
             }
@@ -352,7 +352,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organizationAdd.getParent().setId(parentId);
         // Load the parent organization, if not 'ROOT'
         Organization parentOrg = null;
-        if (parentId != ROOT) {
+        if (!ROOT.equals(parentId)) {
             parentOrg = getOrganization(parentId);
             // populate parent's properties in the 'OrganizationAdd' object to avoid duplicate DB calls down the lane
             organizationAdd.getParent().setName(parentOrg.getName());
@@ -363,7 +363,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             organizationAdd.getParent().setDisplayName(ROOT);
         }
         // Check if the parent organization is active for non ROOT organizations
-        if (parentId != ROOT && parentOrg.getStatus() != Organization.OrgStatus.ACTIVE) {
+        if (!ROOT.equals(parentId) && parentOrg.getStatus() != Organization.OrgStatus.ACTIVE) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST, "Defined parent organization : "
                     + parentId + " is not ACTIVE");
         }
@@ -458,7 +458,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 return VIEW_DISPLAY_NAME_COLUMN;
             case "description":
                 return VIEW_DESCRIPTION_COLUMN;
-            case "createdtime":
+            case "created":
                 return VIEW_CREATED_TIME_COLUMN;
             case "lastmodified":
                 return VIEW_LAST_MODIFIED_COLUMN;

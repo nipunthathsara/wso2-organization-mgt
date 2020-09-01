@@ -167,7 +167,6 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit,
                                                String sortBy, String sortOrder) throws OrganizationManagementException {
 
-        // TODO DB view incorrectly returns the parent name and parent display name fields. This causes a return in duplicate org IDs.
         PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
         // Get organization IDs
         JdbcTemplate jdbcTemplate = getNewTemplate();
