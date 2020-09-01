@@ -79,7 +79,7 @@ ON
     O.ID = C.ORG_ID) K, 
 IDN_ORG N
 WHERE
-    K.PARENT_ID = N.ID OR (N.PARENT_ID = 'ROOT'AND K.ID = N.ID)
+    K.PARENT_ID = N.ID OR (N.PARENT_ID = 'ROOT' AND K.ID = N.ID)
 ```
 
 ```

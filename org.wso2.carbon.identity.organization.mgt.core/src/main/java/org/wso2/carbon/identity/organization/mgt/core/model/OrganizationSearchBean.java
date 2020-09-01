@@ -56,9 +56,16 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 public class OrganizationSearchBean implements SearchBean {
 
     private String name;
+    private String displayName;
     private String description;
+    private String status;
     private String parentId;
-    private Boolean active;
+    private String parentName;
+    private String parentDisplayName;
+    private String created;
+    private String lastModified;
+    private String createdBy;
+    private String lastModifiedBy;
     private String attributeKey;
     private String attributeValue;
     private String userStoreConfigKey;
@@ -147,12 +154,28 @@ public class OrganizationSearchBean implements SearchBean {
         this.name = name;
     }
 
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getParentId() {
@@ -163,12 +186,52 @@ public class OrganizationSearchBean implements SearchBean {
         this.parentId = parentId;
     }
 
-    public Boolean isActive() {
-        return active;
+    public String getParentName() {
+        return parentName;
     }
 
-    public void setActive(Boolean active) {
-        this.active = active;
+    public void setParentName(String parentName) {
+        this.parentName = parentName;
+    }
+
+    public String getParentDisplayName() {
+        return parentDisplayName;
+    }
+
+    public void setParentDisplayName(String parentDisplayName) {
+        this.parentDisplayName = parentDisplayName;
+    }
+
+    public String getCreated() {
+        return created;
+    }
+
+    public void setCreated(String created) {
+        this.created = created;
+    }
+
+    public String getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(String lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getLastModifiedBy() {
+        return lastModifiedBy;
+    }
+
+    public void setLastModifiedBy(String lastModifiedBy) {
+        this.lastModifiedBy = lastModifiedBy;
     }
 
     public String getAttributeKey() {
