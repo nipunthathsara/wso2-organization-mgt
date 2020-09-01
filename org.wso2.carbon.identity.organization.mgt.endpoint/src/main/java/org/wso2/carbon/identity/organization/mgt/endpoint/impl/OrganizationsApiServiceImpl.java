@@ -82,7 +82,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
         try {
             if ((limit != null && limit < 1) || (offset != null && offset < 0)) {
-                handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
+                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
                         "Invalid pagination arguments. 'limit' should be greater than 0 and 'offset' should be greater than -1");
             }
             // If pagination parameters not defined in the request, set them to -1
