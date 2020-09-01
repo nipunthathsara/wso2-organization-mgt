@@ -56,7 +56,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_RESOURCE_BASE_PATH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
@@ -538,7 +537,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                         "ACTIVE field could only contain 'true' or 'false'. Provided : " + value);
             }
             // You can't deactivate an organization having any ACTIVE child
-            if (path.equals(PATCH_PATH_ORG_ACTIVE) && value.equals("false") && !canDeactivate(organizationId)) {
+            if (path.equals(PATCH_PATH_ORG_ACTIVE) && value.equals("false") && !canDisable(organizationId)) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                         "Error deactivating organization : " + organizationId + " as it has one or more ACTIVE organization/s");
             }
@@ -614,24 +613,22 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     /**
-     * To deactivate an organization, it shouldn't have any 'ACTIVE' organizations down in the hierarchy.
+     * To disable an organization, it shouldn't have any 'ACTIVE' organizations down in the hierarchy.
      *
      * @param organizationId
      * @return
      * @throws OrganizationManagementException
      */
-    private boolean canDeactivate(String organizationId) throws OrganizationManagementException {
+    private boolean canDisable(String organizationId) throws OrganizationManagementException {
 
         List<String> children = getChildOrganizationIds(organizationId);
         for (String child : children) {
             Organization organization = getOrganization(child);
             if (organization.getStatus() == Organization.OrgStatus.ACTIVE) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Active child organization : " + organization.getId());
+                    log.debug("Active child organization detected : " + organization.getId());
                 }
                 return false;
-            } else {
-                return canDeactivate(organization.getId());
             }
         }
         return true;
