@@ -79,14 +79,14 @@ paths:
           https://localhost:9443/api/identity/organization-mgt/v1.0/organizations \
           -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
           -H 'Content-Type: application/json' \
-          -H 'Postman-Token: 406d58dd-e8f4-4b62-a9be-d6e20af07e2b' \
+          -H 'Postman-Token: 7db063fc-0728-4397-b928-1390909e7159' \
           -H 'accept: application/json' \
           -H 'cache-control: no-cache' \
           -d '{
             "name": "Hesei",
             "displayName": "Hesei constructions",
-            "description": "Partner organization",
-            "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+            "parentId": "06c1f4e2-3339-44e4-a825-96585e3653b1",
+            "description": "EU organization",
             "attributes": [
                 {
                     "key": "Type",
@@ -110,29 +110,29 @@ paths:
         }'
       x-wso2-response: |
         {
-           "id":"9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
-           "name":"Hesei",
-           "displayName":"Hesei constructions",
-           "description":"Partner organization",
-           "parent":{
-              "id":"2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-              "$ref":"/t/api/identity/organization-mgt/v1.0/organizations/2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-              "name":"MAGA",
-              "displayName":"MAGA Constructor"
-           },
-           "status":"ACTIVE",
-           "meta":{
-              "created":"2020-08-17T16:00:55.156Z",
-              "lastModified":"2020-08-17T16:00:55.156Z",
-              "createdBy":{
-                 "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
-                 "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
-              },
-              "lastModifiedBy":{
-                 "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
-                 "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
-              }
-           }
+            "id": "dd02ecdf-a228-4d75-a53e-3a6650177bc9",
+            "name": "Hesei",
+            "displayName": "Hesei constructions",
+            "description": "EU organization",
+            "status": "ACTIVE",
+            "parent": {
+                "id": "06c1f4e2-3339-44e4-a825-96585e3653b1",
+                "ref": "/t/carbon.super/api/identity/organization-mgt/v1.0/organizations/06c1f4e2-3339-44e4-a825-96585e3653b1",
+                "name": "MAGA",
+                "displayName": "MAGA constructions"
+            },
+            "meta": {
+                "created": "2020-09-01T18:37:44.199Z",
+                "lastModified": "2020-09-01T18:37:44.199Z",
+                "createdBy": {
+                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
+                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
+                },
+                "lastModifiedBy": {
+                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
+                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
+                }
+            }
         }
       summary: |
         Create a new organization.
@@ -174,41 +174,45 @@ paths:
         curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations?$filter=<URL_ENCODED_SEARCH_QUERY>offset=<OFFSET>&limit=<LIMIT>&sortBy=<SORT_BY_FIELD>&sortOrder=<SORT_ORDER>" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
       x-wso2-curl: |
         curl -X GET \
-          'https://localhost:9443/api/identity/organization-mgt/v1.0/organizations?offset=0&limit=1&$filter=name%20eq%20%27Hesei%27%20and%20description%20eq%20%27Partner%20organization%27&sortBy=lastModified&sortOrder=ASC' \
+          'https://localhost:9443/api/identity/organization-mgt/v1.0/organizations?offset=0&limit=10&sortBy=parentDisplayName&sortOrder=ASC&$filter=displayName%20eq%20%27Hesei%20constructions%27%20and%20status%20ne%20%27DISABLED%27%20and%20attributeKey%20eq%20%27Exp%27%20and%20attributeValue%20eq%20%272021%27' \
           -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
-          -H 'Postman-Token: 0df008ca-f586-497f-92b1-ffc96ebc32e7' \
+          -H 'Postman-Token: 8eb7c266-7341-4252-869d-d4d51759f7f5' \
           -H 'accept: application/json' \
           -H 'cache-control: no-cache'
       x-wso2-response: |
         [
-           {
-              "id":"9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
-              "name":"Hesei",
-              "displayName":"Hesei constructions",
-              "description":"Partner organization",
-              "parent":{
-                 "id":"2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-                 "$ref":"/t/api/identity/organization-mgt/v1.0/organizations/2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-                 "name":"MAGA",
-                 "displayName":"MAGA Constructor"
-              },
-              "status":"ACTIVE",
-              "meta":{
-                  "created":"2020-08-17T16:00:55.156Z",
-                  "lastModified":"2020-08-17T16:00:55.156Z",
-                  "createdBy":{
-                     "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
-                     "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
-                  },
-                  "lastModifiedBy":{
-                     "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
-                     "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
-                  }
-              }
-           }
+            {
+                "id": "dd02ecdf-a228-4d75-a53e-3a6650177bc9",
+                "name": "Hesei",
+                "displayName": "Hesei constructions",
+                "description": "EU organization",
+                "status": "ACTIVE",
+                "parent": {
+                    "id": "06c1f4e2-3339-44e4-a825-96585e3653b1",
+                    "ref": "/t/carbon.super/api/identity/organization-mgt/v1.0/organizations/06c1f4e2-3339-44e4-a825-96585e3653b1",
+                    "name": "MAGA",
+                    "displayName": "MAGA constructions"
+                },
+                "meta": {
+                    "created": "2020-09-02 00:07:44.199",
+                    "lastModified": "2020-09-02 00:07:44.199",
+                    "createdBy": {
+                        "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
+                        "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
+                    },
+                    "lastModifiedBy": {
+                        "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
+                        "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
+                    }
+                }
+            }
         ]
       summary: |
         Retrieve organizations created for this tenant which matches the defined search criteria, if any.
+        Allowed search criteria (name, displayName, description, status, parentId, parentName, parentName, parentDisplayName, created, lastModified, createdBy, lastModifiedBy, attributeKey, attributeValue, userStoreConfigKey, userStoreConfigValue).
+        Allowed operators (eq, ne, lt, le, gt, ge).
+        Allowed complex condition operators (and, or).
+        $filter query param value should be URL encoded.
       parameters:
         - in: query
           name: offset
@@ -264,44 +268,44 @@ paths:
           -H 'cache-control: no-cache'
       x-wso2-response: |
         {
-           "id":"9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
-           "name":"Hesei",
-           "displayName":"Hesei constructions",
-           "description":"Partner organization",
-           "parent":{
-              "id":"2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-              "$ref":"/t/api/identity/organization-mgt/v1.0/organizations/2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-              "name":"MAGA",
-              "displayName":"MAGA Constructor"
-           },
-           "status":"ACTIVE",
-           "meta":{
-                  "created":"2020-08-17T16:00:55.156Z",
-                  "lastModified":"2020-08-17T16:00:55.156Z",
-                  "createdBy":{
-                     "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
-                     "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5",
-                     "username":"john"
-                  },
-                  "lastModifiedBy":{
-                     "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
-                     "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5",
-                     "username":"john"
-                  }
-           },
-           "attributes":[
-              {
-                 "key":"Type",
-                 "value":"partner"
-              },
-              {
-                 "key":"Exp",
-                 "value":"2021"
-              }
-           ]
+            "id": "dd02ecdf-a228-4d75-a53e-3a6650177bc9",
+            "name": "Hesei",
+            "displayName": "Hesei constructions",
+            "description": "EU organization",
+            "status": "ACTIVE",
+            "parent": {
+                "id": "06c1f4e2-3339-44e4-a825-96585e3653b1",
+                "ref": "/t/carbon.super/api/identity/organization-mgt/v1.0/organizations/06c1f4e2-3339-44e4-a825-96585e3653b1",
+                "name": "MAGA",
+                "displayName": "MAGA constructions"
+            },
+            "meta": {
+                "created": "2020-09-02 00:07:44.199",
+                "lastModified": "2020-09-02 00:07:44.199",
+                "createdBy": {
+                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
+                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c",
+                    "username": john
+                },
+                "lastModifiedBy": {
+                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
+                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c",
+                    "username": john
+                }
+            },
+            "attributes": [
+                {
+                    "key": "Type",
+                    "value": "partner"
+                },
+                {
+                    "key": "Exp",
+                    "value": "2021"
+                }
+            ]
         }
       summary: |
-        Get an existing organization identified by the organization Id.
+        Get an existing organization, identified by the organization Id.
       parameters:
         - name: organization-id
           in: path
@@ -617,14 +621,14 @@ paths:
           https://localhost:9443/api/identity/organization-mgt/v1.0/organizations \
           -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
           -H 'Content-Type: application/json' \
-          -H 'Postman-Token: 406d58dd-e8f4-4b62-a9be-d6e20af07e2b' \
+          -H 'Postman-Token: 7db063fc-0728-4397-b928-1390909e7159' \
           -H 'accept: application/json' \
           -H 'cache-control: no-cache' \
           -d '{
             "name": "Hesei",
             "displayName": "Hesei constructions",
-            "description": "Partner organization",
-            "parentId": "2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
+            "parentId": "06c1f4e2-3339-44e4-a825-96585e3653b1",
+            "description": "EU organization",
             "attributes": [
                 {
                     "key": "Type",
@@ -648,25 +652,29 @@ paths:
         }'
       x-wso2-response: |
         {
-           "id":"9b7ae6c6-292d-4e10-a184-29fd828bdf6d",
-           "name":"Hesei",
-           "displayName":"Hesei constructions",
-           "description":"Partner organization",
-           "parent":{
-              "id":"2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-              "$ref":"/t/api/identity/organization-mgt/v1.0/organizations/2814efa6-5a13-4fe4-94d6-7b6e6648dabc",
-              "name":"MAGA",
-              "displayName":"MAGA Constructor"
-           },
-           "status":"ACTIVE",
-           "meta":{
-              "created":"2020-08-17T16:00:55.156Z",
-              "lastModified":"2020-08-17T16:00:55.156Z",
-              "createdBy":{
-                 "id":"39425d75-e8a1-414d-86e5-c99144af02e5",
-                 "$ref":"/scim2/Users/39425d75-e8a1-414d-86e5-c99144af02e5"
-              }
-           }
+            "id": "dd02ecdf-a228-4d75-a53e-3a6650177bc9",
+            "name": "Hesei",
+            "displayName": "Hesei constructions",
+            "description": "EU organization",
+            "status": "ACTIVE",
+            "parent": {
+                "id": "06c1f4e2-3339-44e4-a825-96585e3653b1",
+                "ref": "/t/carbon.super/api/identity/organization-mgt/v1.0/organizations/06c1f4e2-3339-44e4-a825-96585e3653b1",
+                "name": "MAGA",
+                "displayName": "MAGA constructions"
+            },
+            "meta": {
+                "created": "2020-09-01T18:37:44.199Z",
+                "lastModified": "2020-09-01T18:37:44.199Z",
+                "createdBy": {
+                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
+                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
+                },
+                "lastModifiedBy": {
+                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
+                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
+                }
+            }
         }
       summary: |
         Create an organization without changing the underlying LDAP.
