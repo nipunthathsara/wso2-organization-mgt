@@ -162,12 +162,12 @@ public class OrganizationMgtEndpointUtil {
     public static List<UserStoreConfigDTO> getUserStoreConfigDTOsFromUserStoreConfigs(Collection<UserStoreConfig> configs) {
 
         List<UserStoreConfigDTO> configDTOs = new ArrayList<>();
-//        for (UserStoreConfig config : configs) {
-//            UserStoreConfigDTO configDTO = new UserStoreConfigDTO();
-//            configDTO.setKey(config.getKey());
-//            configDTO.setValue(config.getValue());
-//            configDTOs.add(configDTO);
-//        }
+        for (UserStoreConfig config : configs) {
+            UserStoreConfigDTO configDTO = new UserStoreConfigDTO();
+            configDTO.setKey(UserStoreConfigDTO.KeyEnum.valueOf(config.getKey()));
+            configDTO.setValue(config.getValue());
+            configDTOs.add(configDTO);
+        }
         return configDTOs;
     }
 

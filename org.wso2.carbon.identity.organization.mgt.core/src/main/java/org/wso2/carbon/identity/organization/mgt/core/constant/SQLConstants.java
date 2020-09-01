@@ -88,7 +88,7 @@ public class SQLConstants {
     public static final String VIEW_CONFIG_KEY_COLUMN = "CONFIG_KEY";
     public static final String VIEW_CONFIG_VALUE_COLUMN = "CONFIG_VALUE";
     public static final String LIKE_SYMBOL = "%";
-    // View returns null for non matching entries upon join. Hence, NULL check.
+    // View returns null for non matching entries upon join. Hence, the NULL check.
     // View returns duplicate CONFIG_IDs if the  #attributes > #configs. Hence, DISTINCT
     public static final String GET_USER_STORE_CONFIGS_BY_ORG_ID =
             "SELECT\n" +

@@ -55,6 +55,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 
 public class OrganizationSearchBean implements SearchBean {
 
+    // Allowed search criteria
     private String name;
     private String displayName;
     private String description;
@@ -62,6 +63,7 @@ public class OrganizationSearchBean implements SearchBean {
     private String parentId;
     private String parentName;
     private String parentDisplayName;
+    //TODO fix time search : Caused by: java.sql.SQLDataException: ORA-01843: not a valid month
     private String created;
     private String lastModified;
     private String createdBy;
@@ -142,7 +144,12 @@ public class OrganizationSearchBean implements SearchBean {
     public PrimitiveCondition mapPrimitiveCondition(PrimitiveCondition primitiveCondition)
             throws PrimitiveConditionValidationException {
 
-        //TODO try to convert timestamps and boolean queries here.
+        //TODO Convert '2020-09-01 15:54:52.905' to '01-SEP-20 10.06.17.867000000 AM'
+        if (ORGANIZATION_SEARCH_BEAN_FIELD_CREATED.equals(primitiveCondition.getProperty()) ||
+                ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED.equals(primitiveCondition.getProperty()) &&
+                primitiveCondition.getValue() != null) {
+            primitiveCondition.setValue(java.sql.Timestamp.valueOf(primitiveCondition.getValue() + "0000000").toString());
+        }
         return primitiveCondition;
     }
 
