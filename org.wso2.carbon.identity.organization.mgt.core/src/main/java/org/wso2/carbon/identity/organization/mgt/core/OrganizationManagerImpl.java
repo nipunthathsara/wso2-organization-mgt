@@ -52,6 +52,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
@@ -175,14 +176,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
     @Override
     public String getOrganizationIdByName(String organizationName) throws OrganizationManagementException {
 
-        // Throwing server exceptions as this method has not being exposed via an endpoint.
         if (StringUtils.isBlank(organizationName)) {
-            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR, "Provided organization name is empty.");
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST, "Provided organization name is empty.");
         }
         organizationName = organizationName.trim();
         String organizationId = organizationMgtDao.getOrganizationIdByName(tenantId, organizationName);
         if (organizationId == null) {
-            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR,
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST,
                     "Organization name " + organizationName + " doesn't exist in this tenant " + tenantId);
         }
         return organizationId;

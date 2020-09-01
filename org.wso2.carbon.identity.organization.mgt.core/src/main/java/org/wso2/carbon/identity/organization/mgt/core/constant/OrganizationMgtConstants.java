@@ -68,6 +68,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST("ORGMGT_00009", "Invalid patch organization config request : %s"),
         ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS("ORGMGT_00010", "Invalid user store configurations : %s"),
         ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED("ORGMGT_00011", "Request caused an SQL query limit exceed : %s"),
+        ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST("ORGMGT_00012", "Invalid get organization Id by name request : %s"),
         // Server errors (ORGMGT_00020-ORGMGT_00040)
         ERROR_CODE_ORGANIZATION_ADD_ERROR("ORGMGT_00020", "Error while creating the organization : %s"),
         ERROR_CODE_ORGANIZATION_IMPORT_ERROR("ORGMGT_00021", "Error while importing the organization : %s"),
@@ -82,7 +83,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_NAME_ERROR("ORGMGT_00030", "Error while checking if the organization name exist : %s"),
         ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR("ORGMGT_00031", "User store configurations error : %s"),
         ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORGMGT_00032", "Error while checking if the attribute exist : %s"),
-        ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR("ORGMGT_000333", "Error while retrieving organization Id by name : %s"),
+        ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR("ORGMGT_00033", "Error while retrieving organization Id by name : %s"),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 
