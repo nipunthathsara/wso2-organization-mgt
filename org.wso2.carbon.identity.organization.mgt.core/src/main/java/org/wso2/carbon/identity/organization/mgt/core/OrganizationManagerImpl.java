@@ -621,6 +621,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
      */
     private boolean canDisable(String organizationId) throws OrganizationManagementException {
 
+        // TODO check for enabled users
         List<String> children = getChildOrganizationIds(organizationId);
         for (String child : children) {
             Organization organization = getOrganization(child);

@@ -43,7 +43,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsPost(OrganizationAddDTO organizationAddDTO) {
-
+        // TODO remove 'null' fields from the response
         try {
             Organization organization = getOrganizationManager().addOrganization(
                     getOrganizationAddFromDTO(organizationAddDTO),
