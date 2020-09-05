@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
@@ -144,4 +145,13 @@ public interface OrganizationMgtDao {
      */
     boolean isAttributeExistByKey(int tenantId, String organizationId, String attributeKey)
             throws OrganizationManagementException;
+
+    /**
+     * Update lastModified and lastModifiedBy fields of the organization identified by the provided ID.
+     *
+     * @param organizationId
+     * @param metadata
+     * @throws OrganizationManagementException
+     */
+    void modifyOrganizationMetadata(String organizationId, Metadata metadata) throws OrganizationManagementException;
 }

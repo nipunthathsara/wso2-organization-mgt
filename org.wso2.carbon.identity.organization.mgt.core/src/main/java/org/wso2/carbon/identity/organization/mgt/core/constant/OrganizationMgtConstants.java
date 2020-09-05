@@ -28,14 +28,16 @@ public class OrganizationMgtConstants {
     public static final String DN_PLACE_HOLDER = "ou=%s,";
     public static final String SCIM2_USER_RESOURCE_BASE_PATH = "/t/%s/scim2/Users/%s";
     public static final String ORGANIZATION_RESOURCE_BASE_PATH = "/t/%s/api/identity/organization-mgt/v1.0/organizations/%s";
+    public static final String ATTRIBUTE_VALIDATOR_PROPERTIES_FILE_NAME = "org-mgt-attributes.properties";
 
     public static final String PATCH_OP_ADD = "add";
     public static final String PATCH_OP_REMOVE = "remove";
     public static final String PATCH_OP_REPLACE = "replace";
     public static final String PATCH_PATH_ORG_NAME = "/name";
+    public static final String PATCH_PATH_ORG_DISPLAY_NAME = "/displayName";
     public static final String PATCH_PATH_ORG_DESCRIPTION = "/description";
-    public static final String PATCH_PATH_ORG_ACTIVE = "/active";
-    public static final String PATCH_PATH_ORG_PARENT_ID = "/parentId";
+    public static final String PATCH_PATH_ORG_STATUS = "/status";
+    public static final String PATCH_PATH_ORG_PARENT_ID = "/parent/id";
     public static final String PATCH_PATH_ORG_ATTRIBUTES = "/attributes/";
 
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_NAME = "name";
@@ -69,6 +71,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS("ORGMGT_00010", "Invalid user store configurations : %s"),
         ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED("ORGMGT_00011", "Request caused an SQL query limit exceed : %s"),
         ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST("ORGMGT_00012", "Invalid get organization Id by name request : %s"),
+        ERROR_CODE_INVALID_ATTRIBUTES("ORGMGT_00013", "Attribute validation failed : %s"),
         // Server errors (ORGMGT_00020-ORGMGT_00040)
         ERROR_CODE_ORGANIZATION_ADD_ERROR("ORGMGT_00020", "Error while creating the organization : %s"),
         ERROR_CODE_ORGANIZATION_IMPORT_ERROR("ORGMGT_00021", "Error while importing the organization : %s"),
@@ -84,6 +87,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR("ORGMGT_00031", "User store configurations error : %s"),
         ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORGMGT_00032", "Error while checking if the attribute exist : %s"),
         ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR("ORGMGT_00033", "Error while retrieving organization Id by name : %s"),
+        ERROR_CODE_ATTRIBUTE_VALIDATION_ERROR("ORGMGT_00034", "Error while validating attributes : %s"),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

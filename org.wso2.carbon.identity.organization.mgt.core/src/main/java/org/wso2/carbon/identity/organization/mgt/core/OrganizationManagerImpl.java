@@ -28,6 +28,8 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
+import org.wso2.carbon.identity.organization.mgt.core.model.MetaUser;
+import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
@@ -60,7 +62,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ACTIVE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DISPLAY_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_STATUS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DESCRIPTION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_NAME;
@@ -104,6 +107,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
         logOrganizationAddObject(organizationAdd);
         validateAddOrganizationRequest(organizationAdd);
         Organization organization = generateOrganizationFromRequest(organizationAdd);
+        // Validate attributes
+        for (Map.Entry entry : organization.getAttributes().entrySet()) {
+            OrganizationMgtDataHolder.getInstance().getAttributeValidator().validateAttribute((Attribute) entry.getValue());
+        }
         organization.setId(generateUniqueID());
         organization.setTenantId(tenantId);
         organization.getMetadata().getCreatedBy().setId(authenticatedUserId);
@@ -200,9 +207,15 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     "Organization Id " + organizationId + " doesn't exist in this tenant " + tenantId);
         }
         validateOrganizationPatchOperations(operations, organizationId);
+        validatePatchingAttributes(operations);
         for (Operation operation : operations) {
             organizationMgtDao.patchOrganization(organizationId, operation);
         }
+        // Update metadata
+        Metadata metadata = new Metadata();
+        metadata.setLastModifiedBy(new MetaUser());
+        metadata.getLastModifiedBy().setId(authenticatedUserId);
+        organizationMgtDao.modifyOrganizationMetadata(organizationId, metadata);
     }
 
     @Override
@@ -277,6 +290,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
         for (Operation operation : operations) {
             organizationMgtDao.patchUserStoreConfigs(organizationId, operation);
         }
+        // Update metadata
+        Metadata metadata = new Metadata();
+        metadata.setLastModifiedBy(new MetaUser());
+        metadata.getLastModifiedBy().setId(authenticatedUserId);
+        organizationMgtDao.modifyOrganizationMetadata(organizationId, metadata);
     }
 
     private void validateAddOrganizationRequest(OrganizationAdd organizationAdd)
@@ -405,7 +423,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organization.getParent().set$ref(organizationAdd.getParent().get$ref());
         organization.setStatus(Organization.OrgStatus.ACTIVE);
         organization.setHasAttributes(!organizationAdd.getAttributes().isEmpty());
-        // Convert attributes list to map for better accessibility
+        // Convert attributes 'list' to a 'map' for better accessibility
         organization.setAttributes(organizationAdd.getAttributes().stream().collect(
                 Collectors.toMap(Attribute::getKey, attribute -> attribute)));
         organization.setUserStoreConfigs(organizationAdd.getUserStoreConfigs().stream().collect(
@@ -498,15 +516,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
             if (path.toLowerCase().startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
                 // Convert only the '/attributes/' part to lower case to treat the attribute name case sensitively
                 path = path.replaceAll("(?i)" + Pattern.quote(PATCH_PATH_ORG_ATTRIBUTES), PATCH_PATH_ORG_ATTRIBUTES);
-            } else if (path.equalsIgnoreCase(PATCH_PATH_ORG_PARENT_ID)) {
-                path = PATCH_PATH_ORG_PARENT_ID;
             } else {
                 path = path.toLowerCase();
             }
             // Is valid path
             if (!(path.equals(PATCH_PATH_ORG_NAME) ||
+                    path.equals(PATCH_PATH_ORG_DISPLAY_NAME) ||
                     path.equals(PATCH_PATH_ORG_DESCRIPTION) ||
-                    path.equals(PATCH_PATH_ORG_ACTIVE) ||
+                    path.equals(PATCH_PATH_ORG_STATUS) ||
                     path.equals(PATCH_PATH_ORG_PARENT_ID) ||
                     path.startsWith(PATCH_PATH_ORG_ATTRIBUTES))) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST, "Invalid Patch operation path : " + path);
@@ -521,32 +538,40 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 // Avoid NPEs down the road
                 value = operation.getValue() != null ? operation.getValue().trim() : "";
             }
-            // You can only remove attributes
-            if (PATCH_OP_REMOVE.equals(op) && !path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
+            // You can only remove attributes and non-mandatory fields (displayName, description) only
+            if (PATCH_OP_REMOVE.equals(op) &&
+                    !(path.startsWith(PATCH_PATH_ORG_ATTRIBUTES) || path.equals(PATCH_PATH_ORG_DISPLAY_NAME) || path.equals(PATCH_PATH_ORG_DESCRIPTION))) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST, "Can not remove mandatory field : " + path);
             }
-            // Primary fields can only be 'Replaced'
-            if (!path.startsWith(PATCH_PATH_ORG_ATTRIBUTES) && !op.equals(PATCH_OP_REPLACE)) {
+            // Mandatory fields can only be 'Replaced'
+            if (!op.equals(PATCH_OP_REPLACE) &&
+                    !(path.startsWith(PATCH_PATH_ORG_ATTRIBUTES) || path.equals(PATCH_PATH_ORG_DISPLAY_NAME) || path.equals(PATCH_PATH_ORG_DESCRIPTION))) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Primary organization fields can only be replaced. Provided op : " + op + ", Path : " + path);
+                        "Mandatory organization fields can only be replaced. Provided op : " + op + ", Path : " + path);
             }
-            // Check for boolean values upon patching the ACTIVE field
-            if (path.equals(PATCH_PATH_ORG_ACTIVE) &&
-                    !(value.equals("true") || value.equals("false"))) {
+            // STATUS may only contain 'ACTIVE' and 'DISABLED' values
+            if (path.equals(PATCH_PATH_ORG_STATUS)) {
+                try {
+                    value = Organization.OrgStatus.valueOf(value.toUpperCase()).toString();
+                } catch (IllegalArgumentException e) {
+                    throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+                            "STATUS field could only contain 'ACTIVE' and 'DISABLED'. Provided : " + value);
+                }
+            }
+            // You can't deactivate an organization which is having any ACTIVE users or ACTIVE child organizations.
+            if (path.equals(PATCH_PATH_ORG_STATUS)
+                    && value.equals(Organization.OrgStatus.DISABLED.toString())
+                    && !canDisable(organizationId)) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "ACTIVE field could only contain 'true' or 'false'. Provided : " + value);
+                        "Can't disable organization : " + organizationId + " as it has one or more ACTIVE organization/s or user/s.");
             }
-            // You can't deactivate an organization having any ACTIVE child
-            if (path.equals(PATCH_PATH_ORG_ACTIVE) && value.equals("false") && !canDisable(organizationId)) {
+            // Check if the new parent exist and ACTIVE before patching the /parent/id field
+            if (path.equals(PATCH_PATH_ORG_PARENT_ID) &&
+                    !(isOrganizationExistById(value) && Organization.OrgStatus.ACTIVE.equals(getOrganization(value).getStatus()))) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Error deactivating organization : " + organizationId + " as it has one or more ACTIVE organization/s");
+                        "Provided parent id doesn't represent an ACTIVE organization : " + value);
             }
-            // Check if the new parent exist before patching the PARENT field
-            if (path.equals(PATCH_PATH_ORG_PARENT_ID) && !isOrganizationExistById(value)) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Provided parent ID does not exist : " + value);
-            }
-            // Check if new organization Name already exists
+            // Check if the new organization name already exists
             if (path.equals(PATCH_PATH_ORG_NAME) && isOrganizationExistByName(value)) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                         "Provided organization name already exists : " + value);
@@ -665,6 +690,19 @@ public class OrganizationManagerImpl implements OrganizationManager {
         } catch (UserStoreException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_ADD_ERROR,
                     "Error creating the DN : " + dn + " in the user store domain : " + userStoreDomain, e);
+        }
+    }
+
+    private void validatePatchingAttributes(List<Operation> operations) throws OrganizationManagementException {
+
+        for (Operation operation : operations) {
+            // Validate all attribute additions and replacements
+            if (operation.getPath().startsWith(PATCH_PATH_ORG_ATTRIBUTES) && !PATCH_OP_REMOVE.equals(operation.getOp())) {
+                Attribute attribute = new Attribute();
+                attribute.setKey(operation.getPath().replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim());
+                attribute.setValue(operation.getValue());
+                OrganizationMgtDataHolder.getInstance().getAttributeValidator().validateAttribute(attribute);
+            }
         }
     }
 }

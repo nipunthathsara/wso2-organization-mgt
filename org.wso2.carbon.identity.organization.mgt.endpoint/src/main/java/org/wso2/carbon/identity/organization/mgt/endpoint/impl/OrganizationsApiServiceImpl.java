@@ -39,7 +39,7 @@ import javax.ws.rs.core.Response;
 
 public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
-    private static final Log LOG = LogFactory.getLog(OrganizationsApiServiceImpl.class);
+    private static final Log log = LogFactory.getLog(OrganizationsApiServiceImpl.class);
 
     @Override
     public Response organizationsPost(OrganizationAddDTO organizationAddDTO) {
@@ -52,11 +52,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             return Response.created(getResourceURI(organization))
                     .entity(getBasicOrganizationDTOFromOrganization(organization)).build();
         } catch (OrganizationManagementClientException e) {
-            return handleBadRequestResponse(e, LOG);
+            return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
-            return handleServerErrorResponse(e, LOG);
+            return handleServerErrorResponse(e, log);
         } catch (Throwable throwable) {
-            return handleUnexpectedServerError(throwable, LOG);
+            return handleUnexpectedServerError(throwable, log);
         }
     }
 
@@ -69,11 +69,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             return Response.created(getResourceURI(organization))
                     .entity(getBasicOrganizationDTOFromOrganization(organization)).build();
         } catch (OrganizationManagementClientException e) {
-            return handleBadRequestResponse(e, LOG);
+            return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
-            return handleServerErrorResponse(e, LOG);
+            return handleServerErrorResponse(e, log);
         } catch (Throwable throwable) {
-            return handleUnexpectedServerError(throwable, LOG);
+            return handleUnexpectedServerError(throwable, log);
         }
     }
 
@@ -97,11 +97,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
                             sortOrder);
             return Response.ok().entity(getBasicOrganizationDTOsFromOrganizations(organizations)).build();
         } catch (OrganizationManagementClientException e) {
-            return handleBadRequestResponse(e, LOG);
+            return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
-            return handleServerErrorResponse(e, LOG);
+            return handleServerErrorResponse(e, log);
         } catch (Throwable throwable) {
-            return handleUnexpectedServerError(throwable, LOG);
+            return handleUnexpectedServerError(throwable, log);
         }
     }
 
@@ -112,11 +112,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             Organization organization = getOrganizationManager().getOrganization(organizationId);
             return Response.ok().entity(getOrganizationDTOFromOrganization(organization)).build();
         } catch (OrganizationManagementClientException e) {
-            return handleBadRequestResponse(e, LOG);
+            return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
-            return handleServerErrorResponse(e, LOG);
+            return handleServerErrorResponse(e, log);
         } catch (Throwable throwable) {
-            return handleUnexpectedServerError(throwable, LOG);
+            return handleUnexpectedServerError(throwable, log);
         }
     }
 
@@ -126,11 +126,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
         try {
             return Response.ok().entity(getOrganizationManager().getChildOrganizationIds(organizationId)).build();
         } catch (OrganizationManagementClientException e) {
-            return handleBadRequestResponse(e, LOG);
+            return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
-            return handleServerErrorResponse(e, LOG);
+            return handleServerErrorResponse(e, log);
         } catch (Throwable throwable) {
-            return handleUnexpectedServerError(throwable, LOG);
+            return handleUnexpectedServerError(throwable, log);
         }
     }
 
@@ -141,11 +141,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             getOrganizationManager().deleteOrganization(organizationId);
             return Response.ok().build();
         } catch (OrganizationManagementClientException e) {
-            return handleBadRequestResponse(e, LOG);
+            return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
-            return handleServerErrorResponse(e, LOG);
+            return handleServerErrorResponse(e, log);
         } catch (Throwable throwable) {
-            return handleUnexpectedServerError(throwable, LOG);
+            return handleUnexpectedServerError(throwable, log);
         }
     }
 
@@ -160,11 +160,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             );
             return Response.ok().build();
         } catch (OrganizationManagementClientException e) {
-            return handleBadRequestResponse(e, LOG);
+            return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
-            return handleServerErrorResponse(e, LOG);
+            return handleServerErrorResponse(e, log);
         } catch (Throwable throwable) {
-            return handleUnexpectedServerError(throwable, LOG);
+            return handleUnexpectedServerError(throwable, log);
         }
     }
 
@@ -175,11 +175,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             Map<String, UserStoreConfig> userStoreConfigs = getOrganizationManager().getUserStoreConfigs(organizationId);
             return Response.ok(getUserStoreConfigDTOsFromUserStoreConfigs(userStoreConfigs.values())).build();
         } catch (OrganizationManagementClientException e) {
-            return handleBadRequestResponse(e, LOG);
+            return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
-            return handleServerErrorResponse(e, LOG);
+            return handleServerErrorResponse(e, log);
         } catch (Throwable throwable) {
-            return handleUnexpectedServerError(throwable, LOG);
+            return handleUnexpectedServerError(throwable, log);
         }
     }
 
@@ -195,11 +195,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             );
             return Response.ok().build();
         } catch (OrganizationManagementClientException e) {
-            return handleBadRequestResponse(e, LOG);
+            return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
-            return handleServerErrorResponse(e, LOG);
+            return handleServerErrorResponse(e, log);
         } catch (Throwable throwable) {
-            return handleUnexpectedServerError(throwable, LOG);
+            return handleUnexpectedServerError(throwable, log);
         }
     }
 

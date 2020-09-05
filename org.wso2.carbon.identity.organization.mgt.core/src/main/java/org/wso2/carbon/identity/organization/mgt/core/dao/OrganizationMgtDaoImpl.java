@@ -27,6 +27,7 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditionValidationException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
+import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationSearchBean;
@@ -62,8 +63,10 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ACTIVE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DISPLAY_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_STATUS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DESCRIPTION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_NAME;
@@ -95,6 +98,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_USER_STORE_CONFIG;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.REMOVE_ATTRIBUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UPDATE_HAS_ATTRIBUTES_FIELD;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UPDATE_ORGANIZATION_METADATA;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_BY_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DISPLAY_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_BY_COLUMN;
@@ -396,9 +400,11 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             sb.append(PATCH_ORGANIZATION);
             if (path.equals(PATCH_PATH_ORG_NAME)) {
                 sb.append(VIEW_NAME_COLUMN);
+            } else if (path.equals(PATCH_PATH_ORG_DISPLAY_NAME)) {
+                sb.append(VIEW_DISPLAY_NAME_COLUMN);
             } else if (path.equals(PATCH_PATH_ORG_DESCRIPTION)) {
                 sb.append(VIEW_DESCRIPTION_COLUMN);
-            } else if (path.equals(PATCH_PATH_ORG_ACTIVE)) {
+            } else if (path.equals(PATCH_PATH_ORG_STATUS)) {
                 sb.append(VIEW_STATUS_COLUMN);
             } else if (path.equals(PATCH_PATH_ORG_PARENT_ID)) {
                 sb.append(VIEW_PARENT_ID_COLUMN);
@@ -412,11 +418,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 jdbcTemplate.executeUpdate(query,
                         preparedStatement -> {
                             int parameterIndex = 0;
-                            if (path.equals(PATCH_PATH_ORG_ACTIVE)) {
-                                preparedStatement.setInt(++parameterIndex, operation.getValue().equals("true") ? 1 : 0);
-                            } else {
-                                preparedStatement.setString(++parameterIndex, operation.getValue());
-                            }
+                            preparedStatement.setString(++parameterIndex, operation.getOp().equals(PATCH_OP_REMOVE) ? null : operation.getValue());
                             preparedStatement.setString(++parameterIndex, organizationId);
                         });
             } catch (DataAccessException e) {
@@ -504,6 +506,26 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR,
                     "Error while checking if the the Attribute key exist : " + attributeKey, e);
+        }
+    }
+
+    @Override
+    public void modifyOrganizationMetadata(String organizationId, Metadata metadata)
+            throws OrganizationManagementException {
+
+        Timestamp currentTime = new java.sql.Timestamp(new Date().getTime());
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        try {
+            jdbcTemplate.executeUpdate(UPDATE_ORGANIZATION_METADATA,
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setTimestamp(++parameterIndex, currentTime, calendar);
+                        preparedStatement.setString(++parameterIndex, metadata.getLastModifiedBy().getId());
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                    });
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
+                    "Error while updating organization metadata : " + organizationId, e);
         }
     }
 

@@ -215,4 +215,11 @@ public class SQLConstants {
             "    ATTR_VALUE = ?\n" +
             "WHERE\n" +
             "    ORG_ID = ? AND ATTR_KEY = ?";
+    public static final String UPDATE_ORGANIZATION_METADATA =
+            "UPDATE\n" +
+            "    IDN_ORG\n" +
+            "SET\n" +
+            "    LAST_MODIFIED = ?, LAST_MODIFIED_BY = ?\n" +
+            "WHERE\n" +
+            "    ID = ?";
 }

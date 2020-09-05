@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.internal;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.BundleContext;
@@ -27,10 +28,15 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
+import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidator;
 import org.wso2.carbon.user.core.service.RealmService;
+
+import static org.wso2.carbon.custom.userstore.manager.Constants.ORGANIZATION_ATTRIBUTE_VALIDATOR;
+import static org.wso2.carbon.custom.userstore.manager.Constants.DEFAULT_ATTRIBUTE_VALIDATOR_CLASS;
 
 /**
  * OSGI service component for organization management core bundle.
@@ -56,6 +62,11 @@ public class OrganizationMgtServiceComponent {
             BundleContext bundleContext = componentContext.getBundleContext();
             bundleContext.registerService(OrganizationManager.class.getName(),
                     new OrganizationManagerImpl(), null);
+            String attributeValidatorClass = !StringUtils.isBlank(IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR))
+                    ? IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR).trim() : DEFAULT_ATTRIBUTE_VALIDATOR_CLASS;
+            OrganizationMgtDataHolder.getInstance().setAttributeValidator(
+                    (AttributeValidator) Class.forName(attributeValidatorClass).newInstance()
+            );
             if (log.isDebugEnabled()) {
                 log.debug("Organization Management component activated successfully.");
             }
