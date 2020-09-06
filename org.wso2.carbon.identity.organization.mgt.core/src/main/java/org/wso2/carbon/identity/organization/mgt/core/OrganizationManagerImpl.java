@@ -516,6 +516,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             if (path.toLowerCase().startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
                 // Convert only the '/attributes/' part to lower case to treat the attribute name case sensitively
                 path = path.replaceAll("(?i)" + Pattern.quote(PATCH_PATH_ORG_ATTRIBUTES), PATCH_PATH_ORG_ATTRIBUTES);
+            } else if (path.equalsIgnoreCase(PATCH_PATH_ORG_DISPLAY_NAME)) {
+                path = PATCH_PATH_ORG_DISPLAY_NAME;
             } else {
                 path = path.toLowerCase();
             }
@@ -564,6 +566,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     && !canDisable(organizationId)) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                         "Can't disable organization : " + organizationId + " as it has one or more ACTIVE organization/s or user/s.");
+            }
+            // You can't activate an organization, whom's parent organization is not in ACTIVE state.
+            if (path.equals(PATCH_PATH_ORG_STATUS)
+                    && value.equals(Organization.OrgStatus.ACTIVE.toString())
+                    && !canEnable(organizationId)) {
+                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+                        "Can't activate organization : " + organizationId + " as its parent organization is not ACTIVE.");
             }
             // Check if the new parent exist and ACTIVE before patching the /parent/id field
             if (path.equals(PATCH_PATH_ORG_PARENT_ID) &&
@@ -658,6 +667,20 @@ public class OrganizationManagerImpl implements OrganizationManager {
             }
         }
         return true;
+    }
+
+    private boolean canEnable(String organizationId) throws OrganizationManagementException {
+
+        Organization organization = getOrganization(organizationId);
+        String parentId = organization.getParent().getId();
+        // You can enable any root level organization
+        if (ROOT.equals(parentId)) {
+            return true;
+        } else if (Organization.OrgStatus.ACTIVE.equals(getOrganization(parentId).getStatus())) {
+            // non-root organizations should have an ACTIVE parent to change to ACTIVE state.
+            return true;
+        }
+        return false;
     }
 
     private void createLdapDirectory(int tenantId, String userStoreDomain, String dn)
