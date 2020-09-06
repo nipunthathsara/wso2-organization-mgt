@@ -41,8 +41,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 
 public class AttributeValidatorImpl implements AttributeValidator {
 
-    private static Properties properties = loadAttributeValidatorProperties();
     private static final Log log = LogFactory.getLog(AttributeValidatorImpl.class);
+    private static Properties properties = loadAttributeValidatorProperties();
 
     @Override
     public void validateAttribute(Attribute attribute) throws OrganizationManagementException {
