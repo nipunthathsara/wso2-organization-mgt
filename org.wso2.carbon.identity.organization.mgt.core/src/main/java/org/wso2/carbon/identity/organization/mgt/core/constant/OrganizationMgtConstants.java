@@ -28,7 +28,14 @@ public class OrganizationMgtConstants {
     public static final String DN_PLACE_HOLDER = "ou=%s,";
     public static final String SCIM2_USER_RESOURCE_BASE_PATH = "/t/%s/scim2/Users/%s";
     public static final String ORGANIZATION_RESOURCE_BASE_PATH = "/t/%s/api/identity/organization-mgt/v1.0/organizations/%s";
+    /**
+     *          <OrganizationMgt>
+     *             <AttributeValidatorClass>org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl</AttributeValidatorClass>
+     *         </OrganizationMgt>
+     */
     public static final String ATTRIBUTE_VALIDATOR_PROPERTIES_FILE_NAME = "org-mgt-attributes.properties";
+    public static final String ORGANIZATION_ATTRIBUTE_VALIDATOR = "OrganizationMgt.AttributeValidatorClass";
+    public static final String DEFAULT_ATTRIBUTE_VALIDATOR_CLASS = "org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl";
 
     public static final String PATCH_OP_ADD = "add";
     public static final String PATCH_OP_REMOVE = "remove";
