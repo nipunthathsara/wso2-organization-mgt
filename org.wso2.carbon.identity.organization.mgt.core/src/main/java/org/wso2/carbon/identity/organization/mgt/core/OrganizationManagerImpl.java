@@ -26,6 +26,7 @@ import org.wso2.carbon.custom.userstore.manager.CustomUserStoreManager;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.organization.mgt.core.model.MetaUser;
@@ -96,11 +97,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrgan
 public class OrganizationManagerImpl implements OrganizationManager {
 
     private static final Log log = LogFactory.getLog(OrganizationManagerImpl.class);
-    //TODO make these thread local
     private OrganizationMgtDao organizationMgtDao = OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao();
-    private int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
-    private String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
-    private String authenticatedUsername = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
 
     @Override
     public Organization addOrganization(OrganizationAdd organizationAdd, boolean isImport)
@@ -114,20 +111,19 @@ public class OrganizationManagerImpl implements OrganizationManager {
             OrganizationMgtDataHolder.getInstance().getAttributeValidator().validateAttribute((Attribute) entry.getValue());
         }
         organization.setId(generateUniqueID());
-        organization.setTenantId(tenantId);
+        organization.setTenantId(getTenantId());
         // Set metadata
-        String authenticatedUserId = getUserIDFromUserName(authenticatedUsername, tenantId);
-        organization.getMetadata().getCreatedBy().setId(authenticatedUserId);
-        organization.getMetadata().getCreatedBy().set$ref(String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain,
-                authenticatedUserId));
-        organization.getMetadata().getLastModifiedBy().setId(authenticatedUserId);
-        organization.getMetadata().getLastModifiedBy().set$ref(String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain,
-                authenticatedUserId));
+        organization.getMetadata().getCreatedBy().setId(getAuthenticatedUserId());
+        organization.getMetadata().getCreatedBy().set$ref(String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
+                getAuthenticatedUserId()));
+        organization.getMetadata().getLastModifiedBy().setId(getAuthenticatedUserId());
+        organization.getMetadata().getLastModifiedBy().set$ref(String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
+                getAuthenticatedUserId()));
         setUserStoreConfigs(organization);
         logOrganizationObject(organization);
         if (!isImport) {
             createLdapDirectory(
-                    tenantId,
+                    getTenantId(),
                     organization.getUserStoreConfigs().get(USER_STORE_DOMAIN).getValue(),
                     organization.getUserStoreConfigs().get(DN).getValue()
             );
@@ -135,7 +131,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 log.debug("Creating LDAP subdirectory for the organization id : " + organization.getId());
             }
         }
-        organizationMgtDao.addOrganization(tenantId, organization);
+        organizationMgtDao.addOrganization(getTenantId(), organization);
         return organization;
     }
 
@@ -145,25 +141,25 @@ public class OrganizationManagerImpl implements OrganizationManager {
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST, "Provided organization ID is empty");
         }
-        Organization organization = organizationMgtDao.getOrganization(tenantId, organizationId.trim());
+        Organization organization = organizationMgtDao.getOrganization(getTenantId(), organizationId.trim());
         if (organization == null) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST,
-                    "Organization id " + organizationId + " doesn't exist in this tenant : " + tenantId);
+                    "Organization id " + organizationId + " doesn't exist in this tenant : " + getTenantId());
         }
         // Set derivable attributes
         if (!ROOT.equals(organization.getParent().getId())) {
             organization.getParent().set$ref(
-                    String.format(ORGANIZATION_RESOURCE_BASE_PATH, tenantDomain, organization.getParent().getId()));
+                    String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), organization.getParent().getId()));
         }
         organization.getMetadata().getCreatedBy().set$ref(
-                String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, organization.getMetadata().getCreatedBy().getId()));
+                String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(), organization.getMetadata().getCreatedBy().getId()));
         organization.getMetadata().getCreatedBy().setUsername(
-                getUserNameFromUserID(organization.getMetadata().getCreatedBy().getId(), tenantId)
+                getUserNameFromUserID(organization.getMetadata().getCreatedBy().getId(), getTenantId())
         );
         organization.getMetadata().getLastModifiedBy().set$ref(
-                String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, organization.getMetadata().getLastModifiedBy().getId()));
+                String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(), organization.getMetadata().getLastModifiedBy().getId()));
         organization.getMetadata().getLastModifiedBy().setUsername(
-                getUserNameFromUserID(organization.getMetadata().getLastModifiedBy().getId(), tenantId)
+                getUserNameFromUserID(organization.getMetadata().getLastModifiedBy().getId(), getTenantId())
         );
         return organization;
     }
@@ -175,17 +171,17 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Validate pagination and sorting parameters
         sortBy = getMatchingColumnNameForSortingParameter(sortBy);
         List<Organization> organizations = organizationMgtDao
-                .getOrganizations(condition, tenantId, offset, limit, sortBy, sortOrder);
+                .getOrganizations(condition, getTenantId(), offset, limit, sortBy, sortOrder);
         // Populate derivable information of the organizations
         for (Organization organization : organizations) {
             if (!ROOT.equals(organization.getParent().getId())) {
                 organization.getParent().set$ref(
-                        String.format(ORGANIZATION_RESOURCE_BASE_PATH, tenantDomain, organization.getParent().getId()));
+                        String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), organization.getParent().getId()));
             }
             organization.getMetadata().getCreatedBy().set$ref(
-                    String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, organization.getMetadata().getCreatedBy().getId()));
+                    String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(), organization.getMetadata().getCreatedBy().getId()));
             organization.getMetadata().getLastModifiedBy().set$ref(
-                    String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, organization.getMetadata().getLastModifiedBy().getId()));
+                    String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(), organization.getMetadata().getLastModifiedBy().getId()));
         }
         return organizations;
     }
@@ -197,10 +193,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST, "Provided organization name is empty.");
         }
         organizationName = organizationName.trim();
-        String organizationId = organizationMgtDao.getOrganizationIdByName(tenantId, organizationName);
+        String organizationId = organizationMgtDao.getOrganizationIdByName(getTenantId(), organizationName);
         if (organizationId == null) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST,
-                    "Organization name " + organizationName + " doesn't exist in this tenant " + tenantId);
+                    "Organization name " + organizationName + " doesn't exist in this tenant " + getTenantId());
         }
         return organizationId;
     }
@@ -215,7 +211,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                    "Organization Id " + organizationId + " doesn't exist in this tenant " + tenantId);
+                    "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
         validateOrganizationPatchOperations(operations, organizationId);
         validatePatchingAttributes(operations);
@@ -225,7 +221,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Update metadata
         Metadata metadata = new Metadata();
         metadata.setLastModifiedBy(new MetaUser());
-        metadata.getLastModifiedBy().setId(getUserIDFromUserName(authenticatedUsername, tenantId));
+        metadata.getLastModifiedBy().setId(getAuthenticatedUserId());
         organizationMgtDao.modifyOrganizationMetadata(organizationId, metadata);
     }
 
@@ -237,21 +233,21 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         if (!isOrganizationExistById(organizationId.trim())) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
-                    "Organization Id " + organizationId + " doesn't exist in this tenant " + tenantId);
+                    "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
-        organizationMgtDao.deleteOrganization(tenantId, organizationId.trim());
+        organizationMgtDao.deleteOrganization(getTenantId(), organizationId.trim());
     }
 
     @Override
     public boolean isOrganizationExistByName(String organizationName) throws OrganizationManagementException {
 
-        return organizationMgtDao.isOrganizationExistByName(tenantId, organizationName);
+        return organizationMgtDao.isOrganizationExistByName(getTenantId(), organizationName);
     }
 
     @Override
     public boolean isOrganizationExistById(String id) throws OrganizationManagementException {
 
-        return organizationMgtDao.isOrganizationExistById(tenantId, id);
+        return organizationMgtDao.isOrganizationExistById(getTenantId(), id);
     }
 
     @Override
@@ -262,11 +258,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST, "Provided organization Id is empty");
         }
         organizationId = organizationId.trim();
-        if (organizationMgtDao.isOrganizationExistById(tenantId, organizationId)) {
-            return organizationMgtDao.getUserStoreConfigsByOrgId(tenantId, organizationId);
+        if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
+            return organizationMgtDao.getUserStoreConfigsByOrgId(getTenantId(), organizationId);
         } else {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST,
-                    "Provided organization Id " + organizationId + " doesn't exist in this tenant " + tenantId);
+                    "Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
     }
 
@@ -277,11 +273,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST, "Provided organization Id is empty");
         }
         organizationId = organizationId.trim();
-        if (organizationMgtDao.isOrganizationExistById(tenantId, organizationId)) {
+        if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
             return organizationMgtDao.getChildOrganizationIds(organizationId);
         } else {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST,
-                    " Provided organization Id " + organizationId + " doesn't exist in this tenant " + tenantId);
+                    " Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
     }
 
@@ -295,7 +291,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST,
-                    "Provided organization Id " + organizationId + " doesn't exist in this tenant " + tenantId);
+                    "Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
         validateUserStoreConfigPatchOperations(operations, organizationId);
         for (Operation operation : operations) {
@@ -304,7 +300,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Update metadata
         Metadata metadata = new Metadata();
         metadata.setLastModifiedBy(new MetaUser());
-        metadata.getLastModifiedBy().setId(getUserIDFromUserName(authenticatedUsername, tenantId));
+        metadata.getLastModifiedBy().setId(getAuthenticatedUserId());
         organizationMgtDao.modifyOrganizationMetadata(organizationId, metadata);
     }
 
@@ -384,7 +380,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             // populate parent's properties in the 'OrganizationAdd' object to avoid duplicate DB calls down the lane
             organizationAdd.getParent().setName(parentOrg.getName());
             organizationAdd.getParent().setDisplayName(parentOrg.getDisplayName());
-            organizationAdd.getParent().set$ref(String.format(ORGANIZATION_RESOURCE_BASE_PATH, tenantDomain, parentId));
+            organizationAdd.getParent().set$ref(String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), parentId));
         } else {
             organizationAdd.getParent().setName(ROOT);
             organizationAdd.getParent().setDisplayName(ROOT);
@@ -413,7 +409,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         boolean rootOrg = ROOT.equals(parentId);
         String dn;
         if (rootOrg) {
-            String ldapRoot = getLdapRootDn(userStoreDomain, tenantId);
+            String ldapRoot = getLdapRootDn(userStoreDomain, getTenantId());
             dn = "ou=".concat(rdn).concat(",").concat(ldapRoot);
         } else {
             dn = "ou=".concat(rdn).concat(",").concat(parentDn);
@@ -463,7 +459,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         // Check if the RDN is already taken
         boolean isAvailable = organizationMgtDao.isRdnAvailable(organization.getUserStoreConfigs().get(RDN).getValue(),
-                organization.getParent().getId(), tenantId);
+                organization.getParent().getId(), getTenantId());
         if (!isAvailable) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
                     "RDN : " + organization.getUserStoreConfigs().get(RDN) + ", is not available for the parent : "
@@ -609,7 +605,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                             "Attribute key is not defined in the path : " + path);
                 }
-                boolean attributeExist = organizationMgtDao.isAttributeExistByKey(tenantId, organizationId, attributeKey);
+                boolean attributeExist = organizationMgtDao.isAttributeExistByKey(getTenantId(), organizationId, attributeKey);
                 // If attribute key to be added already exists, update its value
                 if (op.equals(PATCH_OP_ADD) && attributeExist) {
                     op = PATCH_OP_REPLACE;
@@ -658,8 +654,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             }
             // Check if the RDN is available for this parent
             // Note, only the RDN can be patched
-            String parentId = organizationMgtDao.getOrganization(tenantId, organizationId).getParent().getId();
-            boolean isAvailable = organizationMgtDao.isRdnAvailable(operation.getValue(), parentId, tenantId);
+            String parentId = organizationMgtDao.getOrganization(getTenantId(), organizationId).getParent().getId();
+            boolean isAvailable = organizationMgtDao.isRdnAvailable(operation.getValue(), parentId, getTenantId());
             if (!isAvailable) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                         "RDN : " + operation.getValue() + ", is not available for the parent : " + parentId);
@@ -751,5 +747,25 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 OrganizationMgtDataHolder.getInstance().getAttributeValidator().validateAttribute(attribute);
             }
         }
+    }
+
+    private String getTenantDomain() {
+
+        return PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+    }
+
+    private int getTenantId() {
+
+        return PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
+    }
+
+    private String getAuthenticatedUserId() throws OrganizationManagementServerException {
+
+        return getUserIDFromUserName(getAuthenticatedUsername(), getTenantId());
+    }
+
+    private String getAuthenticatedUsername() {
+
+        return PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
     }
 }
