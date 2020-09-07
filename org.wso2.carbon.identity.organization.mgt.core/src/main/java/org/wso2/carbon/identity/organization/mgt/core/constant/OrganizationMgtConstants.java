@@ -95,6 +95,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORGMGT_00032", "Error while checking if the attribute exist : %s"),
         ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR("ORGMGT_00033", "Error while retrieving organization Id by name : %s"),
         ERROR_CODE_ATTRIBUTE_VALIDATION_ERROR("ORGMGT_00034", "Error while validating attributes : %s"),
+        ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGMGT_00035", "Error accessing user store : %s"),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

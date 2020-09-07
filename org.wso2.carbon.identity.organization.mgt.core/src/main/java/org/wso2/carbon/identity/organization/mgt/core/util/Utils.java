@@ -32,6 +32,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadOnlyLDAPUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadWriteLDAPUserStoreManager;
 
@@ -43,6 +44,7 @@ import java.util.UUID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.DOMAIN_NAME;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.userSearchBase;
@@ -223,5 +225,29 @@ public class Utils {
     public static JdbcTemplate getNewTemplate() {
 
         return new JdbcTemplate(IdentityDatabaseUtil.getDataSource());
+    }
+
+    public static String getUserIDFromUserName(String username, int tenantId) throws OrganizationManagementServerException {
+
+        try {
+            AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationMgtDataHolder.getInstance().
+                    getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
+            return userStoreManager.getUserIDFromUserName(username);
+        } catch (UserStoreException e) {
+            throw handleServerException(ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
+                    "Error obtaining ID for the username : " + username + ", tenant id : " + tenantId);
+        }
+    }
+
+    public static String getUserNameFromUserID(String userId, int tenantId) throws OrganizationManagementServerException {
+
+        try {
+            AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationMgtDataHolder.getInstance().
+                    getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
+            return userStoreManager.getUserNameFromUserID(userId);
+        } catch (UserStoreException e) {
+            throw handleServerException(ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
+                    "Error obtaining username for the user id : " + userId + ", tenant id : " + tenantId);
+        }
     }
 }

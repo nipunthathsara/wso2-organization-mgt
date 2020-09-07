@@ -83,6 +83,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_STATUS_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getLdapRootDn;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getUserIDFromUserName;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getUserNameFromUserID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationAddObject;
@@ -94,11 +96,11 @@ import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrgan
 public class OrganizationManagerImpl implements OrganizationManager {
 
     private static final Log log = LogFactory.getLog(OrganizationManagerImpl.class);
+    //TODO make these thread local
     private OrganizationMgtDao organizationMgtDao = OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao();
     private int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
     private String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
-    // TODO get SCIM id of the logged in user here.
-    private String authenticatedUserId = "dummyId";
+    private String authenticatedUsername = PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
 
     @Override
     public Organization addOrganization(OrganizationAdd organizationAdd, boolean isImport)
@@ -113,10 +115,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         organization.setId(generateUniqueID());
         organization.setTenantId(tenantId);
+        // Set metadata
+        String authenticatedUserId = getUserIDFromUserName(authenticatedUsername, tenantId);
         organization.getMetadata().getCreatedBy().setId(authenticatedUserId);
-        organization.getMetadata().getCreatedBy().set$ref(String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, authenticatedUserId));
+        organization.getMetadata().getCreatedBy().set$ref(String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain,
+                authenticatedUserId));
         organization.getMetadata().getLastModifiedBy().setId(authenticatedUserId);
-        organization.getMetadata().getLastModifiedBy().set$ref(String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, authenticatedUserId));
+        organization.getMetadata().getLastModifiedBy().set$ref(String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain,
+                authenticatedUserId));
         setUserStoreConfigs(organization);
         logOrganizationObject(organization);
         if (!isImport) {
@@ -151,9 +157,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         organization.getMetadata().getCreatedBy().set$ref(
                 String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, organization.getMetadata().getCreatedBy().getId()));
+        organization.getMetadata().getCreatedBy().setUsername(
+                getUserNameFromUserID(organization.getMetadata().getCreatedBy().getId(), tenantId)
+        );
         organization.getMetadata().getLastModifiedBy().set$ref(
                 String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, organization.getMetadata().getLastModifiedBy().getId()));
-        //TODO set meta users' username
+        organization.getMetadata().getLastModifiedBy().setUsername(
+                getUserNameFromUserID(organization.getMetadata().getLastModifiedBy().getId(), tenantId)
+        );
         return organization;
     }
 
@@ -214,7 +225,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Update metadata
         Metadata metadata = new Metadata();
         metadata.setLastModifiedBy(new MetaUser());
-        metadata.getLastModifiedBy().setId(authenticatedUserId);
+        metadata.getLastModifiedBy().setId(getUserIDFromUserName(authenticatedUsername, tenantId));
         organizationMgtDao.modifyOrganizationMetadata(organizationId, metadata);
     }
 
@@ -293,7 +304,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Update metadata
         Metadata metadata = new Metadata();
         metadata.setLastModifiedBy(new MetaUser());
-        metadata.getLastModifiedBy().setId(authenticatedUserId);
+        metadata.getLastModifiedBy().setId(getUserIDFromUserName(authenticatedUsername, tenantId));
         organizationMgtDao.modifyOrganizationMetadata(organizationId, metadata);
     }
 
@@ -435,7 +446,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         Map<String, UserStoreConfig> parentConfigs = new HashMap<>();
         if (!ROOT.equals(organization.getParent().getId())) {
-            // TODO this is a duplicate DB call. Same happens while validating the request
             parentConfigs = getUserStoreConfigs(organization.getParent().getId());
         }
         if (organization.getUserStoreConfigs().get(USER_STORE_DOMAIN) == null) {
