@@ -52,6 +52,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_NAME_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_DELETE_ERROR;
@@ -76,6 +77,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORG_HAS_ATTRIBUTES;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_RDN_AVAILABILITY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
@@ -526,6 +528,26 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
                     "Error while updating organization metadata : " + organizationId, e);
+        }
+    }
+
+    public boolean isRdnAvailable(String rdn, String parentId, int tenantId) throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        try {
+            int matchingEntries = jdbcTemplate.fetchSingleRecord(CHECK_RDN_AVAILABILITY,
+                    (resultSet, rowNumber) ->
+                            resultSet.getInt(COUNT_COLUMN),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, parentId);
+                        preparedStatement.setString(++parameterIndex, rdn);
+                    });
+            return matchingEntries == 0;
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR,
+                    "Error while checking if the RDN is available : " + rdn + ", parent id : " + parentId, e);
         }
     }
 

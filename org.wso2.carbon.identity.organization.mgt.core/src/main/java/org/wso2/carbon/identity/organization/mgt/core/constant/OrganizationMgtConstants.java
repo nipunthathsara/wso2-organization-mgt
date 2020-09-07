@@ -79,6 +79,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED("ORGMGT_00011", "Request caused an SQL query limit exceed : %s"),
         ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST("ORGMGT_00012", "Invalid get organization Id by name request : %s"),
         ERROR_CODE_INVALID_ATTRIBUTES("ORGMGT_00013", "Attribute validation failed : %s"),
+
         // Server errors (ORGMGT_00020-ORGMGT_00040)
         ERROR_CODE_ORGANIZATION_ADD_ERROR("ORGMGT_00020", "Error while creating the organization : %s"),
         ERROR_CODE_ORGANIZATION_IMPORT_ERROR("ORGMGT_00021", "Error while importing the organization : %s"),
@@ -96,6 +97,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR("ORGMGT_00033", "Error while retrieving organization Id by name : %s"),
         ERROR_CODE_ATTRIBUTE_VALIDATION_ERROR("ORGMGT_00034", "Error while validating attributes : %s"),
         ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGMGT_00035", "Error accessing user store : %s"),
+        ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR("ORGMGT_00036", "Error checking RDN availability : %s"),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

@@ -222,4 +222,11 @@ public class SQLConstants {
             "    LAST_MODIFIED = ?, LAST_MODIFIED_BY = ?\n" +
             "WHERE\n" +
             "    ID = ?";
+    public static final String CHECK_RDN_AVAILABILITY =
+            "SELECT\n" +
+            "    COUNT(1)\n" +
+            "FROM\n" +
+            "    ORG_MGT_VIEW\n" +
+            "WHERE\n" +
+            "    TENANT_ID = ? AND PARENT_ID = ? AND CONFIG_KEY = 'RDN' AND CONFIG_VALUE = ?";
 }

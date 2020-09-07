@@ -310,7 +310,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
     private void validateAddOrganizationRequest(OrganizationAdd organizationAdd)
             throws OrganizationManagementException {
-        //TODO check if RDN is available for the parent
 
         // Check required fields.
         if (StringUtils.isBlank(organizationAdd.getName())) {
@@ -461,6 +460,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // If RDN is not provided, defaults to organization ID
         if (organization.getUserStoreConfigs().get(RDN) == null) {
             organization.getUserStoreConfigs().put(RDN, new UserStoreConfig(RDN, organization.getId()));
+        }
+        // Check if the RDN is already taken
+        boolean isAvailable = organizationMgtDao.isRdnAvailable(organization.getUserStoreConfigs().get(RDN).getValue(),
+                organization.getParent().getId(), tenantId);
+        if (!isAvailable) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
+                    "RDN : " + organization.getUserStoreConfigs().get(RDN) + ", is not available for the parent : "
+                            + organization.getParent().getId());
         }
         // Construct and set DN using RDN, User store domain and the parent ID
         String dn = constructDn(
@@ -649,7 +656,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
             if (StringUtils.isBlank(operation.getValue())) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST, "Patch operation value is not defined");
             }
-            // TODO check if the RDN available for the parent
+            // Check if the RDN is available for this parent
+            // Note, only the RDN can be patched
+            String parentId = organizationMgtDao.getOrganization(tenantId, organizationId).getParent().getId();
+            boolean isAvailable = organizationMgtDao.isRdnAvailable(operation.getValue(), parentId, tenantId);
+            if (!isAvailable) {
+                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+                        "RDN : " + operation.getValue() + ", is not available for the parent : " + parentId);
+            }
             operation.setOp(PATCH_OP_REPLACE);
             operation.setPath(path);
             operation.setValue(operation.getValue().trim());

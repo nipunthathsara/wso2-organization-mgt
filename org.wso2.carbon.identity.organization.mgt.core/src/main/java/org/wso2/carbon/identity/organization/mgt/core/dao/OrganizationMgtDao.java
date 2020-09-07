@@ -154,4 +154,15 @@ public interface OrganizationMgtDao {
      * @throws OrganizationManagementException
      */
     void modifyOrganizationMetadata(String organizationId, Metadata metadata) throws OrganizationManagementException;
+
+    /**
+     * Check if the RDN is already taken for a given parent (or ROOT)
+     *
+     * @param rdn
+     * @param parentId
+     * @param tenantId
+     * @return
+     * @throws OrganizationManagementException
+     */
+    boolean isRdnAvailable(String rdn, String parentId, int tenantId) throws OrganizationManagementException;
 }
