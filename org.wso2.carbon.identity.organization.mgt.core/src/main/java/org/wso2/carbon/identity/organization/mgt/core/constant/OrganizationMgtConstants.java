@@ -28,6 +28,7 @@ public class OrganizationMgtConstants {
     public static final String DN_PLACE_HOLDER = "ou=%s,";
     public static final String SCIM2_USER_RESOURCE_BASE_PATH = "/t/%s/scim2/Users/%s";
     public static final String ORGANIZATION_RESOURCE_BASE_PATH = "/t/%s/api/identity/organization-mgt/v1.0/organizations/%s";
+    public static final String DISABLED_USER_ACCOUNT_CLAIM_URI = "http://wso2.org/claims/identity/accountDisabled";
     /**
      *          <OrganizationMgt>
      *             <AttributeValidatorClass>org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl</AttributeValidatorClass>

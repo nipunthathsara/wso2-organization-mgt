@@ -21,8 +21,11 @@ package org.wso2.carbon.identity.organization.mgt.core.util;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.context.CarbonContext;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
+import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
@@ -30,21 +33,28 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
+import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.core.UserRealm;
+import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadOnlyLDAPUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadWriteLDAPUserStoreManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DISABLED_USER_ACCOUNT_CLAIM_URI;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.DOMAIN_NAME;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.userSearchBase;
@@ -249,5 +259,28 @@ public class Utils {
             throw handleServerException(ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
                     "Error obtaining username for the user id : " + userId + ", tenant id : " + tenantId);
         }
+    }
+
+    public static boolean checkActiveUsers(String organizationId, int tenantId) throws OrganizationManagementException {
+
+        //TODO fix java security manager error
+        Map<String, UserStoreConfig> userStoreConfigs = getOrganizationManager().getUserStoreConfigs(organizationId);
+        String dn = userStoreConfigs.get(DN).getValue();
+        String domain = userStoreConfigs.get(USER_STORE_DOMAIN).getValue();
+        try {
+            UserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationMgtDataHolder.getInstance()
+                    .getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
+            return 0 == userStoreManager.getUserCountWithClaims(DISABLED_USER_ACCOUNT_CLAIM_URI,
+                    domain + "/false");
+        } catch (UserStoreException e) {
+            throw handleServerException(ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
+                    "Error obtaining user store manager for the tenant id : " + tenantId + ", user store domain : " + domain);
+        }
+    }
+
+    public static OrganizationManager getOrganizationManager() {
+
+        return (OrganizationManager) PrivilegedCarbonContext.getThreadLocalCarbonContext()
+                .getOSGiService(OrganizationManager.class, null);
     }
 }
