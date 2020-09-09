@@ -35,6 +35,7 @@ import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl
 import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidator;
 import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.utils.ConfigurationContextService;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DEFAULT_ATTRIBUTE_VALIDATOR_CLASS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ATTRIBUTE_VALIDATOR;
@@ -63,7 +64,6 @@ public class OrganizationMgtServiceComponent {
             BundleContext bundleContext = componentContext.getBundleContext();
             bundleContext.registerService(OrganizationManager.class.getName(),
                     new OrganizationManagerImpl(), null);
-            //TODO Can not read from identity xml. Fix here and user store manager
             String attributeValidatorClass = !StringUtils.isBlank(IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR))
                     ? IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR).trim() : DEFAULT_ATTRIBUTE_VALIDATOR_CLASS;
             //TODO fix class loading error
@@ -96,5 +96,26 @@ public class OrganizationMgtServiceComponent {
             log.debug("Unset the Realm Service.");
         }
         OrganizationMgtDataHolder.getInstance().setRealmService(null);
+    }
+
+    @Reference(
+            name = "configuration.context.service",
+            service = ConfigurationContextService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetConfigurationContextService"
+    )
+    protected void setConfigurationContextService(ConfigurationContextService configurationContextService) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("ConfigurationContextService Instance registered.");
+        }
+    }
+
+    protected void unsetConfigurationContextService(ConfigurationContextService configurationContextService) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("ConfigurationContextService Instance was unset.");
+        }
     }
 }
