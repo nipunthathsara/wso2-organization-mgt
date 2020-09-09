@@ -76,7 +76,7 @@ public class OrganizationDTO  {
   @ApiModelProperty(value = "")
   @JsonProperty("displayName")
   public String getDisplayName() {
-    return displayName;
+    return displayName != null ? displayName : "";
   }
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
@@ -88,7 +88,7 @@ public class OrganizationDTO  {
   @ApiModelProperty(value = "")
   @JsonProperty("description")
   public String getDescription() {
-    return description;
+    return description != null ? description : "";
   }
   public void setDescription(String description) {
     this.description = description;

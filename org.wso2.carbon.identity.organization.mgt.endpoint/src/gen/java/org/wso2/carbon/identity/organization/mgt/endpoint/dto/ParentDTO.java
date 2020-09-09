@@ -44,7 +44,7 @@ public class ParentDTO  {
   @ApiModelProperty(value = "")
   @JsonProperty("ref")
   public String getRef() {
-    return ref;
+    return ref != null ? ref : "";
   }
   public void setRef(String ref) {
     this.ref = ref;
@@ -68,7 +68,7 @@ public class ParentDTO  {
   @ApiModelProperty(value = "")
   @JsonProperty("displayName")
   public String getDisplayName() {
-    return displayName;
+    return displayName != null ? displayName : "";
   }
   public void setDisplayName(String displayName) {
     this.displayName = displayName;

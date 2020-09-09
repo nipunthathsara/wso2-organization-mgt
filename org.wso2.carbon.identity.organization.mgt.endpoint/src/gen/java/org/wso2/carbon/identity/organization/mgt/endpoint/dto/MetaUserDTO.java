@@ -53,7 +53,7 @@ public class MetaUserDTO  {
   @ApiModelProperty(value = "")
   @JsonProperty("username")
   public String getUsername() {
-    return username;
+    return username != null ? username : "";
   }
   public void setUsername(String username) {
     this.username = username;
