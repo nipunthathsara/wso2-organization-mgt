@@ -70,10 +70,11 @@ public interface OrganizationManager {
      * @param limit Number of items to be retrieved
      * @param sortBy Attribute to be sorted by
      * @param sortOrder Order to be sorted by
+     * @param requestedAttributes Attributes to be returned in the response organizations
      * @return
      * @throws OrganizationManagementException
      */
-    List<Organization> getOrganizations(Condition searchCondition, int offset, int limit, String sortBy, String sortOrder)
+    List<Organization> getOrganizations(Condition searchCondition, int offset, int limit, String sortBy, String sortOrder, List<String> requestedAttributes)
             throws OrganizationManagementException;
 
     /**

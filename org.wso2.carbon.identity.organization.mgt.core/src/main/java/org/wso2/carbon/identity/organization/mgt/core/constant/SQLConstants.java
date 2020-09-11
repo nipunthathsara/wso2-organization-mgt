@@ -195,7 +195,10 @@ public class SQLConstants {
             "    V.CREATED_TIME,\n" +
             "    V.LAST_MODIFIED,\n" +
             "    V.CREATED_BY,\n" +
-            "    V.LAST_MODIFIED_BY\n" +
+            "    V.LAST_MODIFIED_BY,\n" +
+            "    V.HAS_ATTRIBUTES,\n" +
+            "    V.ATTR_KEY,\n" +
+            "    V.ATTR_VALUE\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +

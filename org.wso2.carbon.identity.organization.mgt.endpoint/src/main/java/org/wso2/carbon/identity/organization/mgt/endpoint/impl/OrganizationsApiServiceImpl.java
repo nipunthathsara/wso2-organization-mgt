@@ -15,7 +15,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_PATH;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getBasicOrganizationDTOFromOrganization;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getBasicOrganizationDTOsFromOrganizations;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationDTOsFromOrganizations;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationDTOFromOrganization;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationManager;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationAddFromDTO;
@@ -29,6 +29,8 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -89,6 +91,8 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             // If pagination parameters not defined in the request, set them to -1
             limit = (limit == null) ? -1 : limit;
             offset = (offset == null) ? -1 : offset;
+            List<String> requestedAttributes = attributes == null ? new ArrayList<>()
+                    : Arrays.stream(attributes.split(",")).map(String::trim).collect(Collectors.toList());
             List<Organization> organizations = getOrganizationManager()
                     .getOrganizations(
                             getSearchCondition(searchContext, OrganizationSearchBean.class),
@@ -96,8 +100,8 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
                             limit,
                             sortBy,
                             sortOrder,
-                            attributes);
-            return Response.ok().entity(getBasicOrganizationDTOsFromOrganizations(organizations)).build();
+                            requestedAttributes);
+            return Response.ok().entity(getOrganizationDTOsFromOrganizations(organizations)).build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {

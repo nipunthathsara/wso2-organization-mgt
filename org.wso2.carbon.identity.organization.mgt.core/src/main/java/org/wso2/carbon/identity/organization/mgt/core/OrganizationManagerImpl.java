@@ -165,13 +165,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     @Override
-    public List<Organization> getOrganizations(Condition condition, int offset, int limit, String sortBy, String sortOrder)
+    public List<Organization> getOrganizations(Condition condition, int offset, int limit, String sortBy, String sortOrder, List<String> requestedAttributes)
             throws OrganizationManagementException {
 
         // Validate pagination and sorting parameters
         sortBy = getMatchingColumnNameForSortingParameter(sortBy);
         List<Organization> organizations = organizationMgtDao
-                .getOrganizations(condition, getTenantId(), offset, limit, sortBy, sortOrder);
+                .getOrganizations(condition, getTenantId(), offset, limit, sortBy, sortOrder, requestedAttributes);
         // Populate derivable information of the organizations
         for (Organization organization : organizations) {
             if (!ROOT.equals(organization.getParent().getId())) {

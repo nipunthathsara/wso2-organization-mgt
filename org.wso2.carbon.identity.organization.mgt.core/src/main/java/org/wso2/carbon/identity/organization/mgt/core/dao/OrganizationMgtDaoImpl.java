@@ -40,6 +40,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -170,13 +171,12 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
     @Override
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit,
-                                               String sortBy, String sortOrder) throws OrganizationManagementException {
+               String sortBy, String sortOrder, List<String> requestedAttributes) throws OrganizationManagementException {
 
         PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
         // Get organization IDs
         JdbcTemplate jdbcTemplate = getNewTemplate();
         List<String> orgIds;
-        List<Organization> organizations = new ArrayList<>();
         try {
             orgIds = jdbcTemplate.executeQuery(placeholderSQL.getQuery(),
                     (resultSet, rowNumber) ->
@@ -199,7 +199,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     "Error while retrieving organization IDs.", e);
         }
         if (orgIds.isEmpty()) {
-            return organizations;
+            return new ArrayList<>();
         }
 
         // Get organizations by IDs
@@ -212,27 +212,35 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         // This query only expects a list of organization IDs(server generated) to be retrieved. Hence, no security vulnerability.
         query = query.replace("?", sj.toString());
         validateQueryLength(query);
+        List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
-            organizations = jdbcTemplate.executeQuery(query,
+            organizationRowDataCollectors = jdbcTemplate.executeQuery(query,
                     (resultSet, rowNumber) -> {
-                        Organization organization = new Organization();
-                        organization.setId(resultSet.getString(VIEW_ID_COLUMN));
-                        organization.setName(resultSet.getString(VIEW_NAME_COLUMN));
-                        organization.setDisplayName(resultSet.getString(VIEW_DISPLAY_NAME_COLUMN));
-                        organization.setDescription(resultSet.getString(VIEW_DESCRIPTION_COLUMN));
-                        organization.getParent().setId(resultSet.getString(VIEW_PARENT_ID_COLUMN));
-                        organization.getParent().setName(resultSet.getString(VIEW_PARENT_NAME_COLUMN));
-                        organization.getParent().setDisplayName(resultSet.getString(VIEW_PARENT_DISPLAY_NAME_COLUMN));
-                        organization.setStatus(Organization.OrgStatus.valueOf(resultSet.getString(VIEW_STATUS_COLUMN)));
-                        organization.getMetadata().setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED_COLUMN, calendar).toString());
-                        organization.getMetadata().setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME_COLUMN, calendar).toString());
-                        organization.getMetadata().getCreatedBy().setId(resultSet.getString(VIEW_CREATED_BY_COLUMN));
-                        organization.getMetadata().getLastModifiedBy().setId(resultSet.getString(VIEW_LAST_MODIFIED_BY_COLUMN));
-                        return organization;
+                        OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
+                        collector.setId(resultSet.getString(VIEW_ID_COLUMN));
+                        collector.setName(resultSet.getString(VIEW_NAME_COLUMN));
+                        collector.setDisplayName(resultSet.getString(VIEW_DISPLAY_NAME_COLUMN));
+                        collector.setDescription(resultSet.getString(VIEW_DESCRIPTION_COLUMN));
+                        collector.setParentId(resultSet.getString(VIEW_PARENT_ID_COLUMN));
+                        collector.setParentName(resultSet.getString(VIEW_PARENT_NAME_COLUMN));
+                        collector.setParentDisplayName(resultSet.getString(VIEW_PARENT_DISPLAY_NAME_COLUMN));
+                        collector.setStatus(Organization.OrgStatus.valueOf(resultSet.getString(VIEW_STATUS_COLUMN)));
+                        collector.setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED_COLUMN, calendar));
+                        collector.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME_COLUMN, calendar));
+                        collector.setCreatedBy(resultSet.getString(VIEW_CREATED_BY_COLUMN));
+                        collector.setLastModifiedBy(resultSet.getString(VIEW_LAST_MODIFIED_BY_COLUMN));
+                        collector.setHasAttributes(resultSet.getInt(VIEW_HAS_ATTRIBUTES_COLUMN) == 1 ? true : false);
+                        collector.setAttributeKey(resultSet.getString(VIEW_ATTR_KEY_COLUMN));
+                        collector.setAttributeValue(resultSet.getString(VIEW_ATTR_VALUE_COLUMN));
+                        return collector;
                     });
+            // Build organizations from the DB results.
+            // Append only the requested attributes to the organizations.
+            Map<String, Organization> organizationMap = (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?
+                    new HashMap<>() : buildOrganizationsFromRawData(organizationRowDataCollectors, requestedAttributes);
             // When sorting is required, organization IDs were fetched sorted from the DB. But the collected organizations may not.
             // Therefore, sort the organization as per the order of their IDs.
-            return sortBy != null ? sortCollectedOrganizations(organizations, orgIds) : organizations;
+            return sortBy != null ? sortCollectedOrganizations(organizationMap, orgIds) : new ArrayList<>(organizationMap.values());
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
                     "Error while constructing organizations by IDs", e);
@@ -699,6 +707,46 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         return organization;
     }
 
+    private Map<String, Organization> buildOrganizationsFromRawData(List<OrganizationRowDataCollector> organizationRowDataCollectors,
+                                                                    List<String> requestedAttributes) {
+
+        Map<String, Organization> organizationMap = new HashMap<>();
+        for (OrganizationRowDataCollector collector : organizationRowDataCollectors) {
+            Organization organization;
+            if (organizationMap.containsKey(collector.getId())) {
+                organization = organizationMap.get(collector.getId());
+            } else {
+                organization = new Organization();
+                organization.setId(collector.getId());
+                organization.setName(collector.getName());
+                organization.setDisplayName(collector.getDisplayName());
+                organization.setDescription(collector.getDescription());
+                organization.getParent().setId(collector.getParentId());
+                organization.getParent().setName(collector.getParentName());
+                organization.getParent().setDisplayName(collector.getParentDisplayName());
+                organization.setStatus(collector.getStatus());
+                organization.getMetadata().setCreated(collector.getCreated().toString());
+                organization.getMetadata().setLastModified(collector.getLastModified().toString());
+                organization.getMetadata().getCreatedBy().setId(collector.getCreatedBy());
+                organization.getMetadata().getLastModifiedBy().setId(collector.getLastModifiedBy());
+                organization.setHasAttributes(collector.hasAttributes());
+                organizationMap.put(organization.getId(), organization);
+            }
+            // Populate with attributes if any
+            // Populate attributes if requested specifically, or requested all the attributes '*'
+            if (organization.hasAttributes()
+                    && collector.getAttributeKey() != null
+                    && (requestedAttributes.contains(collector.getAttributeKey()) || requestedAttributes.contains("*"))
+                    && !organization.getAttributes().containsKey(collector.getAttributeKey())) {
+                organization.getAttributes().put(
+                        collector.getAttributeKey(),
+                        new Attribute(collector.getAttributeKey(), collector.getAttributeValue())
+                );
+            }
+        }
+        return organizationMap;
+    }
+
     private void validateQueryLength(String query) throws OrganizationManagementClientException {
         if (query.getBytes().length > getMaximumQueryLengthInBytes()) {
             if (log.isDebugEnabled()) {
@@ -749,12 +797,10 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         return placeholderSQL;
     }
 
-    private List<Organization> sortCollectedOrganizations(List<Organization> organizations,
+    private List<Organization> sortCollectedOrganizations(Map<String, Organization> organizationMap,
                                                           List<String> organizationIds) {
 
-        Map<String, Organization> organizationMap = organizations.stream()
-                .collect(Collectors.toMap(Organization::getId, organization -> organization));
-        organizations.clear();
+        List<Organization> organizations = new ArrayList<>();
         for (String id : organizationIds) {
             organizations.add(organizationMap.get(id));
         }

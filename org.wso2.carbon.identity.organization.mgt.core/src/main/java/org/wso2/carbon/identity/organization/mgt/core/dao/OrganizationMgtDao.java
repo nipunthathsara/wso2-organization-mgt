@@ -92,10 +92,11 @@ public interface OrganizationMgtDao {
      * @param limit
      * @param sortBy
      * @param sortOrder
+     * @param requestedAttributes
      * @return
      * @throws OrganizationManagementException
      */
-    List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy, String sortOrder)
+    List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy, String sortOrder, List<String> requestedAttributes)
             throws OrganizationManagementException;
 
     /**

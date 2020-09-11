@@ -171,23 +171,23 @@ public class OrganizationMgtEndpointUtil {
         return configDTOs;
     }
 
-    public static List<BasicOrganizationDTO> getBasicOrganizationDTOsFromOrganizations(List<Organization> organizations) {
+    public static List<OrganizationDTO> getOrganizationDTOsFromOrganizations(List<Organization> organizations) {
 
-        List<BasicOrganizationDTO> basicOrganizationDTOs = new ArrayList<>();
+        List<OrganizationDTO> organizationDTOs = new ArrayList<>();
         for (Organization org : organizations) {
-            BasicOrganizationDTO basicOrg = new BasicOrganizationDTO();
-            basicOrg.setId(org.getId());
-            basicOrg.setName(org.getName());
-            basicOrg.setDisplayName(org.getDisplayName());
-            basicOrg.setDescription(org.getDescription());
-            basicOrg.setStatus(BasicOrganizationDTO.StatusEnum.valueOf(org.getStatus().toString()));
+            OrganizationDTO organizationDTO = new OrganizationDTO();
+            organizationDTO.setId(org.getId());
+            organizationDTO.setName(org.getName());
+            organizationDTO.setDisplayName(org.getDisplayName());
+            organizationDTO.setDescription(org.getDescription());
+            organizationDTO.setStatus(OrganizationDTO.StatusEnum.valueOf(org.getStatus().toString()));
             // Set parent
             ParentDTO parentDTO = new ParentDTO();
             parentDTO.setId(org.getParent().getId());
             parentDTO.setName(org.getParent().getName());
             parentDTO.setDisplayName(org.getParent().getDisplayName());
             parentDTO.setRef(org.getParent().get$ref());
-            basicOrg.setParent(parentDTO);
+            organizationDTO.setParent(parentDTO);
             // Set metadata
             MetaDTO metaDTO = new MetaDTO();
             metaDTO.setCreatedBy(new MetaUserDTO());
@@ -198,10 +198,15 @@ public class OrganizationMgtEndpointUtil {
             metaDTO.getCreatedBy().setRef(org.getMetadata().getCreatedBy().get$ref());
             metaDTO.getLastModifiedBy().setId(org.getMetadata().getLastModifiedBy().getId());
             metaDTO.getLastModifiedBy().setRef(org.getMetadata().getLastModifiedBy().get$ref());
-            basicOrg.setMeta(metaDTO);
-            basicOrganizationDTOs.add(basicOrg);
+            organizationDTO.setMeta(metaDTO);
+            // Set attributes if any
+            if (org.hasAttributes()) {
+                organizationDTO.setAttributes(org.getAttributes().values().stream()
+                        .map(OrganizationMgtEndpointUtil::getAttributeDTOFromAttribute).collect(Collectors.toList()));
+            }
+            organizationDTOs.add(organizationDTO);
         }
-        return basicOrganizationDTOs;
+        return organizationDTOs;
     }
 
     public static AttributeDTO getAttributeDTOFromAttribute(Attribute attribute) {
