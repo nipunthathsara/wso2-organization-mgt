@@ -171,10 +171,10 @@ paths:
       description: |
         This API is used to search and retrieve organizations created for this tenant which matches the defined search criteria, if any.
       x-wso2-request: |
-        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations?$filter=<URL_ENCODED_SEARCH_QUERY>offset=<OFFSET>&limit=<LIMIT>&sortBy=<SORT_BY_FIELD>&sortOrder=<SORT_ORDER>" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations?attributes=<COMMA_SEPARATED_ATTRIBUTES_LIST>&$filter=<URL_ENCODED_SEARCH_QUERY>offset=<OFFSET>&limit=<LIMIT>&sortBy=<SORT_BY_FIELD>&sortOrder=<SORT_ORDER>" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
       x-wso2-curl: |
         curl -X GET \
-          'https://localhost:9443/api/identity/organization-mgt/v1.0/organizations?offset=0&limit=10&sortBy=parentDisplayName&sortOrder=ASC&$filter=displayName%20eq%20%27Hesei%20constructions%27%20and%20status%20ne%20%27DISABLED%27%20and%20attributeKey%20eq%20%27Exp%27%20and%20attributeValue%20eq%20%272021%27' \
+          'https://localhost:9443/api/identity/organization-mgt/v1.0/organizations?attributes=type,locale&offset=0&limit=10&sortBy=parentDisplayName&sortOrder=ASC&$filter=displayName%20eq%20%27Hesei%20constructions%27%20and%20status%20ne%20%27DISABLED%27%20and%20attributeKey%20eq%20%27Exp%27%20and%20attributeValue%20eq%20%272021%27' \
           -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
           -H 'Postman-Token: 8eb7c266-7341-4252-869d-d4d51759f7f5' \
           -H 'accept: application/json' \
@@ -204,7 +204,17 @@ paths:
                         "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
                         "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
                     }
-                }
+                },
+                "attributes": [
+                    {
+                        "key": "type",
+                        "value": "partner"
+                    },
+                    {
+                        "key": "locale",
+                        "value": "en_US"
+                    }
+                ]
             }
         ]
       summary: |
@@ -232,13 +242,17 @@ paths:
           type: string
           enum: [ASC, DESC]
           description: Ascending or Descending order. (ASC, DESC)
+        - in: query
+          name: attributes
+          type: string
+          description: Comma separated list of attributes to be returned in the response. ('*' for all)
       responses:
         200:
           description: Ok
           schema:
             type: array
             items:
-              $ref: '#/definitions/BasicOrganization'
+              $ref: '#/definitions/Organization'
         400:
           description: Bad Request
           schema:

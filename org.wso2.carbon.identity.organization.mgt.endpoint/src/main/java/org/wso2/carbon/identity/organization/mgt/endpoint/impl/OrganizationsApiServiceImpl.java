@@ -78,7 +78,8 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     }
 
     @Override
-    public Response organizationsGet(SearchContext searchContext, Integer offset, Integer limit, String sortBy, String sortOrder) {
+    public Response organizationsGet(SearchContext searchContext, Integer offset, Integer limit, String sortBy,
+                                     String sortOrder, String attributes) {
 
         try {
             if ((limit != null && limit < 1) || (offset != null && offset < 0)) {
@@ -94,7 +95,8 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
                             offset,
                             limit,
                             sortBy,
-                            sortOrder);
+                            sortOrder,
+                            attributes);
             return Response.ok().entity(getBasicOrganizationDTOsFromOrganizations(organizations)).build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);

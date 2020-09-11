@@ -23,7 +23,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import javax.ws.rs.core.Response;
 
 public abstract class OrganizationsApiService {
-    public abstract Response organizationsGet(SearchContext searchContext, Integer offset, Integer limit, String sortBy, String sortOrder);
+    public abstract Response organizationsGet(SearchContext searchContext, Integer offset, Integer limit, String sortBy, String sortOrder, String attributes);
 
     public abstract Response organizationsImportPost(OrganizationAddDTO organization);
 

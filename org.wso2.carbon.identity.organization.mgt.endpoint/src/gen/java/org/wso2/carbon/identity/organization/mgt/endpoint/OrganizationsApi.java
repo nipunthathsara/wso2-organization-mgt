@@ -50,9 +50,10 @@ public class OrganizationsApi  {
     public Response organizationsGet(@Context SearchContext searchContext, @ApiParam(value = "Number of items to be skipped before starting to collect the result set. (Should be 0 or positive)") @QueryParam("offset")  Integer offset,
                                      @ApiParam(value = "Max number of items to be returned. (Should be greater than 0)") @QueryParam("limit")  Integer limit,
                                      @ApiParam(value = "Criteria to sort by. (name, lastModified, created)", allowableValues="{values=[name, description, displayName, status, lastModified, created, parentName, parentDisplayName]}") @QueryParam("sortBy")  String sortBy,
-                                     @ApiParam(value = "Ascending or Descending order. (ASC, DESC)", allowableValues="{values=[ASC, DESC]}") @QueryParam("sortOrder")  String sortOrder)
+                                     @ApiParam(value = "Ascending or Descending order. (ASC, DESC)", allowableValues="{values=[ASC, DESC]}") @QueryParam("sortOrder")  String sortOrder,
+                                     @ApiParam(value = "Comma separated list of attributes to be returned in the response. ('*' for all)") @QueryParam("attributes")  String attributes)
     {
-    return delegate.organizationsGet(searchContext, offset,limit,sortBy,sortOrder);
+    return delegate.organizationsGet(searchContext, offset,limit,sortBy,sortOrder,attributes);
     }
     @POST
     @Path("/import")
