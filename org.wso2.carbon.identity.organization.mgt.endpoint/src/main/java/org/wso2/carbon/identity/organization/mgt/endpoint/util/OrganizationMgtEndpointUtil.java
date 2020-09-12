@@ -48,6 +48,7 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ConflictReq
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ForbiddenException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.InternalServerErrorException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.NotFoundException;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.OrganizationUserRoleManager;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -71,6 +72,12 @@ public class OrganizationMgtEndpointUtil {
 
         return (OrganizationManager) PrivilegedCarbonContext.getThreadLocalCarbonContext()
                 .getOSGiService(OrganizationManager.class, null);
+    }
+
+    public static OrganizationUserRoleManager getOrganizationUserRoleManager() {
+
+        return (OrganizationUserRoleManager) PrivilegedCarbonContext.getThreadLocalCarbonContext()
+                .getOSGiService(OrganizationUserRoleManager.class, null);
     }
 
     public static OrganizationAdd getOrganizationAddFromDTO(OrganizationAddDTO organizationAddDTO) {
