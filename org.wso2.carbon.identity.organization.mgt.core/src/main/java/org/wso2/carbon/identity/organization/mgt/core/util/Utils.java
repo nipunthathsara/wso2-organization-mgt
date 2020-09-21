@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
+import org.wso2.carbon.identity.core.persistence.UmPersistenceManager;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
@@ -41,6 +42,7 @@ import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadOnlyLDAPUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadWriteLDAPUserStoreManager;
+import org.wso2.carbon.user.core.util.DatabaseUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -234,7 +236,7 @@ public class Utils {
 
     public static JdbcTemplate getNewTemplate() {
 
-        return new JdbcTemplate(IdentityDatabaseUtil.getDataSource());
+        return new JdbcTemplate(UmPersistenceManager.getInstance().getDataSource());
     }
 
     public static String getUserIDFromUserName(String username, int tenantId) throws OrganizationManagementServerException {
