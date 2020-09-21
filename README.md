@@ -1,9 +1,9 @@
 # wso2-organization-mgt
 Hierarchical organization management REST API - IS version 5.10.0 (Oracle)
 
-Execute the below script against the Identity Data source.
+Execute the below script against the User Management(UM) Data source.
 ```oracle-sql
-CREATE TABLE IDN_ORG (
+CREATE TABLE UM_ORG (
     ID VARCHAR2(255) NOT NULL,
     TENANT_ID INTEGER NOT NULL,
     NAME VARCHAR2(512) NOT NULL,
@@ -20,23 +20,23 @@ CREATE TABLE IDN_ORG (
     CONSTRAINT TENANT_ORG_CONSTRAINT UNIQUE (NAME, TENANT_ID)
 )
 /
-CREATE TABLE IDN_ORG_ATTRIBUTES (
+CREATE TABLE UM_ORG_ATTRIBUTES (
     ID VARCHAR2(255) NOT NULL,
     ORG_ID VARCHAR2(255) NOT NULL,
     ATTR_KEY VARCHAR2(255) NOT NULL,
     ATTR_VALUE VARCHAR2(512),
     PRIMARY KEY (ID),
-    CONSTRAINT FK_IDN_ORG_ATTRIBUTES_IDN_ORG FOREIGN KEY(ORG_ID) REFERENCES IDN_ORG (ID) ON DELETE CASCADE,
+    CONSTRAINT FK_UM_ORG_ATTRIBUTES_UM_ORG FOREIGN KEY(ORG_ID) REFERENCES UM_ORG (ID) ON DELETE CASCADE,
     CONSTRAINT ORG_ATTRIBUTE_CONSTRAINT UNIQUE (ORG_ID, ATTR_KEY)
 )
 /
-CREATE TABLE IDN_ORG_USERSTORE_CONFIGS (
+CREATE TABLE UM_ORG_USERSTORE_CONFIGS (
     ID VARCHAR2(255) NOT NULL,
     ORG_ID VARCHAR2(255) NOT NULL,
     ATTR_KEY VARCHAR2(255) NOT NULL,
     ATTR_VALUE VARCHAR2(512) NOT NULL,
     PRIMARY KEY (ID),
-    CONSTRAINT FK_IDN_ORG_USERSTORE_CONFIGS_IDN_ORG FOREIGN KEY(ORG_ID) REFERENCES IDN_ORG (ID) ON DELETE CASCADE,
+    CONSTRAINT FK_UM_ORG_USERSTORE_CONFIGS_UM_ORG FOREIGN KEY(ORG_ID) REFERENCES UM_ORG (ID) ON DELETE CASCADE,
     CONSTRAINT ORG_USERSTORE_CONFIG_CONSTRAINT UNIQUE (ORG_ID, ATTR_KEY)
 )
 /
@@ -68,22 +68,22 @@ FROM
     C.ATTR_KEY CONFIG_KEY,
     C.ATTR_VALUE CONFIG_VALUE
 FROM
-    IDN_ORG O
+    UM_ORG O
 LEFT JOIN
-    IDN_ORG_ATTRIBUTES A
+    UM_ORG_ATTRIBUTES A
 ON
     (O.HAS_ATTRIBUTES = 1 AND O.ID = A.ORG_ID)
 LEFT JOIN
-    IDN_ORG_USERSTORE_CONFIGS C
+    UM_ORG_USERSTORE_CONFIGS C
 ON
     O.ID = C.ORG_ID) K, 
-IDN_ORG N
+UM_ORG N
 WHERE
     K.PARENT_ID = N.ID OR (N.PARENT_ID = 'ROOT' AND K.ID = N.ID)
 ```
 
 ```
-IDN_ORG;
+UM_ORG;
 +------------------+--------------+-------------+----------+-----------------+
 |    COLUMN_NAME   |   DATA_TYPE  | DATA_LENGTH | NULLABLE | DEFAULT_ON_NULL |
 +------------------+--------------+-------------+----------+-----------------+
@@ -111,7 +111,7 @@ IDN_ORG;
 +------------------+--------------+-------------+----------+-----------------+
 | PARENT_ID        | VARCHAR2     | 255         | N        | NO              |
 +------------------+--------------+-------------+----------+-----------------+
-IDN_ORG_ATTRIBUTES;
+UM_ORG_ATTRIBUTES;
 +-------------+-----------+-------------+----------+-----------------+
 | COLUMN_NAME | DATA_TYPE | DATA_LENGTH | NULLABLE | DEFAULT_ON_NULL |
 +-------------+-----------+-------------+----------+-----------------+
@@ -123,7 +123,7 @@ IDN_ORG_ATTRIBUTES;
 +-------------+-----------+-------------+----------+-----------------+
 | ATTR_VALUE  | VARCHAR2  | 512         | Y        | NO              |
 +-------------+-----------+-------------+----------+-----------------+
-IDN_ORG_USERSTORE_CONFIGS
+UM_ORG_USERSTORE_CONFIGS
 +-------------+-----------+-------------+----------+-----------------+
 | COLUMN_NAME | DATA_TYPE | DATA_LENGTH | NULLABLE | DEFAULT_ON_NULL |
 +-------------+-----------+-------------+----------+-----------------+
