@@ -292,7 +292,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
-            // Delete organization from IDN_ORG table and cascade the deletion to other two tables
+            // Delete organization from UM_ORG table and cascade the deletion to other two tables
             jdbcTemplate.executeUpdate(DELETE_ORGANIZATION_BY_ID,
                     preparedStatement -> {
                         int parameterIndex = 0;

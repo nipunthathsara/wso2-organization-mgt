@@ -28,14 +28,14 @@ public class SQLConstants {
             "SELECT\n" +
             "    COUNT(1)\n" +
             "FROM\n" +
-            "    IDN_ORG\n" +
+            "    UM_ORG\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND NAME = ?";
     public static final String CHECK_ORGANIZATION_EXIST_BY_ID =
             "SELECT\n" +
             "    COUNT(1)\n" +
             "FROM\n" +
-            "    IDN_ORG\n" +
+            "    UM_ORG\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND ID = ?";
     public static final String CHECK_ATTRIBUTE_EXIST_BY_KEY =
@@ -49,12 +49,12 @@ public class SQLConstants {
             "SELECT\n" +
             "    COUNT(1)\n" +
             "FROM\n" +
-            "    IDN_ORG_ATTRIBUTES\n" +
+            "    UM_ORG_ATTRIBUTES\n" +
             "WHERE\n" +
             "    ORG_ID = ?";
     public static final String UPDATE_HAS_ATTRIBUTES_FIELD =
             "UPDATE\n" +
-            "    IDN_ORG\n" +
+            "    UM_ORG\n" +
             "SET\n" +
             "    HAS_ATTRIBUTES = ?\n" +
             "WHERE\n" +
@@ -63,7 +63,7 @@ public class SQLConstants {
             "SELECT\n" +
             "    ID\n" +
             "FROM\n" +
-            "    IDN_ORG\n" +
+            "    UM_ORG\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND NAME = ?";
     public static final String COUNT_COLUMN = "COUNT(1)";
@@ -99,20 +99,20 @@ public class SQLConstants {
             "    V.TENANT_ID = ? AND V.ID = ? AND V.CONFIG_ID IS NOT NULL";
     public static final String INSERT_ORGANIZATION =
             "INSERT INTO \n" +
-            "    IDN_ORG\n" +
+            "    UM_ORG\n" +
             "    (ID, TENANT_ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, LAST_MODIFIED_BY, HAS_ATTRIBUTES, STATUS, PARENT_ID)\n" +
             "VALUES\n" +
             "    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String INSERT_ATTRIBUTES =
             "INSERT ALL\n";
     public static final String INSERT_ATTRIBUTE =
-            "    INTO IDN_ORG_ATTRIBUTES (ID, ORG_ID, ATTR_KEY, ATTR_VALUE)\n" +
+            "    INTO UM_ORG_ATTRIBUTES (ID, ORG_ID, ATTR_KEY, ATTR_VALUE)\n" +
             "    VALUES (?, ?, ?, ?)\n";
     public static final String INSERT_ATTRIBUTES_CONCLUDE =
             "SELECT 1 FROM dual";
     public static final String INSERT_OR_UPDATE_USER_STORE_CONFIG =
         "MERGE INTO\n" +
-        "    IDN_ORG_USERSTORE_CONFIGS C\n" +
+        "    UM_ORG_USERSTORE_CONFIGS C\n" +
         "USING\n" +
         "    (SELECT ? ID, ? ORG_ID, ? ATTR_KEY, ? ATTR_VALUE FROM dual) N\n" +
         "ON \n" +
@@ -126,7 +126,7 @@ public class SQLConstants {
         "    VALUES (N.ID, N.ORG_ID, N.ATTR_KEY, N.ATTR_VALUE)";
     public static final String INSERT_OR_UPDATE_ATTRIBUTE =
             "MERGE INTO\n" +
-            "    IDN_ORG_ATTRIBUTES A\n" +
+            "    UM_ORG_ATTRIBUTES A\n" +
             "USING\n" +
             "    (SELECT ? ID, ? ORG_ID, ? ATTR_KEY, ? ATTR_VALUE FROM dual) N\n" +
             "ON \n" +
@@ -141,13 +141,13 @@ public class SQLConstants {
     public static final String REMOVE_ATTRIBUTE =
             "DELETE\n" +
             "FROM\n" +
-            "    IDN_ORG_ATTRIBUTES\n" +
+            "    UM_ORG_ATTRIBUTES\n" +
             "WHERE\n" +
             "    ORG_ID = ? AND ATTR_KEY = ?";
     public static final String DELETE_ORGANIZATION_BY_ID =
             "DELETE\n" +
             "FROM\n" +
-            "    IDN_ORG O\n" +
+            "    UM_ORG O\n" +
             "WHERE\n" +
             "    O.TENANT_ID = ? AND O.ID = ?";
     public static final String GET_ORGANIZATION_BY_ID =
@@ -163,7 +163,7 @@ public class SQLConstants {
             "SELECT\n" +
             "    O.ID\n" +
             "FROM\n" +
-            "    IDN_ORG O\n" +
+            "    UM_ORG O\n" +
             "WHERE\n" +
             "    O.PARENT_ID = ?";
     // ORDER BY with DISTINCT requires to have the columns in the SELECT clause.
@@ -205,7 +205,7 @@ public class SQLConstants {
             "    V.ID IN (?)";
     public static final String PATCH_ORGANIZATION =
             "UPDATE\n" +
-            "    IDN_ORG\n" +
+            "    UM_ORG\n" +
             "SET ";
     public static final String PATCH_ORGANIZATION_CONCLUDE =
             " = ?\n" +
@@ -213,14 +213,14 @@ public class SQLConstants {
             "    ID = ?";
     public static final String PATCH_USER_STORE_CONFIG =
             "UPDATE\n" +
-            "    IDN_ORG_USERSTORE_CONFIGS\n" +
+            "    UM_ORG_USERSTORE_CONFIGS\n" +
             "SET\n" +
             "    ATTR_VALUE = ?\n" +
             "WHERE\n" +
             "    ORG_ID = ? AND ATTR_KEY = ?";
     public static final String UPDATE_ORGANIZATION_METADATA =
             "UPDATE\n" +
-            "    IDN_ORG\n" +
+            "    UM_ORG\n" +
             "SET\n" +
             "    LAST_MODIFIED = ?, LAST_MODIFIED_BY = ?\n" +
             "WHERE\n" +
