@@ -713,7 +713,7 @@ paths:
           in: path
           description: 'ID of the role of which, the user will be deleted.'
           required: true
-          type: string
+          type: integer
         - name: user-id
           in: path
           description: 'ID of the user.'
@@ -1005,9 +1005,11 @@ definitions:
   #-----------------------------------------------------
   UserRoleMapping:
     type: object
+    required:
+      - roleId
     properties:
       roleId:
-        type: string
+        type: integer
       users:
         type: array
         items:

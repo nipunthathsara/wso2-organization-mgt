@@ -200,7 +200,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
         try {
             getOrganizationUserRoleManager().addOrganizationAndUserRoleMappings(organizationId,
             userRoles.stream()
-                    .map(mapping -> new UserRoleMapping(Integer.getInteger(mapping.getRoleId()), mapping.getUsers()))
+                    .map(mapping -> new UserRoleMapping(mapping.getRoleId(), mapping.getUsers()))
                     .collect(Collectors.toList()));
         } catch (OrganizationUserRoleMgtServerException e) {
             //@TODO
@@ -209,11 +209,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     }
 
     @Override
-    public Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, String roleId,
+    public Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, Integer roleId,
                                                                             String userId) {
 
         getOrganizationUserRoleManager()
-                .deleteOrganizationAndUserRoleMapping(organizationId, userId, Integer.getInteger(roleId));
+                .deleteOrganizationAndUserRoleMapping(organizationId, userId, roleId);
         return Response.ok().build();
     }
 

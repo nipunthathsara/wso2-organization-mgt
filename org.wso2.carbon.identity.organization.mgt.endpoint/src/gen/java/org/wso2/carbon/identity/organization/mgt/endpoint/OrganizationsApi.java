@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2020, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.wso2.carbon.identity.organization.mgt.endpoint;
 
 import org.apache.cxf.jaxrs.ext.search.SearchContext;
@@ -13,6 +29,7 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 import java.util.List;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserStoreConfigDTO;
 
 import java.util.List;
@@ -154,6 +171,76 @@ public class OrganizationsApi  {
     {
     return delegate.organizationsOrganizationIdPatch(organizationId,operations);
     }
+
+    @PATCH
+    @Path("/{organization-id}/roles")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @io.swagger.annotations.ApiOperation(value = "Modify user role mappings for an organization.\n",
+            notes = "This API is used to modify user role mappings for an organization.\n",
+            response = void.class)
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 204, message = "Ok"),
+        
+        @io.swagger.annotations.ApiResponse(code = 400, message = "Bad Request"),
+        
+        @io.swagger.annotations.ApiResponse(code = 401, message = "Unauthorized"),
+        
+        @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
+
+    public Response organizationsOrganizationIdRolesPatch(@ApiParam(value = "ID of the organization of which, the user role mappings are modified.",required=true ) @PathParam("organization-id")  String organizationId,
+    @ApiParam(value = "This represents the patch operation." ,required=true )  List<OperationDTO> operations) {
+
+        return delegate.organizationsOrganizationIdRolesPatch(organizationId,operations);
+    }
+
+    @POST
+    @Path("/{organization-id}/roles")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @io.swagger.annotations.ApiOperation(value = "Create a user role mappings for an organization.\n",
+            notes = "This API is used to create user role mappings for an organization.\n",
+            response = void.class)
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 204, message = "Ok"),
+        
+        @io.swagger.annotations.ApiResponse(code = 400, message = "Bad Request"),
+        
+        @io.swagger.annotations.ApiResponse(code = 401, message = "Unauthorized"),
+        
+        @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
+
+    public Response organizationsOrganizationIdRolesPost(@ApiParam(value = "ID of the organization of which, the user role mappings are added.",required=true ) @PathParam("organization-id")  String organizationId,
+    @ApiParam(value = "This represents user role mappings." ,required=true )  List<UserRoleMappingDTO> userRoles) {
+
+        return delegate.organizationsOrganizationIdRolesPost(organizationId,userRoles);
+    }
+
+    @DELETE
+    @Path("/{organization-id}/roles/{role-id}/users/{user-id}")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @io.swagger.annotations.ApiOperation(value = "Delte an organization user role mapping.\n",
+            notes = "This API is used to delete user role mappings for an organization.\n",
+            response = void.class)
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 204, message = "Ok"),
+        
+        @io.swagger.annotations.ApiResponse(code = 400, message = "Bad Request"),
+        
+        @io.swagger.annotations.ApiResponse(code = 401, message = "Unauthorized"),
+        
+        @io.swagger.annotations.ApiResponse(code = 409, message = "Conflict"),
+        
+        @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
+
+    public Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(@ApiParam(value = "ID of the organization of which, the user role mappings will be deleted.",required=true ) @PathParam("organization-id")  String organizationId,
+    @ApiParam(value = "ID of the role of which, the user will be deleted.",required=true ) @PathParam("role-id")  Integer roleId,
+    @ApiParam(value = "ID of the user.",required=true ) @PathParam("user-id")  String userId) {
+
+        return delegate.organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(organizationId,roleId,userId);
+    }
+
     @GET
     @Path("/{organization-id}/userstore-configs")
     @Consumes({ "application/json" })
@@ -216,4 +303,3 @@ public class OrganizationsApi  {
     return delegate.organizationsPost(organization);
     }
 }
-

@@ -21,7 +21,6 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.dao;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
-import org.wso2.carbon.identity.organization.mgt.core.util.Utils;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 
@@ -33,7 +32,6 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.INSERT_ALL;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.INSERT_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.SELECT_DUMMY_RECORD;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.getNewTemplate;
@@ -83,7 +81,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
     public void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, Integer roleId,
                                                      Integer tenantId) {
 
-        JdbcTemplate jdbcTemplate = Utils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             jdbcTemplate.executeUpdate(DELETE_ORGANIZATION_USER_ROLE_MAPPING,
                     preparedStatement -> {
@@ -102,7 +100,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
     public boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, Integer roleId,
                                                           Integer tenantId) {
 
-        JdbcTemplate jdbcTemplate = Utils.getNewTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             int mappingsCount = jdbcTemplate.fetchSingleRecord(GET_ORGANIZATION_USER_ROLE_MAPPING,
                     (resultSet, rowNumber) ->
@@ -113,8 +111,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         preparedStatement.setInt(++parameterIndex, roleId);
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, organizationId);
-                    }
-                                                              );
+                    });
             return mappingsCount > 0;
         } catch (DataAccessException e) {
             //@TODO add error
