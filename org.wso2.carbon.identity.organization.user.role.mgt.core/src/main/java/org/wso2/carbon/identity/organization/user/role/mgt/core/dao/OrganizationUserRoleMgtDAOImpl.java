@@ -26,7 +26,7 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Organizati
 
 import java.util.List;
 
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_AND_USER_ROLE_MAPPING_ADD_ERROR;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.COUNT_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_ORGANIZATION_USER_ROLE_MAPPING;
@@ -44,7 +44,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
             throws OrganizationUserRoleMgtServerException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
-
+        String orgId = organizationUserRoleMappings.get(0).getOrganizationId();
         try {
             jdbcTemplate.executeInsert(buildQueryForMultipleInserts(organizationUserRoleMappings.size()),
                     preparedStatement -> {
@@ -59,9 +59,9 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         }
                     }, organizationUserRoleMappings, false);
         } catch (DataAccessException e) {
-            String message = String.format(String.valueOf(ERROR_CODE_ORGANIZATION_AND_USER_ROLE_MAPPING_ADD_ERROR));
+            String message = String.format(String.valueOf(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR), orgId);
             throw new OrganizationUserRoleMgtServerException(message,
-                    ERROR_CODE_ORGANIZATION_AND_USER_ROLE_MAPPING_ADD_ERROR.getCode(), e);
+                    ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR.getCode(), e);
         }
     }
 

@@ -22,7 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
-import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
+import org.wso2.carbon.identity.core.persistence.UmPersistenceManager;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
@@ -71,7 +71,7 @@ public class Utils {
     }
 
     public static JdbcTemplate getNewTemplate() {
-        return new JdbcTemplate(IdentityDatabaseUtil.getDataSource());
+        return new JdbcTemplate(UmPersistenceManager.getInstance().getDataSource());
     }
 
     public static String generateUniqueID() {
