@@ -38,6 +38,9 @@ import java.util.stream.Collectors;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
@@ -188,10 +191,14 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
                             .map(op -> new org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation(
                                     op.getOp(), op.getPath(), op.getValue()))
                             .collect(Collectors.toList()));
-        } catch (OrganizationUserRoleMgtServerException e) {
-            // @TODO
+            return Response.ok().build();
+        } catch (OrganizationUserRoleMgtClientException e) {
+            return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
+        } catch (OrganizationUserRoleMgtException e) {
+            return OrganizationUserRoleMgtEndpointUtil.handleServerErrorResponse(e, log);
+        } catch (Throwable throwable) {
+            return OrganizationUserRoleMgtEndpointUtil.handleUnexpectedServerError(throwable, log);
         }
-        return Response.ok().build();
     }
 
     @Override
@@ -202,19 +209,31 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             userRoles.stream()
                     .map(mapping -> new UserRoleMapping(mapping.getRoleId(), mapping.getUsers()))
                     .collect(Collectors.toList()));
-        } catch (OrganizationUserRoleMgtServerException e) {
-            //@TODO
+            return Response.noContent().build();
+        } catch (OrganizationUserRoleMgtClientException e) {
+            return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
+        } catch (OrganizationUserRoleMgtException e) {
+            return OrganizationUserRoleMgtEndpointUtil.handleServerErrorResponse(e, log);
+        } catch (Throwable throwable) {
+            return OrganizationUserRoleMgtEndpointUtil.handleUnexpectedServerError(throwable, log);
         }
-        return Response.ok().build();
     }
 
     @Override
     public Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, Integer roleId,
                                                                             String userId) {
 
-        getOrganizationUserRoleManager()
-                .deleteOrganizationAndUserRoleMapping(organizationId, userId, roleId);
-        return Response.ok().build();
+        try {
+            getOrganizationUserRoleManager()
+                    .deleteOrganizationAndUserRoleMapping(organizationId, userId, roleId);
+            return Response.accepted().build();
+        } catch (OrganizationUserRoleMgtClientException e) {
+            return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
+        } catch (OrganizationUserRoleMgtException e) {
+            return OrganizationUserRoleMgtEndpointUtil.handleServerErrorResponse(e, log);
+        } catch (Throwable throwable) {
+            return OrganizationUserRoleMgtEndpointUtil.handleUnexpectedServerError(throwable, log);
+        }
     }
 
     @Override

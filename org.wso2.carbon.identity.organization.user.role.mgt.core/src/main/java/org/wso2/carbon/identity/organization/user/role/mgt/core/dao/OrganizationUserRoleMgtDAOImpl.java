@@ -21,12 +21,15 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.dao;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 
 import java.util.List;
 
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_ERROR;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_RETRIEVING_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.COUNT_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_ORGANIZATION_USER_ROLE_MAPPING;
@@ -35,6 +38,7 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.SELECT_DUMMY_RECORD;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.getNewTemplate;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.handleServerException;
 
 public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDAO {
 
@@ -59,9 +63,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         }
                     }, organizationUserRoleMappings, false);
         } catch (DataAccessException e) {
-            String message = String.format(String.valueOf(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR), orgId);
-            throw new OrganizationUserRoleMgtServerException(message,
-                    ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR.getCode(), e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR, orgId, e);
         }
     }
 
@@ -79,7 +81,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
 
     @Override
     public void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, Integer roleId,
-                                                     Integer tenantId) {
+                                                     Integer tenantId) throws OrganizationUserRoleMgtException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
@@ -92,17 +94,23 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         preparedStatement.setString(++parameterIndex, organizationId);
                     });
         } catch (DataAccessException e) {
-            //@TODO add error
+            String message =
+                    String.format(String.valueOf(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_ERROR), roleId,
+                            userId, organizationId);
+            throw new OrganizationUserRoleMgtServerException(message,
+                    ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_ERROR.getCode(), e);
         }
     }
 
     @Override
     public boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, Integer roleId,
-                                                          Integer tenantId) {
+                                                          Integer tenantId)
+            throws OrganizationUserRoleMgtException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
+        int mappingsCount = 0;
         try {
-            int mappingsCount = jdbcTemplate.fetchSingleRecord(GET_ORGANIZATION_USER_ROLE_MAPPING,
+            mappingsCount = jdbcTemplate.fetchSingleRecord(GET_ORGANIZATION_USER_ROLE_MAPPING,
                     (resultSet, rowNumber) ->
                             resultSet.getInt(COUNT_COLUMN_NAME),
                     preparedStatement -> {
@@ -112,11 +120,14 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, organizationId);
                     });
-            return mappingsCount > 0;
         } catch (DataAccessException e) {
-            //@TODO add error
-            return false;
+            String message =
+                    String.format(String.valueOf(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_RETRIEVING_ERROR), roleId,
+                            userId, organizationId);
+            throw new OrganizationUserRoleMgtServerException(message,
+                    ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_RETRIEVING_ERROR.getCode(), e);
         }
+        return mappingsCount > 0;
     }
 
     private String buildQueryForMultipleInserts(Integer numberOfMapings) {

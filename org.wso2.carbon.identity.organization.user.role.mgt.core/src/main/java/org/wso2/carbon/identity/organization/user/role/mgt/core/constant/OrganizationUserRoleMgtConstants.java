@@ -26,8 +26,9 @@ public class OrganizationUserRoleMgtConstants {
         ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST("ORGPERMMGT_00001", "Invalid organization add request : %s"),
 
         // Server errors (ORGPERMMGT_00020-ORGPERMMGT_00040)
-        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR("ORGPERMMGT_00020", "Error while creating the role mapping for organization : %s");
-
+        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR("ORGPERMMGT_00020", "Error while creating the role mapping for organization : %s"),
+        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_ERROR("ORGPERMMGT_00021", "Error while deleting the role : %s, for user : %s for organization : %s"),
+        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_RETRIEVING_ERROR("ORGPERMMGT_00021", "Error while retrieving the role : %s, for user : %s for organization : %s");
 
         private final String code;
         private final String message;

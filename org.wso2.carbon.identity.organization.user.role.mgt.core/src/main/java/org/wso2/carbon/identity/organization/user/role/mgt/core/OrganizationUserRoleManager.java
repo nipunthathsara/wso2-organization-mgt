@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.organization.user.role.mgt.core;
 
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
@@ -32,15 +33,17 @@ import java.util.List;
 public interface OrganizationUserRoleManager {
 
     void addOrganizationAndUserRoleMappings(String organizationId, List<UserRoleMapping> userRoleMappings)
-            throws OrganizationUserRoleMgtServerException;
+            throws OrganizationUserRoleMgtException;
 
-    void patchOrganizationAndUserRoleMapping(String organizationId, List<Operation> operations) throws OrganizationUserRoleMgtServerException;
+    void patchOrganizationAndUserRoleMapping(String organizationId, List<Operation> operations) throws OrganizationUserRoleMgtException;
 
     List<Organization> getOrganizationsByUserAndRole(String userId, Integer roleId);
 
     List<String> getUserIdsByOrganizationAndRole(String organizationID, Integer roleId);
 
-    void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, Integer roleId);
+    void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, Integer roleId)
+            throws OrganizationUserRoleMgtException;
 
-    boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, Integer roleId);
+    boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, Integer roleId)
+            throws OrganizationUserRoleMgtException;
 }

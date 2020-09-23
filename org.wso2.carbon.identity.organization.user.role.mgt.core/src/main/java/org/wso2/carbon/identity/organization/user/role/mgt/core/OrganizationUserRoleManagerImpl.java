@@ -18,17 +18,14 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core;
 
-import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
-import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAO;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAOImpl;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
-import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +34,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
 
     @Override
     public void addOrganizationAndUserRoleMappings(String organizationId, List<UserRoleMapping> userRoleMappings)
-            throws OrganizationUserRoleMgtServerException {
+            throws OrganizationUserRoleMgtException {
 
 //        validateAddRoleMappingRequest(organizationUserRoleMappings);
         //@TODO check for mapping existance
@@ -57,7 +54,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
 
     @Override
     public void patchOrganizationAndUserRoleMapping(String organizationId, List<Operation> operations)
-            throws OrganizationUserRoleMgtServerException {
+            throws OrganizationUserRoleMgtException {
 
     }
 
@@ -74,14 +71,16 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
     }
 
     @Override
-    public void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, Integer roleId) {
+    public void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, Integer roleId)
+            throws OrganizationUserRoleMgtException {
 
         OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
         organizationUserRoleMgtDAO.deleteOrganizationAndUserRoleMapping(organizationId, userId, roleId, getTenantId());
     }
 
     @Override
-    public boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, Integer roleId) {
+    public boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, Integer roleId)
+            throws OrganizationUserRoleMgtException {
 
         OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
         return organizationUserRoleMgtDAO
