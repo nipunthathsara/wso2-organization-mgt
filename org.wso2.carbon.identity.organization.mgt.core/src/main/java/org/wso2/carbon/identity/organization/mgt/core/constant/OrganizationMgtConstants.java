@@ -64,6 +64,9 @@ public class OrganizationMgtConstants {
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY = "userStoreConfigKey";
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE = "userStoreConfigValue";
 
+    public static final String ORGANIZATION_VIEW_PERMISSION = "/permission/admin/organizations/view";
+    public static final String ORGANIZATION_EDIT_PERMISSION = "/permission/admin/organizations/edit";
+
     public enum ErrorMessages {
 
         // Client errors (ORGMGT_00001-ORGMGT_00019)

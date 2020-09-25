@@ -87,6 +87,7 @@ public class SQLConstants {
     public static final String VIEW_CONFIG_ID_COLUMN = "CONFIG_ID";
     public static final String VIEW_CONFIG_KEY_COLUMN = "CONFIG_KEY";
     public static final String VIEW_CONFIG_VALUE_COLUMN = "CONFIG_VALUE";
+    public static final String UM_ROLE_ID_COLUMN = "UM_ROLE_ID";
     public static final String LIKE_SYMBOL = "%";
     // View returns null for non matching entries upon join. Hence, the NULL check.
     // View returns duplicate CONFIG_IDs if the  #attributes > #configs. Hence, DISTINCT
@@ -173,7 +174,7 @@ public class SQLConstants {
             "FROM\n" +
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
-            "    TENANT_ID = ?";
+            "    TENANT_ID = ? AND UM_USER_ID = ? AND UM_ROLE_ID IN (#)";
     public static final String ORDER_BY =
             "\nORDER BY" +
             "\n   %s %s";
@@ -232,4 +233,11 @@ public class SQLConstants {
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND PARENT_ID = ? AND CONFIG_KEY = 'RDN' AND CONFIG_VALUE = ?";
+    public static final String GET_ROLE_IDS_FOR_PERMISSION =
+            "SELECT\n" +
+            "    UM_ROLE_ID\n" +
+            "FROM\n" +
+            "    ORG_AUTHZ_VIEW\n" +
+            "WHERE\n" +
+            "    UM_RESOURCE_ID = ?";
 }

@@ -25,6 +25,7 @@ import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditionValidationException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
@@ -64,6 +65,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
@@ -85,6 +87,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATIONS_BY_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_ID_BY_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ROLE_IDS_FOR_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_STORE_CONFIGS_BY_ORG_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTE;
@@ -100,6 +103,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_ORGANIZATION_CONCLUDE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_USER_STORE_CONFIG;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.REMOVE_ATTRIBUTE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ROLE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UPDATE_HAS_ATTRIBUTES_FIELD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UPDATE_ORGANIZATION_METADATA;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_BY_COLUMN;
@@ -149,7 +153,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         preparedStatement.setTimestamp(++parameterIndex, currentTime, calendar);
                         preparedStatement.setTimestamp(++parameterIndex, currentTime, calendar);
                         preparedStatement.setString(++parameterIndex, organization.getMetadata().getCreatedBy().getId());
-                        preparedStatement.setString(++parameterIndex, organization.getMetadata().getLastModifiedBy().getId());
+                        preparedStatement.setString(++parameterIndex,
+                                organization.getMetadata().getLastModifiedBy().getId());
                         preparedStatement.setInt(++parameterIndex, organization.hasAttributes() ? 1 : 0);
                         preparedStatement.setString(++parameterIndex, organization.getStatus().toString());
                         preparedStatement.setString(++parameterIndex, organization.getParent().getId());
@@ -170,21 +175,41 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     @Override
-    public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit,
-               String sortBy, String sortOrder, List<String> requestedAttributes) throws OrganizationManagementException {
+    public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
+             String sortOrder, List<String> requestedAttributes, String userId) throws OrganizationManagementException {
 
         PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
-        // Get organization IDs
         JdbcTemplate jdbcTemplate = getNewTemplate();
+        // Get list of roles with the required permission
+        List<String> roleIds = getRoleListForPermission(jdbcTemplate, ORGANIZATION_VIEW_PERMISSION);
+        if (roleIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String query = placeholderSQL.getQuery();
+        StringJoiner sj = new StringJoiner(",");
+        for (String id : roleIds) {
+            sj.add("'" + id + "'");
+        }
+        // Can not perform this in a prepared statement due to character escaping.
+        // System generated list of role IDs. No security concern here.
+        query = query.replace("#", sj.toString());
+        if(log.isDebugEnabled()) {
+            log.debug("Get matching organization IDs query with role IDs : " + query);
+        }
+        validateQueryLength(query);
+
+        // Get organization IDs
         List<String> orgIds;
         try {
-            orgIds = jdbcTemplate.executeQuery(placeholderSQL.getQuery(),
+            orgIds = jdbcTemplate.executeQuery(query,
                     (resultSet, rowNumber) ->
                             resultSet.getString(VIEW_ID_COLUMN),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         // Populate tenant ID
                         preparedStatement.setInt(++parameterIndex, tenantId);
+                        // Populate user Id
+                        preparedStatement.setString(++parameterIndex, userId);
                         // Populate generated conditions if any
                         for (int count = 0; placeholderSQL.getData() != null && count < placeholderSQL.getData().size(); count++) {
                             if (placeholderSQL.getData().get(count).getClass().equals(Integer.class)) {
@@ -203,13 +228,14 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
 
         // Get organizations by IDs
-        String query = GET_ORGANIZATIONS_BY_IDS;
-        StringJoiner sj = new StringJoiner(",");
+        query = GET_ORGANIZATIONS_BY_IDS;
+        sj = new StringJoiner(",");
         for (String id : orgIds) {
             sj.add("'" + id + "'");
         }
         // Can not perform this in a prepared statement due to character escaping.
-        // This query only expects a list of organization IDs(server generated) to be retrieved. Hence, no security vulnerability.
+        // This query only expects a list of organization IDs(server generated) to be retrieved.
+        // Hence, no security vulnerability.
         query = query.replace("?", sj.toString());
         validateQueryLength(query);
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
@@ -240,6 +266,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     new HashMap<>() : buildOrganizationsFromRawData(organizationRowDataCollectors, requestedAttributes);
             // When sorting is required, organization IDs were fetched sorted from the DB. But the collected organizations may not.
             // Therefore, sort the organization as per the order of their IDs.
+            //TODO sort even if sorting is not required
             return sortBy != null ? sortCollectedOrganizations(organizationMap, orgIds) : new ArrayList<>(organizationMap.values());
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
@@ -793,7 +820,6 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         if (log.isDebugEnabled()) {
             log.debug("Built query : " + placeholderSQL.getQuery());
         }
-        validateQueryLength(placeholderSQL.getQuery());
         return placeholderSQL;
     }
 
@@ -805,5 +831,21 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             organizations.add(organizationMap.get(id));
         }
         return organizations;
+    }
+
+    private List<String> getRoleListForPermission(JdbcTemplate jdbcTemplate, String permission)
+            throws OrganizationManagementServerException {
+
+        List<String> roleIds;
+        try {
+            roleIds = jdbcTemplate.executeQuery(GET_ROLE_IDS_FOR_PERMISSION,
+                    (resultSet, rowNumber) -> resultSet.getString(UM_ROLE_ID_COLUMN),
+                    preparedStatement -> preparedStatement.setString(1, permission)
+            );
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
+                    "Error obtaining authorized list of roles", e);
+        }
+        return roleIds;
     }
 }
