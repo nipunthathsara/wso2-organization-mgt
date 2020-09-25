@@ -18,7 +18,7 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core;
 
-import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+//import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation;
@@ -37,9 +37,10 @@ public interface OrganizationUserRoleManager {
 
     void patchOrganizationAndUserRoleMapping(String organizationId, List<Operation> operations) throws OrganizationUserRoleMgtException;
 
-    List<Organization> getOrganizationsByUserAndRole(String userId, Integer roleId);
+//    List<Organization> getOrganizationsByUserAndRole(String userId, Integer roleId);
 
-    List<String> getUserIdsByOrganizationAndRole(String organizationID, Integer roleId);
+    List<String> getUserIdsByOrganizationAndRole(String organizationID, String roleId)
+            throws OrganizationUserRoleMgtServerException;
 
     void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, String roleId)
             throws OrganizationUserRoleMgtException;

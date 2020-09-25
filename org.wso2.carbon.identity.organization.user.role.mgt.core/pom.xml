@@ -100,12 +100,12 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.identity.framework</groupId>
-            <artifactId>org.wso2.carbon.identity.organization.mgt.core</artifactId>
-            <version>5.17.5</version>
-            <scope>compile</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.wso2.carbon.identity.framework</groupId>-->
+<!--            <artifactId>org.wso2.carbon.identity.organization.mgt.core</artifactId>-->
+<!--            <version>5.17.5</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.core</artifactId>
