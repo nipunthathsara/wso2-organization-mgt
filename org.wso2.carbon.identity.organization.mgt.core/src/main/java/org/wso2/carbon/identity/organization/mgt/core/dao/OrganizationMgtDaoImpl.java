@@ -65,6 +65,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNAUTHORIZED_ACTION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_EDIT_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
@@ -76,6 +78,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ATTRIBUTE_EXIST_BY_KEY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_NAME;
@@ -141,6 +144,19 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         Timestamp currentTime = new java.sql.Timestamp(new Date().getTime());
         JdbcTemplate jdbcTemplate = getNewTemplate();
+        // Check if the user is authorized to 'edit' the parent
+        OrganizationAuthorizationDao authorizationDao = new OrganizationAuthorizationDaoImpl();
+        String parentId = organization.getMetadata().getCreatedBy().getId();
+        boolean isAuthorized = false;
+        if(ROOT.equals(parentId)) {
+
+        }
+        isAuthorized = authorizationDao.isUserAuthorized(parentId, organization.getParent().getId(), ORGANIZATION_EDIT_PERMISSION);
+        if (isAuthorized) {
+            throw handleClientException(ERROR_CODE_UNAUTHORIZED_ACTION, "Not authorized to create organizations under : " + parentId);
+        }
+
+
         try {
             jdbcTemplate.executeInsert(INSERT_ORGANIZATION,
                     preparedStatement -> {
@@ -176,7 +192,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
     @Override
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
-             String sortOrder, List<String> requestedAttributes, String userId) throws OrganizationManagementException {
+                                               String sortOrder, List<String> requestedAttributes, String userId) throws OrganizationManagementException {
 
         PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -193,7 +209,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         // Can not perform this in a prepared statement due to character escaping.
         // System generated list of role IDs. No security concern here.
         query = query.replace("#", sj.toString());
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("Get matching organization IDs query with role IDs : " + query);
         }
         validateQueryLength(query);
@@ -619,6 +635,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
     private void validateHasAttributesField(JdbcTemplate template, String organizationId)
             throws OrganizationManagementException {
+
         int attrCount;
         try {
             attrCount = template.fetchSingleRecord(CHECK_ORG_HAS_ATTRIBUTES,
@@ -775,6 +792,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     private void validateQueryLength(String query) throws OrganizationManagementClientException {
+
         if (query.getBytes().length > getMaximumQueryLengthInBytes()) {
             if (log.isDebugEnabled()) {
                 log.debug("Error building SQL query. Get organizations expression " +

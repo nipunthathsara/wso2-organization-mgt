@@ -20,6 +20,8 @@ package org.wso2.carbon.identity.organization.mgt.core.constant;
 
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
+
 public class SQLConstants {
 
     public static final String MAX_QUERY_LENGTH_IN_BYTES_SQL =
@@ -240,4 +242,11 @@ public class SQLConstants {
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
             "    UM_RESOURCE_ID = ?";
+    public static final String IS_USER_AUTHORIZED =
+            "SELECT" +
+            "    COUNT(1)\n" +
+            "FROM\n" +
+            "    ORG_AUTHZ_VIEW\n" +
+            "WHERE\n" +
+            "    UM_USER_ID = ? AND ORG_ID = ? AND (UM_RESOURCE_ID = ? OR UM_RESOURCE_ID = '" + ORGANIZATION_BASE_PERMISSION + "')";
 }

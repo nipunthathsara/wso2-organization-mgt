@@ -23,6 +23,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.custom.userstore.manager.CustomUserStoreManager;
+import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
+import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
@@ -36,6 +38,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
+import org.wso2.carbon.user.api.AuthorizationManager;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreManager;
@@ -49,6 +52,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_USER_AUTHORIZED_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST;
@@ -59,6 +63,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNAUTHORIZED_ACTION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_RESOURCE_BASE_PATH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
@@ -73,6 +79,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.SCIM2_USER_RESOURCE_BASE_PATH;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.UI_EXECUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION_COLUMN;
@@ -106,6 +113,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
         logOrganizationAddObject(organizationAdd);
         validateAddOrganizationRequest(organizationAdd);
         Organization organization = generateOrganizationFromRequest(organizationAdd);
+        // We can't perform this from the authorization valve. Hence, authorize from here
+        boolean isAuthorized = isUserAuthorizedToCreateOrganization(organization.getParent().getId());
+        if (!isAuthorized) {
+            throw handleClientException(ERROR_CODE_UNAUTHORIZED_ACTION, "User not authorized to create organizations under : " + organization.getParent().getId());
+        }
         // Validate attributes
         for (Map.Entry entry : organization.getAttributes().entrySet()) {
             OrganizationMgtDataHolder.getInstance().getAttributeValidator().validateAttribute((Attribute) entry.getValue());
@@ -767,5 +779,27 @@ public class OrganizationManagerImpl implements OrganizationManager {
     private String getAuthenticatedUsername() {
 
         return PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
+    }
+
+    private boolean isUserAuthorizedToCreateOrganization(String parentId) throws OrganizationManagementException {
+
+        // If you are going to create a root level organization,
+        // you should have '/permission/admin/organizations/create' assigned to at least one of the roles that you are bearing
+        if(ROOT.equals(parentId)) {
+            // check using the authorization manager
+            try {
+                AuthorizationManager authorizationManager = OrganizationMgtDataHolder.getInstance().
+                        getRealmService().getTenantUserRealm(getTenantId()).getAuthorizationManager();
+                return authorizationManager.isUserAuthorized(getAuthenticatedUsername(), ORGANIZATION_CREATE_PERMISSION, UI_EXECUTE);
+            } catch (UserStoreException e) {
+                throw handleServerException(ERROR_CODE_CHECK_USER_AUTHORIZED_ERROR,
+                        "Error while checking if the user is authorized to create ROOT level organization.", e);
+            }
+        } else {
+            // If you are going to create a sub organization,
+            // you should have '/permission/admin/organizations/create' over the parent organization
+            OrganizationAuthorizationDao authorizationDao = new OrganizationAuthorizationDaoImpl();
+            return authorizationDao.isUserAuthorized(getAuthenticatedUserId(), parentId, ORGANIZATION_CREATE_PERMISSION);
+        }
     }
 }

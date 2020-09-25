@@ -64,8 +64,12 @@ public class OrganizationMgtConstants {
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY = "userStoreConfigKey";
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE = "userStoreConfigValue";
 
+    public static final String ORGANIZATION_BASE_PERMISSION = "/permission/admin/organizations";
     public static final String ORGANIZATION_VIEW_PERMISSION = "/permission/admin/organizations/view";
     public static final String ORGANIZATION_EDIT_PERMISSION = "/permission/admin/organizations/edit";
+    public static final String ORGANIZATION_CREATE_PERMISSION = "/permission/admin/organizations/create";
+    public static final String ORGANIZATION_DELETE_PERMISSION = "/permission/admin/organizations/delete";
+    public static final String UI_EXECUTE = "ui.execute";
 
     public enum ErrorMessages {
 
@@ -83,6 +87,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED("ORGMGT_00011", "Request caused an SQL query limit exceed : %s"),
         ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST("ORGMGT_00012", "Invalid get organization Id by name request : %s"),
         ERROR_CODE_INVALID_ATTRIBUTES("ORGMGT_00013", "Attribute validation failed : %s"),
+        ERROR_CODE_UNAUTHORIZED_ACTION("ORGMGT_00014", "Unauthorized action : %s"),
 
         // Server errors (ORGMGT_00020-ORGMGT_00040)
         ERROR_CODE_ORGANIZATION_ADD_ERROR("ORGMGT_00020", "Error while creating the organization : %s"),
@@ -102,6 +107,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_ATTRIBUTE_VALIDATION_ERROR("ORGMGT_00034", "Error while validating attributes : %s"),
         ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGMGT_00035", "Error accessing user store : %s"),
         ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR("ORGMGT_00036", "Error checking RDN availability : %s"),
+        ERROR_CODE_CHECK_USER_AUTHORIZED_ERROR("ORGMGT_00037", "Error while checking if the user is authorized : %s"),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 
