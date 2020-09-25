@@ -162,6 +162,13 @@ public class SQLConstants {
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +
             "    V.TENANT_ID = ? AND V.ID = ?";
+    public static final String FIND_AUTHORIZED_CHILD_ORG_IDS =
+            "SELECT\n" +
+            "    DISTINCT ID\n" +
+            "FROM\n" +
+            "    ORG_MGT_VIEW\n" +
+            "WHERE\n" +
+            "    PARENT_ID = ?  AND UM_USER_ID = ? AND UM_ROLE_ID IN (#)";
     public static final String FIND_CHILD_ORG_IDS =
             "SELECT\n" +
             "    O.ID\n" +
@@ -241,7 +248,7 @@ public class SQLConstants {
             "FROM\n" +
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
-            "    UM_RESOURCE_ID = ?";
+            "    UM_RESOURCE_ID = ? OR UM_RESOURCE_ID = '" + ORGANIZATION_BASE_PERMISSION + "'";
     public static final String IS_USER_AUTHORIZED =
             "SELECT" +
             "    COUNT(1)\n" +

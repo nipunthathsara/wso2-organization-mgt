@@ -114,6 +114,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         validateAddOrganizationRequest(organizationAdd);
         Organization organization = generateOrganizationFromRequest(organizationAdd);
         // We can't perform this from the authorization valve. Hence, authorize from here
+        //TODO add creator with full permission
         boolean isAuthorized = isUserAuthorizedToCreateOrganization(organization.getParent().getId());
         if (!isAuthorized) {
             throw handleClientException(ERROR_CODE_UNAUTHORIZED_ACTION, "User not authorized to create organizations under : " + organization.getParent().getId());
@@ -281,12 +282,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
     @Override
     public List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException {
 
+        //TODO test
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST, "Provided organization Id is empty");
         }
         organizationId = organizationId.trim();
         if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
-            return organizationMgtDao.getChildOrganizationIds(organizationId);
+            return organizationMgtDao.getChildOrganizationIds(organizationId, getAuthenticatedUserId());
         } else {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST,
                     " Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
@@ -688,7 +690,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
     private boolean canDisable(String organizationId) throws OrganizationManagementException {
 
         // TODO check for enabled users
-        List<String> children = getChildOrganizationIds(organizationId);
+        List<String> children = organizationMgtDao.getChildOrganizationIds(organizationId, null);
         for (String child : children) {
             Organization organization = getOrganization(child);
             if (organization.getStatus() == Organization.OrgStatus.ACTIVE) {

@@ -113,10 +113,11 @@ public interface OrganizationMgtDao {
     /**
      *
      * @param organizationId
+     * @param userId
      * @return
      * @throws OrganizationManagementException
      */
-    List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException;
+    List<String> getChildOrganizationIds(String organizationId, String userId) throws OrganizationManagementException;
 
     /**
      * Add, remove or replace organization field, attribute or user store configuration.
