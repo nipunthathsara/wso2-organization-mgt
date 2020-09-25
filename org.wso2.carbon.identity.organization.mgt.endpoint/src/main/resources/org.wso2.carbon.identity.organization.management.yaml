@@ -624,6 +624,122 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Organization
+  '/organizations/{organization-id}/roles':
+    post:
+      summary: |
+        Create a user role mappings for an organization.
+      description: |
+        This API is used to create user role mappings for an organization.
+      parameters:
+        - name: organization-id
+          in: path
+          description: 'ID of the organization of which, the user role mappings are added.'
+          required: true
+          type: string
+        - name: userRoles
+          in: body
+          description: This represents user role mappings.
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserRoleMapping'
+      responses:
+        '204':
+          description: Ok
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization User Roles
+    patch:
+      summary: |
+        Modify user role mappings for an organization.
+      description: |
+        This API is used to modify user role mappings for an organization.
+      parameters:
+        - name: organization-id
+          in: path
+          description: 'ID of the organization of which, the user role mappings are modified.'
+          required: true
+          type: string
+        - name: Operations
+          in: body
+          description: This represents the patch operation.
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Operation'
+      responses:
+        '204':
+          description: Ok
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization User Roles
+  '/organizations/{organization-id}/roles/{role-id}/users/{user-id}':
+    delete:
+      summary: |
+        Delte an organization user role mapping.
+      description: |
+        This API is used to delete user role mappings for an organization.
+      parameters:
+        - name: organization-id
+          in: path
+          description: 'ID of the organization of which, the user role mappings will be deleted.'
+          required: true
+          type: string
+        - name: role-id
+          in: path
+          description: 'ID of the role of which, the user will be deleted.'
+          required: true
+          type: string
+        - name: user-id
+          in: path
+          description: 'ID of the user.'
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Ok
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization User Roles
   "/organizations/import":
     post:
       description: |
@@ -884,6 +1000,20 @@ definitions:
         enum: [USER_STORE_DOMAIN, RDN, DN]
       value:
         type: string
+  #-----------------------------------------------------
+  # Organization User Role Mapping Object
+  #-----------------------------------------------------
+  UserRoleMapping:
+    type: object
+    required:
+      - roleId
+    properties:
+      roleId:
+        type: string
+      users:
+        type: array
+        items:
+          type: string
   #-----------------------------------------------------
   # Organization Patch Operation Object
   #-----------------------------------------------------
