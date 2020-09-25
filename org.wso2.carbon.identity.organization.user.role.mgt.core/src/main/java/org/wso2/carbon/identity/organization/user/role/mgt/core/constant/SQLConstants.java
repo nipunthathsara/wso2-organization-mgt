@@ -22,8 +22,10 @@ public class SQLConstants {
 
     public static final String COUNT_COLUMN_NAME = "COUNT(1)";
     public static final String INSERT_ALL = "INSERT ALL ";
+    public static final String VIEW_ID_COLUMN = "UM_ID";
+    public static final String VIEW_USER_ID_COLUMN = "UM_USER_ID";
     public static final String INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING =
-            "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_TENANT_ID, ORG_ID) VALUES (?, ?, ?, ?, ?) ";
+            "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID) VALUES (?, ?, ?, ?, ?, ?) ";
     public static final String SELECT_DUMMY_RECORD = "SELECT 1 FROM DUAL";
     public static final String INSERT_ORGANIZATION_USER_ROLE_MAPPING =
             "INSERT INTO\n" +
@@ -51,7 +53,14 @@ public class SQLConstants {
                     "    UM_USER_ROLE_ORG\n" +
                     "WHERE\n" +
                     "    UM_USER_ID = ? AND UM_ROLE_ID = ? AND UM_TENANT_ID = ?";
-    public static final String GET_USERS_BY_ORG_AND_ROLE =
+    public static final String GET_ROLE_ID_BY_SCIM_GROUP_NAME =
+            "SELECT\n" +
+                    "    UM_ID\n" +
+                    "FROM\n" +
+                    "    UM_HYBRID_ROLE\n" +
+                    "WHERE\n" +
+                    "    UM_ROLE_NAME = ? AND UM_TENANT_ID = ?";
+    public static final String  GET_USERS_BY_ORG_AND_ROLE =
             "SELECT\n" +
                     "    UM_USER_ID\n" +
                     "FROM\n" +

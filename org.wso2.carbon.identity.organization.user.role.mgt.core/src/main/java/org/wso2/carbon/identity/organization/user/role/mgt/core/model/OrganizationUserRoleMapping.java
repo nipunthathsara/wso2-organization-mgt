@@ -22,16 +22,18 @@ public class OrganizationUserRoleMapping {
 
     private String organizationId;
     private String userId;
-    private Integer roleId;
+    private Integer hybridRoleId;
+    private String roleId;
 
     public OrganizationUserRoleMapping() {
 
     }
 
-    public OrganizationUserRoleMapping(String organizationId, String userId, Integer roleId) {
+    public OrganizationUserRoleMapping(String organizationId, String userId, String roleId, Integer hybridRoleId) {
 
         this.organizationId = organizationId;
         this.userId = userId;
+        this.hybridRoleId = hybridRoleId;
         this.roleId = roleId;
     }
 
@@ -40,15 +42,21 @@ public class OrganizationUserRoleMapping {
         this.organizationId = organizationId;
     }
 
+    public void setHybridRoleId(Integer hybridRoleId) {
+
+        this.hybridRoleId = hybridRoleId;
+    }
+
+    public void setRoleId(String roleId) {
+
+        this.roleId = roleId;
+    }
+
     public void setUserId(String userId) {
 
         this.userId = userId;
     }
 
-    public void setRoleId(Integer roleId) {
-
-        this.roleId = roleId;
-    }
 
     public String getOrganizationId() {
 
@@ -60,7 +68,12 @@ public class OrganizationUserRoleMapping {
         return userId;
     }
 
-    public Integer getRoleId() {
+    public Integer getHybridRoleId() {
+
+        return hybridRoleId;
+    }
+
+    public String getRoleId() {
 
         return roleId;
     }

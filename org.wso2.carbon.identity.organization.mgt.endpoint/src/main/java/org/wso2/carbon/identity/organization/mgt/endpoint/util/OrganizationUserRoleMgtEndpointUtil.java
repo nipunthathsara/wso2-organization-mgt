@@ -117,8 +117,7 @@ public class OrganizationUserRoleMgtEndpointUtil {
         ErrorDTO errorDTO = getErrorDTO(
                 Response.Status.INTERNAL_SERVER_ERROR.toString(),
                 Response.Status.INTERNAL_SERVER_ERROR.toString(),
-                code
-                                       );
+                code);
         logError(log, e);
         return new InternalServerErrorException(errorDTO);
     }

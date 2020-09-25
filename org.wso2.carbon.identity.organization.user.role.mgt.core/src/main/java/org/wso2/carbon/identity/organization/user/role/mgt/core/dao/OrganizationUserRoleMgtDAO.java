@@ -30,13 +30,16 @@ public interface OrganizationUserRoleMgtDAO {
     void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMapping, Integer tenantID)
             throws OrganizationUserRoleMgtException;
 
-    List<Organization> getOrganizationsByUserAndRole(String userId, Integer roleId);
+    List<Organization> getOrganizationsByUserAndRole(String userId, String roleId, Integer tenantID);
 
-    List<String> getUserIdsByOrganizationAndRole(String organizationID, Integer roleId);
+    List<String> getUserIdsByOrganizationAndRole(String organizationID, String roleId, Integer tenantID)
+            throws OrganizationUserRoleMgtServerException;
 
-    void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, Integer roleId, Integer tenantId)
+    void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, String roleId, Integer tenantId)
             throws OrganizationUserRoleMgtException;
 
-    boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, Integer roleId, Integer tenantId)
+    boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, String roleId, Integer tenantId)
             throws OrganizationUserRoleMgtException;
+
+    Integer getRoleIdBySCIMGroupName(String roleName, Integer tenantId) throws OrganizationUserRoleMgtServerException;
 }

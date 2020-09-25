@@ -55,7 +55,7 @@ public abstract class OrganizationsApiService {
 
     public abstract Response organizationsOrganizationIdRolesPost(String organizationId, List<UserRoleMappingDTO> userRoles);
 
-    public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, Integer roleId, String userId);
+    public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, String roleId, String userId);
 
     public abstract Response organizationsOrganizationIdUserstoreConfigsGet(String organizationId);
 

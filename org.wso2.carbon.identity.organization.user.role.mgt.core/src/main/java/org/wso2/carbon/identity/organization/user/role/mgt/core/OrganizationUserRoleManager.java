@@ -41,9 +41,9 @@ public interface OrganizationUserRoleManager {
 
     List<String> getUserIdsByOrganizationAndRole(String organizationID, Integer roleId);
 
-    void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, Integer roleId)
+    void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, String roleId)
             throws OrganizationUserRoleMgtException;
 
-    boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, Integer roleId)
+    boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, String roleId)
             throws OrganizationUserRoleMgtException;
 }

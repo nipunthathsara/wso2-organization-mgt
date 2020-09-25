@@ -209,7 +209,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             userRoles.stream()
                     .map(mapping -> new UserRoleMapping(mapping.getRoleId(), mapping.getUsers()))
                     .collect(Collectors.toList()));
-            return Response.noContent().build();
+            return Response.ok().build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
         } catch (OrganizationUserRoleMgtException e) {
@@ -220,7 +220,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     }
 
     @Override
-    public Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, Integer roleId,
+    public Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, String roleId,
                                                                             String userId) {
 
         try {

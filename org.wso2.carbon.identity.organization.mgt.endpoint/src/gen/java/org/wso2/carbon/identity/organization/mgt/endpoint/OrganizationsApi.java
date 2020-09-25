@@ -235,7 +235,7 @@ public class OrganizationsApi  {
         @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
 
     public Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(@ApiParam(value = "ID of the organization of which, the user role mappings will be deleted.",required=true ) @PathParam("organization-id")  String organizationId,
-    @ApiParam(value = "ID of the role of which, the user will be deleted.",required=true ) @PathParam("role-id")  Integer roleId,
+    @ApiParam(value = "ID of the role of which, the user will be deleted.",required=true ) @PathParam("role-id")  String roleId,
     @ApiParam(value = "ID of the user.",required=true ) @PathParam("user-id")  String userId) {
 
         return delegate.organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(organizationId,roleId,userId);
@@ -283,7 +283,7 @@ public class OrganizationsApi  {
     return delegate.organizationsOrganizationIdUserstoreConfigsPatch(organizationId,operations);
     }
     @POST
-    
+
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
     @io.swagger.annotations.ApiOperation(value = "Create a new organization.\n", notes = "This API is used to create the organization defined in the user input.\n", response = BasicOrganizationDTO.class)

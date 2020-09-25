@@ -30,7 +30,7 @@ public class UserRoleMappingDTO {
 
     @Valid 
     @NotNull(message = "Property roleId cannot be null.") 
-    private Integer roleId = null;
+    private String roleId = null;
 
     @Valid 
     private List<String> users = new ArrayList<String>();
@@ -39,10 +39,10 @@ public class UserRoleMappingDTO {
     **/
     @ApiModelProperty(required = true, value = "")
     @JsonProperty("roleId")
-    public Integer getRoleId() {
+    public String getRoleId() {
         return roleId;
     }
-    public void setRoleId(Integer roleId) {
+    public void setRoleId(String roleId) {
         this.roleId = roleId;
     }
 
