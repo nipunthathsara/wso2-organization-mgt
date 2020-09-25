@@ -93,11 +93,12 @@ public interface OrganizationMgtDao {
      * @param sortBy
      * @param sortOrder
      * @param requestedAttributes
+     * @param userId
      * @return
      * @throws OrganizationManagementException
      */
-    List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy, String sortOrder, List<String> requestedAttributes)
-            throws OrganizationManagementException;
+    List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
+              String sortOrder, List<String> requestedAttributes, String userId) throws OrganizationManagementException;
 
     /**
      * Returns user store configs of the {@link Organization} identified by the given ID.
