@@ -22,8 +22,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.custom.userstore.manager.internal.CustomUserStoreDataHolder;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.core.persistence.UmPersistenceManager;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
@@ -39,6 +41,8 @@ import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadOnlyLDAPUserStoreManager;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadWriteLDAPUserStoreManager;
+import org.wso2.carbon.user.core.model.ExpressionCondition;
+import org.wso2.carbon.user.core.model.OperationalCondition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,14 +50,18 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.UUID;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DISABLED_USER_ACCOUNT_CLAIM_URI;
+import static org.wso2.carbon.custom.userstore.manager.Constants.ORGANIZATION_ID_CLAIM_URI;
+import static org.wso2.carbon.custom.userstore.manager.Constants.ORGANIZATION_ID_DEFAULT_CLAIM_URI;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ACCOUNT_DISABLED_CLAIM_URI;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
+import static org.wso2.carbon.user.core.UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.DOMAIN_NAME;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.userSearchBase;
 
@@ -259,20 +267,46 @@ public class Utils {
         }
     }
 
-    public static boolean checkActiveUsers(String organizationId, int tenantId) throws OrganizationManagementException {
+    public static boolean checkForActiveUsers(String organizationId, int tenantId) throws OrganizationManagementException {
 
-        //TODO fix java security manager error
-        Map<String, UserStoreConfig> userStoreConfigs = getOrganizationManager().getUserStoreConfigs(organizationId);
-        String dn = userStoreConfigs.get(DN).getValue();
-        String domain = userStoreConfigs.get(USER_STORE_DOMAIN).getValue();
+        String userStoreDomain = getOrganizationManager().getUserStoreConfigs(organizationId).get(USER_STORE_DOMAIN).getValue();
+        // Find realmConfigurations for the user store domain
+        List<RealmConfiguration> realmConfigurations = getRealmConfigurations(tenantId);
+        RealmConfiguration matchingRealmConfig = null;
+        for (RealmConfiguration realmConfig : realmConfigurations) {
+            if (realmConfig.getUserStoreProperties().get(DOMAIN_NAME).equalsIgnoreCase(userStoreDomain)) {
+                matchingRealmConfig = realmConfig;
+                break;
+            }
+        }
+        if (matchingRealmConfig == null) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR, "Couldn't find realm configurations for the user store domain : " + userStoreDomain);
+        }
+        String orgIdClaimUri = !StringUtils.isBlank(IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI))
+                ? IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI).trim() : ORGANIZATION_ID_DEFAULT_CLAIM_URI;
         try {
-            UserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationMgtDataHolder.getInstance()
-                    .getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
-            return 0 == userStoreManager.getUserCountWithClaims(DISABLED_USER_ACCOUNT_CLAIM_URI,
-                    domain + "/false");
-        } catch (UserStoreException e) {
-            throw handleServerException(ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
-                    "Error obtaining user store manager for the tenant id : " + tenantId + ", user store domain : " + domain);
+            // Get user store manager for the domain
+            UserStoreManager userStoreManager = OrganizationMgtDataHolder.getInstance().getRealmService().getUserRealm(matchingRealmConfig).getUserStoreManager();
+            // Get tenant user realm
+            org.wso2.carbon.user.api.UserRealm tenantUserRealm = CustomUserStoreDataHolder.getInstance().getRealmService()
+                    .getTenantUserRealm(tenantId);
+            org.wso2.carbon.user.api.ClaimManager claimManager = tenantUserRealm.getClaimManager();
+            // Find attribute name for the 'accountDisabled' claim
+            String accDisabledAttribute = claimManager.getAttributeName(
+                    userStoreDomain,
+                    ACCOUNT_DISABLED_CLAIM_URI
+            );
+            String orgIdAttribute = claimManager.getAttributeName(
+                    userStoreDomain,
+                    orgIdClaimUri
+            );
+            ExpressionCondition accDisabledCondition = new ExpressionCondition("EQ", accDisabledAttribute, "false");
+            ExpressionCondition orgIdCondition = new ExpressionCondition("EQ", orgIdAttribute, organizationId);
+            OperationalCondition opCondition = new OperationalCondition("and", orgIdCondition, accDisabledCondition);
+            String[] userList = ((AbstractUserStoreManager) userStoreManager).getUserList(opCondition, userStoreDomain, null, 1, 0, null, null);
+            return userList.length > 0;
+        } catch (org.wso2.carbon.user.api.UserStoreException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR, "Error while checking for active users", e);
         }
     }
 

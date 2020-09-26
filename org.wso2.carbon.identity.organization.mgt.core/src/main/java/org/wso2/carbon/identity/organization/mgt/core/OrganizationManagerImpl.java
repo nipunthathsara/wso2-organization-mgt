@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.custom.userstore.manager.CustomUserStoreManager;
+import org.wso2.carbon.custom.userstore.manager.internal.CustomUserStoreDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
@@ -89,6 +90,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_DISPLAY_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_STATUS_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.checkForActiveUsers;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getLdapRootDn;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getUserIDFromUserName;
@@ -681,7 +683,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     /**
-     * To disable an organization, it shouldn't have any 'ACTIVE' organizations down in the hierarchy.
+     * To disable an organization, it shouldn't have any 'ACTIVE' organizations as its sub-organizations.
+     * To disable an organization, all user accounts should be disabled.
      *
      * @param organizationId
      * @return
@@ -689,7 +692,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
      */
     private boolean canDisable(String organizationId) throws OrganizationManagementException {
 
-        // TODO check for enabled users
+        int tenantId = getTenantId();
+        //TODO test this
+        if (checkForActiveUsers(organizationId, tenantId)) {
+            return false;
+        }
         List<String> children = organizationMgtDao.getChildOrganizationIds(organizationId, null);
         for (String child : children) {
             Organization organization = getOrganization(child);
