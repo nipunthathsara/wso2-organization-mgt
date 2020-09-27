@@ -23,7 +23,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.custom.userstore.manager.CustomUserStoreManager;
-import org.wso2.carbon.custom.userstore.manager.internal.CustomUserStoreDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
@@ -37,6 +36,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import org.wso2.carbon.user.api.AuthorizationManager;
@@ -53,7 +53,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_USER_AUTHORIZED_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST;
@@ -107,6 +107,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
     private static final Log log = LogFactory.getLog(OrganizationManagerImpl.class);
     private OrganizationMgtDao organizationMgtDao = OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao();
+    private OrganizationAuthorizationDao authorizationDao = OrganizationMgtDataHolder.getInstance().getOrganizationAuthDao();
 
     @Override
     public Organization addOrganization(OrganizationAdd organizationAdd, boolean isImport)
@@ -801,7 +802,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                         getRealmService().getTenantUserRealm(getTenantId()).getAuthorizationManager();
                 return authorizationManager.isUserAuthorized(getAuthenticatedUsername(), ORGANIZATION_CREATE_PERMISSION, UI_EXECUTE);
             } catch (UserStoreException e) {
-                throw handleServerException(ERROR_CODE_CHECK_USER_AUTHORIZED_ERROR,
+                throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
                         "Error while checking if the user is authorized to create ROOT level organization.", e);
             }
         } else {

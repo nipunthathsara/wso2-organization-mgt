@@ -107,7 +107,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_ATTRIBUTE_VALIDATION_ERROR("ORGMGT_00034", "Error while validating attributes : %s"),
         ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGMGT_00035", "Error accessing user store : %s"),
         ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR("ORGMGT_00036", "Error checking RDN availability : %s"),
-        ERROR_CODE_CHECK_USER_AUTHORIZED_ERROR("ORGMGT_00037", "Error while checking if the user is authorized : %s"),
+        ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR("ORGMGT_00037", "Error while authorizing : %s"),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

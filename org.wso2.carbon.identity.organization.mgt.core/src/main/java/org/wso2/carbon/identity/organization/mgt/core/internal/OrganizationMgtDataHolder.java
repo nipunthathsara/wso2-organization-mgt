@@ -18,13 +18,16 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.internal;
 
+import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidator;
 import org.wso2.carbon.user.core.service.RealmService;
 
 public class OrganizationMgtDataHolder {
 
     private static OrganizationMgtDataHolder orgMgtDataHolder = new OrganizationMgtDataHolder();
+    private static OrganizationAuthorizationDao organizationAuthDao;
     private OrganizationMgtDao organizationMgtDao;
     private RealmService realmService;
     private AttributeValidator attributeValidator;
@@ -42,6 +45,16 @@ public class OrganizationMgtDataHolder {
     public void setOrganizationMgtDao(OrganizationMgtDao organizationMgtDao) {
 
         this.organizationMgtDao = organizationMgtDao;
+    }
+
+    public static OrganizationAuthorizationDao getOrganizationAuthDao() {
+
+        return organizationAuthDao;
+    }
+
+    public static void setOrganizationAuthDao(OrganizationAuthorizationDao organizationAuthDao) {
+
+        OrganizationMgtDataHolder.organizationAuthDao = organizationAuthDao;
     }
 
     public RealmService getRealmService() {

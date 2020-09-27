@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 
 /**
  * This interface is used to query 'UM_USER_ROLE_ORG' table and 'ORG_AUTHZ_VIEW' view which are also being accessed
@@ -37,4 +38,27 @@ public interface OrganizationAuthorizationDao {
      * @throws OrganizationManagementException
      */
     boolean isUserAuthorized(String userId, String organizationId, String permission) throws OrganizationManagementException;
+
+    /**
+     * Get role name (fetch first match) which the user was authorized by
+     *
+     * @param userId
+     * @param organizationId
+     * @param permission
+     * @return
+     * @throws OrganizationManagementException
+     */
+    OrganizationUserRoleMapping getAuthorizedUserRole(String userId, String organizationId, String permission) throws OrganizationManagementException;
+
+    /**
+     * Add an entry to the 'UM_USER_ROLE_ORG' table.
+     *
+     * @param userId
+     * @param roleId
+     * @param hybridRoleId
+     * @param tenantId
+     * @param organizationId
+     * @throws OrganizationManagementException
+     */
+    void addOrganizationAndUserRoleMapping(String userId, String roleId, int hybridRoleId, int tenantId, String organizationId) throws OrganizationManagementException;
 }

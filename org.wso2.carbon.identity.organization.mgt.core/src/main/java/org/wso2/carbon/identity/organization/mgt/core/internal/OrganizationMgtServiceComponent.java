@@ -31,6 +31,7 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
+import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidator;
 import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl;
@@ -61,6 +62,7 @@ public class OrganizationMgtServiceComponent {
 
         try {
             OrganizationMgtDataHolder.getInstance().setOrganizationMgtDao(new OrganizationMgtDaoImpl());
+            OrganizationMgtDataHolder.getInstance().setOrganizationAuthDao(new OrganizationAuthorizationDaoImpl());
             BundleContext bundleContext = componentContext.getBundleContext();
             bundleContext.registerService(OrganizationManager.class.getName(),
                     new OrganizationManagerImpl(), null);

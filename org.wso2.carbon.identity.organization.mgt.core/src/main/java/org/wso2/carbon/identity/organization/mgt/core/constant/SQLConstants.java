@@ -90,6 +90,7 @@ public class SQLConstants {
     public static final String VIEW_CONFIG_KEY_COLUMN = "CONFIG_KEY";
     public static final String VIEW_CONFIG_VALUE_COLUMN = "CONFIG_VALUE";
     public static final String UM_ROLE_ID_COLUMN = "UM_ROLE_ID";
+    public static final String UM_HYBRID_ROLE_ID_COLUMN = "UM_HYBRID_ROLE_ID";
     public static final String LIKE_SYMBOL = "%";
     // View returns null for non matching entries upon join. Hence, the NULL check.
     // View returns duplicate CONFIG_IDs if the  #attributes > #configs. Hence, DISTINCT
@@ -256,4 +257,17 @@ public class SQLConstants {
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
             "    UM_USER_ID = ? AND ORG_ID = ? AND (UM_RESOURCE_ID = ? OR UM_RESOURCE_ID = '" + ORGANIZATION_BASE_PERMISSION + "')";
+    public static final String GET_USER_AUTHORIZED_ROLE =
+            "SELECT" +
+            "    UM_ROLE_ID\n" +
+            "FROM\n" +
+            "    ORG_AUTHZ_VIEW\n" +
+            "WHERE\n" +
+            "    UM_USER_ID = ? AND ORG_ID = ? AND (UM_RESOURCE_ID = ? OR UM_RESOURCE_ID = '" + ORGANIZATION_BASE_PERMISSION + "')";
+    public static final String ADD_USER_ROLE_ORG_MAPPING =
+            "INSERT INTO\n" +
+            "    UM_USER_ROLE_ORG\n" +
+            "    (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID)\n" +
+            "VALUES\n" +
+            "    (?, ?, ?, ?, ?, ?)";
 }
