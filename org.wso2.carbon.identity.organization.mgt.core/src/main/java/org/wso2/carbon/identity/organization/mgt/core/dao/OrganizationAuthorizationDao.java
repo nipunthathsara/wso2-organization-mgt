@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 
 /**
@@ -61,4 +62,24 @@ public interface OrganizationAuthorizationDao {
      * @throws OrganizationManagementException
      */
     void addOrganizationAndUserRoleMapping(String userId, String roleId, int hybridRoleId, int tenantId, String organizationId) throws OrganizationManagementException;
+
+    /**
+     * Find the 'UM_ID' by 'UM_ROLE_NAME' from the 'UM_HYBRID_ROLE' table.
+     *
+     * @param role
+     * @param tenantId
+     * @return
+     * @throws OrganizationManagementException
+     */
+    int findHybridRoleIdFromRoleName(String role, int tenantId) throws OrganizationManagementException;
+
+    /**
+     * Find the 'ID' (SCIM group id) from the 'IDN_SCIM_GROUP' table using the role name.
+     *
+     * @param role
+     * @param tenantId
+     * @return
+     * @throws OrganizationManagementException
+     */
+    String findGroupIdFromRoleName(String role, int tenantId) throws OrganizationManagementException;
 }

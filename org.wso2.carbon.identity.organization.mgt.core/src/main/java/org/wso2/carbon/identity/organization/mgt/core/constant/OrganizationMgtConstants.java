@@ -30,9 +30,9 @@ public class OrganizationMgtConstants {
     public static final String ORGANIZATION_RESOURCE_BASE_PATH = "/t/%s/api/identity/organization-mgt/v1.0/organizations/%s";
     public static final String ACCOUNT_DISABLED_CLAIM_URI = "http://wso2.org/claims/identity/accountDisabled";
     /**
-     *          <OrganizationMgt>
-     *             <AttributeValidatorClass>org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl</AttributeValidatorClass>
-     *         </OrganizationMgt>
+     * <OrganizationMgt>
+     * <AttributeValidatorClass>org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl</AttributeValidatorClass>
+     * </OrganizationMgt>
      */
     public static final String ATTRIBUTE_VALIDATOR_PROPERTIES_FILE_NAME = "org-mgt-attributes.properties";
     public static final String ORGANIZATION_ATTRIBUTE_VALIDATOR = "OrganizationMgt.AttributeValidatorClass";
@@ -71,6 +71,31 @@ public class OrganizationMgtConstants {
     public static final String ORGANIZATION_DELETE_PERMISSION = "/permission/admin/organizations/delete";
     public static final String UI_EXECUTE = "ui.execute";
 
+    // Identity property keys for organization mgt roles
+    public enum OrganizationMgtRoles {
+
+        ORGANIZATION_MGT_ROLE("OrganizationMgtRoles.OrganizationMgtRole"),
+        ORGANIZATION_ROLE_MGT_ROLE("OrganizationMgtRoles.OrganizationRoleMgtRole"),
+        ORGANIZATION_USER_MGT_ROLE("OrganizationMgtRoles.OrganizationUserMgtRole");
+
+        private String propertyName;
+
+        OrganizationMgtRoles(String propertyName) {
+
+            this.propertyName = propertyName;
+        }
+
+        public void setPropertyName(String propertyName) {
+
+            this.propertyName = propertyName;
+        }
+
+        public String getPropertyName() {
+
+            return propertyName;
+        }
+    }
+
     public enum ErrorMessages {
 
         // Client errors (ORGMGT_00001-ORGMGT_00019)
@@ -108,6 +133,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGMGT_00035", "Error accessing user store : %s"),
         ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR("ORGMGT_00036", "Error checking RDN availability : %s"),
         ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR("ORGMGT_00037", "Error while authorizing : %s"),
+        ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR("ORGMGT_00038", "Organization Management Server configuration error : %s"),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

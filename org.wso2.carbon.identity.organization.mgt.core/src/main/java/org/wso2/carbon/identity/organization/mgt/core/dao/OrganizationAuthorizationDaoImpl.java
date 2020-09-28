@@ -25,12 +25,17 @@ import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRole
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ADD_USER_ROLE_ORG_MAPPING;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_GROUP_ID_FROM_ROLE_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_HYBRID_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_AUTHORIZED_ROLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.IS_USER_AUTHORIZED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_HYBRID_ROLE_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ROLE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewIdentityTemplate;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewTemplate;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 
@@ -42,8 +47,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             int mappingsCount = jdbcTemplate.fetchSingleRecord(IS_USER_AUTHORIZED,
-                    (resultSet, rowNumber) ->
-                            resultSet.getInt(COUNT_COLUMN),
+                    (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setString(++parameterIndex, userId);
@@ -100,7 +104,42 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                     false);
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
-                    "Error while adding authorization mapping entry. Organization : " + organizationId + ", userId : " + userId + ", roleId : " + roleId + ", hybridRoleId : " + hybridRoleId, e);
+                    "Error while adding org-authorization mapping entry. Organization : " + organizationId + ", userId : " + userId + ", roleId : " + roleId + ", hybridRoleId : " + hybridRoleId, e);
+        }
+    }
+
+    public int findHybridRoleIdFromRoleName(String role, int tenantId) throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        try {
+            return jdbcTemplate.fetchSingleRecord(FIND_HYBRID_ID_FROM_ROLE_NAME,
+                    (resultSet, rowNumber) -> resultSet.getInt(UM_ID_COLUMN),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex, role);
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                    });
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
+                    "Error obtaining UM id for the hybrid role : " + role + ", tenant id : " + tenantId, e);
+        }
+    }
+
+    public String findGroupIdFromRoleName(String role, int tenantId) throws OrganizationManagementException {
+
+        // This method is querying the Identity database.
+        JdbcTemplate jdbcTemplate = getNewIdentityTemplate();
+        try {
+            return jdbcTemplate.fetchSingleRecord(FIND_GROUP_ID_FROM_ROLE_NAME,
+                    (resultSet, rowNumber) -> resultSet.getString(ID_COLUMN),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex, role);
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                    });
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
+                    "Error obtaining group id for the hybrid role : " + role + ", tenant id : " + tenantId, e);
         }
     }
 }

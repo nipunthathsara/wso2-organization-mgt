@@ -25,16 +25,18 @@ import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.custom.userstore.manager.internal.CustomUserStoreDataHolder;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.core.persistence.UmPersistenceManager;
+import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
+import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
-import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
@@ -45,23 +47,25 @@ import org.wso2.carbon.user.core.model.ExpressionCondition;
 import org.wso2.carbon.user.core.model.OperationalCondition;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import static org.wso2.carbon.custom.userstore.manager.Constants.ORGANIZATION_ID_CLAIM_URI;
 import static org.wso2.carbon.custom.userstore.manager.Constants.ORGANIZATION_ID_DEFAULT_CLAIM_URI;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ACCOUNT_DISABLED_CLAIM_URI;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
-import static org.wso2.carbon.user.core.UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.DOMAIN_NAME;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.userSearchBase;
 
@@ -243,6 +247,11 @@ public class Utils {
         return new JdbcTemplate(UmPersistenceManager.getInstance().getDataSource());
     }
 
+    public static JdbcTemplate getNewIdentityTemplate() {
+
+        return new JdbcTemplate(IdentityDatabaseUtil.getDataSource());
+    }
+
     public static String getUserIDFromUserName(String username, int tenantId) throws OrganizationManagementServerException {
 
         try {
@@ -314,5 +323,32 @@ public class Utils {
 
         return (OrganizationManager) PrivilegedCarbonContext.getThreadLocalCarbonContext()
                 .getOSGiService(OrganizationManager.class, null);
+    }
+
+    public static Map<String, OrganizationMgtRole> populateManagementRoles(int tenantId) throws OrganizationManagementException {
+
+        Map<String, OrganizationMgtRole> organizationMgtRoles = new HashMap<>();
+        for (OrganizationMgtRoles mgtRole : OrganizationMgtRoles.values()) {
+            String role = IdentityUtil.getProperty(mgtRole.getPropertyName());
+            if (StringUtils.isBlank(role)) {
+                throw handleServerException(ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR, "Organization Management roles can not be empty : " + mgtRole.getPropertyName());
+            }
+            role = role.trim();
+            // If the domain is defined, it should be 'internal'
+            if (role.contains("/") && !"Internal".equalsIgnoreCase(role.substring(0, role.indexOf("/")))) {
+                throw handleServerException(ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR, "Management roles should be 'INTERNAL' roles : " + role);
+            } else {
+                // Remove the 'internal/' prefix from the role name
+                role = role.replaceAll("(?i)" + Pattern.quote("Internal/"), "");
+            }
+            OrganizationAuthorizationDao authorizationDao = OrganizationMgtDataHolder.getInstance().getOrganizationAuthDao();
+            // Find hybrid role id of the internal role
+            int hybridRoleId = authorizationDao.findHybridRoleIdFromRoleName(role, tenantId);
+            // Find SCIM group id
+            role = "Internal/".concat(role);
+            String groupId = authorizationDao.findGroupIdFromRoleName(role, tenantId);
+            organizationMgtRoles.put(mgtRole.toString(), new OrganizationMgtRole(role, groupId, hybridRoleId));
+        }
+        return organizationMgtRoles;
     }
 }

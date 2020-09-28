@@ -91,6 +91,10 @@ public class SQLConstants {
     public static final String VIEW_CONFIG_VALUE_COLUMN = "CONFIG_VALUE";
     public static final String UM_ROLE_ID_COLUMN = "UM_ROLE_ID";
     public static final String UM_HYBRID_ROLE_ID_COLUMN = "UM_HYBRID_ROLE_ID";
+
+    public static final String UM_ID_COLUMN = "UM_ID";
+    public static final String ID_COLUMN = "ID";
+
     public static final String LIKE_SYMBOL = "%";
     // View returns null for non matching entries upon join. Hence, the NULL check.
     // View returns duplicate CONFIG_IDs if the  #attributes > #configs. Hence, DISTINCT
@@ -270,4 +274,18 @@ public class SQLConstants {
             "    (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID)\n" +
             "VALUES\n" +
             "    (?, ?, ?, ?, ?, ?)";
+    public static final String FIND_HYBRID_ID_FROM_ROLE_NAME =
+            "SELECT\n" +
+            "    UM_ID\n" +
+            "FROM\n" +
+            "    UM_HYBRID_ROLE\n" +
+            "WHERE\n" +
+            "    UM_ROLE_NAME = ? AND UM_TENANT_ID = ?";
+    public static final String FIND_GROUP_ID_FROM_ROLE_NAME =
+            "SELECT\n" +
+            "    ATTR_VALUE\n" +
+            "FROM\n" +
+            "    IDN_SCIM_GROUP\n" +
+            "WHERE\n" +
+            "    ROLE_NAME = ? AND TENANT_ID = ? AND ATTR_NAME = 'urn:ietf:params:scim:schemas:core:2.0:id'";
 }

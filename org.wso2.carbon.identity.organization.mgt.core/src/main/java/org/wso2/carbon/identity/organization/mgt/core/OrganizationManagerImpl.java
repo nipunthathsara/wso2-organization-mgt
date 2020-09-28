@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.custom.userstore.manager.CustomUserStoreManager;
+import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
@@ -36,6 +37,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
@@ -44,6 +46,7 @@ import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreManager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -67,6 +70,9 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNAUTHORIZED_ACTION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_RESOURCE_BASE_PATH;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_MGT_ROLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_ROLE_MGT_ROLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_USER_MGT_ROLE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
@@ -148,6 +154,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             }
         }
         organizationMgtDao.addOrganization(getTenantId(), organization);
+        grantCreatorWithFullPermission(organization.getId());
         return organization;
     }
 
@@ -182,7 +189,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
     @Override
     public List<Organization> getOrganizations(Condition condition, int offset, int limit, String sortBy,
-                     String sortOrder, List<String> requestedAttributes) throws OrganizationManagementException {
+                                               String sortOrder, List<String> requestedAttributes) throws OrganizationManagementException {
 
         // Validate pagination and sorting parameters
         sortBy = getMatchingColumnNameForSortingParameter(sortBy);
@@ -795,7 +802,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         // If you are going to create a root level organization,
         // you should have '/permission/admin/organizations/create' assigned to at least one of the roles that you are bearing
-        if(ROOT.equals(parentId)) {
+        if (ROOT.equals(parentId)) {
             // check using the authorization manager
             try {
                 AuthorizationManager authorizationManager = OrganizationMgtDataHolder.getInstance().
@@ -810,6 +817,47 @@ public class OrganizationManagerImpl implements OrganizationManager {
             // you should have '/permission/admin/organizations/create' over the parent organization
             OrganizationAuthorizationDao authorizationDao = new OrganizationAuthorizationDaoImpl();
             return authorizationDao.isUserAuthorized(getAuthenticatedUserId(), parentId, ORGANIZATION_CREATE_PERMISSION);
+        }
+    }
+
+    private void grantCreatorWithFullPermission(String organizationId) throws OrganizationManagementException {
+
+        List<String> tempGroupIds = new ArrayList<>();
+        Map<String, OrganizationMgtRole> organizationMgtRoles = OrganizationMgtDataHolder.getInstance().getOrganizationMgtRoles();
+        OrganizationMgtRole organizationManager = organizationMgtRoles.get(ORGANIZATION_MGT_ROLE.toString());
+        tempGroupIds.add(organizationManager.getGroupId());
+        // Add an entry for 'organization management' purposes
+        authorizationDao.addOrganizationAndUserRoleMapping(
+                getAuthenticatedUserId(),
+                organizationManager.getGroupId(),
+                organizationManager.getHybridRoleId(),
+                getTenantId(),
+                organizationId
+        );
+        OrganizationMgtRole organizationUserManager = organizationMgtRoles.get(ORGANIZATION_USER_MGT_ROLE.toString());
+        // If the 'OrganizationMgtRole' and the 'OrganizationUserMgtRole' are the same, avoid adding duplicate entries
+        if (!tempGroupIds.contains(organizationUserManager.getGroupId())) {
+            tempGroupIds.add(organizationUserManager.getGroupId());
+            // Add an entry for 'organization user management' purposes
+            authorizationDao.addOrganizationAndUserRoleMapping(
+                    getAuthenticatedUserId(),
+                    organizationUserManager.getGroupId(),
+                    organizationUserManager.getHybridRoleId(),
+                    getTenantId(),
+                    organizationId
+            );
+        }
+        OrganizationMgtRole organizationRoleManager = organizationMgtRoles.get(ORGANIZATION_ROLE_MGT_ROLE.toString());
+        // If the 'OrganizationRoleMgtRole' is the same as any of the above, avoid adding duplicate entries
+        if (!tempGroupIds.contains(organizationRoleManager.getGroupId())) {
+            // Add an entry for 'organization role management' purposes
+            authorizationDao.addOrganizationAndUserRoleMapping(
+                    getAuthenticatedUserId(),
+                    organizationRoleManager.getGroupId(),
+                    organizationRoleManager.getHybridRoleId(),
+                    getTenantId(),
+                    organizationId
+            );
         }
     }
 }

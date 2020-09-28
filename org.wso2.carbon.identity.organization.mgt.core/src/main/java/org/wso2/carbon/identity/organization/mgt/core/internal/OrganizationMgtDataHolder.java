@@ -20,9 +20,13 @@ package org.wso2.carbon.identity.organization.mgt.core.internal;
 
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidator;
 import org.wso2.carbon.user.core.service.RealmService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class OrganizationMgtDataHolder {
 
@@ -30,7 +34,16 @@ public class OrganizationMgtDataHolder {
     private static OrganizationAuthorizationDao organizationAuthDao;
     private OrganizationMgtDao organizationMgtDao;
     private RealmService realmService;
-    private AttributeValidator attributeValidator;
+    private static AttributeValidator attributeValidator;
+    private Map<String, OrganizationMgtRole> organizationMgtRoles = new HashMap<>();
+
+    public Map<String, OrganizationMgtRole> getOrganizationMgtRoles() {
+        return organizationMgtRoles;
+    }
+
+    public void setOrganizationMgtRoles(Map<String, OrganizationMgtRole> organizationMgtRoles) {
+        this.organizationMgtRoles = organizationMgtRoles;
+    }
 
     public static OrganizationMgtDataHolder getInstance() {
 
@@ -47,12 +60,12 @@ public class OrganizationMgtDataHolder {
         this.organizationMgtDao = organizationMgtDao;
     }
 
-    public static OrganizationAuthorizationDao getOrganizationAuthDao() {
+    public OrganizationAuthorizationDao getOrganizationAuthDao() {
 
         return organizationAuthDao;
     }
 
-    public static void setOrganizationAuthDao(OrganizationAuthorizationDao organizationAuthDao) {
+    public void setOrganizationAuthDao(OrganizationAuthorizationDao organizationAuthDao) {
 
         OrganizationMgtDataHolder.organizationAuthDao = organizationAuthDao;
     }
