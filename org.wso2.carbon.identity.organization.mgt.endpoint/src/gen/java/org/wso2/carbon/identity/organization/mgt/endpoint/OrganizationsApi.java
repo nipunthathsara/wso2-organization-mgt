@@ -216,6 +216,30 @@ public class OrganizationsApi  {
         return delegate.organizationsOrganizationIdRolesPost(organizationId,userRoles);
     }
 
+    @GET
+    @Path("/{organization-id}/roles/{role-id}/users")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @io.swagger.annotations.ApiOperation(value = "Retrieve the list of users who have specific role against an organization.\n",
+            notes = "This API is used to get the user list of an organization with a specific role.\n",
+            response = UserDTO.class, responseContainer = "List")
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 200, message = "Ok"),
+        
+        @io.swagger.annotations.ApiResponse(code = 400, message = "Bad Request"),
+        
+        @io.swagger.annotations.ApiResponse(code = 401, message = "Unauthorized"),
+        
+        @io.swagger.annotations.ApiResponse(code = 409, message = "Conflict"),
+        
+        @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
+
+    public Response organizationsOrganizationIdRolesRoleIdUsersGet(@ApiParam(value = "ID of the organization of which, the users will be returned.",required=true ) @PathParam("organization-id")  String organizationId,
+    @ApiParam(value = "ID of the role of which, the user will be returned.",required=true ) @PathParam("role-id")  String roleId) {
+
+        return delegate.organizationsOrganizationIdRolesRoleIdUsersGet(organizationId,roleId);
+    }
+
     @DELETE
     @Path("/{organization-id}/roles/{role-id}/users/{user-id}")
     @Consumes({ "application/json" })

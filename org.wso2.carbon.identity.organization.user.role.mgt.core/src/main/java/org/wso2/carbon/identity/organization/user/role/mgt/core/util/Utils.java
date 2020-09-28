@@ -26,6 +26,10 @@ import org.wso2.carbon.identity.core.persistence.UmPersistenceManager;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.internal.OrganizationUserRoleMgtDataHolder;
+import org.wso2.carbon.user.api.UserRealm;
+import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.service.RealmService;
 
 import java.util.UUID;
 
@@ -77,5 +81,16 @@ public class Utils {
     public static String generateUniqueID() {
 
         return UUID.randomUUID().toString();
+    }
+
+    public static UserStoreManager getUserStoreManager(int tenantId) throws org.wso2.carbon.user.api.UserStoreException {
+
+        UserStoreManager userStoreManager = null;
+        RealmService realmService = OrganizationUserRoleMgtDataHolder.getInstance().getRealmService();
+
+        UserRealm tenantUserRealm = realmService.getTenantUserRealm(tenantId);
+        userStoreManager = (UserStoreManager) tenantUserRealm.getUserStoreManager();
+
+        return userStoreManager;
     }
 }

@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserStoreConfigDTO;
 
 import java.util.List;
@@ -54,6 +55,8 @@ public abstract class OrganizationsApiService {
     public abstract Response organizationsOrganizationIdRolesPatch(String organizationId, List<OperationDTO> operations);
 
     public abstract Response organizationsOrganizationIdRolesPost(String organizationId, List<UserRoleMappingDTO> userRoles);
+
+    public abstract Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId);
 
     public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, String roleId, String userId);
 
