@@ -93,7 +93,7 @@ public class SQLConstants {
     public static final String UM_HYBRID_ROLE_ID_COLUMN = "UM_HYBRID_ROLE_ID";
 
     public static final String UM_ID_COLUMN = "UM_ID";
-    public static final String ID_COLUMN = "ID";
+    public static final String ATTR_VALUE_COLUMN = "ATTR_VALUE";
 
     public static final String LIKE_SYMBOL = "%";
     // View returns null for non matching entries upon join. Hence, the NULL check.

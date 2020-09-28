@@ -28,7 +28,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_GROUP_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_HYBRID_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_AUTHORIZED_ROLE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.IS_USER_AUTHORIZED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_HYBRID_ROLE_ID_COLUMN;
@@ -131,7 +131,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         JdbcTemplate jdbcTemplate = getNewIdentityTemplate();
         try {
             return jdbcTemplate.fetchSingleRecord(FIND_GROUP_ID_FROM_ROLE_NAME,
-                    (resultSet, rowNumber) -> resultSet.getString(ID_COLUMN),
+                    (resultSet, rowNumber) -> resultSet.getString(ATTR_VALUE_COLUMN),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setString(++parameterIndex, role);
