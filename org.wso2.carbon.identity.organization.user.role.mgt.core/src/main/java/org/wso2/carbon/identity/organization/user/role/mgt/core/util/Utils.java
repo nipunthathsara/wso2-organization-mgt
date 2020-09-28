@@ -31,7 +31,7 @@ import java.util.UUID;
 
 public class Utils {
 
-    private static final Log log = LogFactory.getLog(org.wso2.carbon.identity.organization.mgt.core.util.Utils.class);
+    private static final Log log = LogFactory.getLog(Utils.class);
 
     public static OrganizationUserRoleMgtClientException handleClientException(
             OrganizationUserRoleMgtConstants.ErrorMessages error, String data) {

@@ -20,8 +20,8 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.dao;
 
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
-import org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants;
-import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+//import org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants;
+//import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
@@ -75,11 +75,11 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         }
     }
 
-    @Override
-    public List<Organization> getOrganizationsByUserAndRole(String userId, String roleId, Integer tenantID) {
-
-        return null;
-    }
+//    @Override
+//    public List<Organization> getOrganizationsByUserAndRole(String userId, String roleId, Integer tenantID) {
+//
+//        return null;
+//    }
 
     @Override
     public List<String> getUserIdsByOrganizationAndRole(String organizationId, String roleId, Integer tenantID)

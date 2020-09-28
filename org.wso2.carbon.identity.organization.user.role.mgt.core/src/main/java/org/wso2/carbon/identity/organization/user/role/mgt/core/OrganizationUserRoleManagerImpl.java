@@ -19,7 +19,7 @@
 package org.wso2.carbon.identity.organization.user.role.mgt.core;
 
 import org.wso2.carbon.context.PrivilegedCarbonContext;
-import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+//import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAO;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAOImpl;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
@@ -94,16 +94,18 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
 
     }
 
+//    @Override
+//    public List<Organization> getOrganizationsByUserAndRole(String userId, Integer roleId) {
+//
+//        return null;
+//    }
+
     @Override
-    public List<Organization> getOrganizationsByUserAndRole(String userId, Integer roleId) {
+    public List<String> getUserIdsByOrganizationAndRole(String organizationID, String roleId)
+            throws OrganizationUserRoleMgtServerException {
 
-        return null;
-    }
-
-    @Override
-    public List<String> getUserIdsByOrganizationAndRole(String organizationID, Integer roleId) {
-
-        return null;
+        OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
+        return organizationUserRoleMgtDAO.getUserIdsByOrganizationAndRole(organizationID, roleId, getTenantId());
     }
 
     @Override
