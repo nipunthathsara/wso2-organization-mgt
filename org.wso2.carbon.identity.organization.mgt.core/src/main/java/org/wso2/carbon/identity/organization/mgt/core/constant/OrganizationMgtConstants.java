@@ -74,9 +74,9 @@ public class OrganizationMgtConstants {
     // Identity property keys for organization mgt roles
     public enum OrganizationMgtRoles {
 
-        ORGANIZATION_MGT_ROLE("OrganizationMgtRoles.OrganizationMgtRole"),
-        ORGANIZATION_ROLE_MGT_ROLE("OrganizationMgtRoles.OrganizationRoleMgtRole"),
-        ORGANIZATION_USER_MGT_ROLE("OrganizationMgtRoles.OrganizationUserMgtRole");
+        ORGANIZATION_MGT_ROLE("OrganizationMgt.OrganizationMgtRole"),
+        ORGANIZATION_ROLE_MGT_ROLE("OrganizationMgt.OrganizationRoleMgtRole"),
+        ORGANIZATION_USER_MGT_ROLE("OrganizationMgt.OrganizationUserMgtRole");
 
         private String propertyName;
 
