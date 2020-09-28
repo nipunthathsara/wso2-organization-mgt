@@ -25,7 +25,13 @@ import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils;
+import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_HYBRID_ROLE_ID_RETRIEVING_ERROR;
@@ -82,11 +88,12 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
 //    }
 
     @Override
-    public List<String> getUserIdsByOrganizationAndRole(String organizationId, String roleId, Integer tenantID)
+    public List<User> getUserIdsByOrganizationAndRole(String organizationId, String roleId, Integer tenantID)
             throws OrganizationUserRoleMgtServerException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         List<String> userIds = null;
+        List<User> users = new ArrayList<>();
         try {
             userIds = jdbcTemplate.executeQuery(GET_USERS_BY_ORG_AND_ROLE,
                     (resultSet, rowNumber) ->
@@ -96,8 +103,15 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         preparedStatement.setString(++parameterIndex, organizationId);
                         preparedStatement.setString(++parameterIndex, roleId);
                         preparedStatement.setInt(++parameterIndex, tenantID);
-
                     });
+            for(String userId: userIds) {
+                AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager)Utils.getUserStoreManager(tenantID);
+                org.wso2.carbon.user.core.common.User user = userStoreManager.getUser(userId, null);
+                users.add(new User(user.getUserID(), user.getUsername()));
+            }
+        } catch (UserStoreException e) {
+            //TODO
+            throw new OrganizationUserRoleMgtServerException(e);
         } catch (DataAccessException e) {
             String message =
                     String.format(String.valueOf(ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR), roleId,
@@ -106,7 +120,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                     ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR.getCode(), e);
 
         }
-        return userIds;
+        return users;
     }
 
     @Override

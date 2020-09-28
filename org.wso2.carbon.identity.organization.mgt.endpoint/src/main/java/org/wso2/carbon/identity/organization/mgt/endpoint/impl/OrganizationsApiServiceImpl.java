@@ -25,6 +25,7 @@ import static org.wso2.carbon.identity.organization.mgt.endpoint.util.Organizati
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleBadRequestResponse;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleServerErrorResponse;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleUnexpectedServerError;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil.getUserDTOsFromUsers;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO;
 
@@ -37,12 +38,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
 
 import javax.ws.rs.core.Response;
@@ -210,6 +213,21 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
                     .map(mapping -> new UserRoleMapping(mapping.getRoleId(), mapping.getUsers()))
                     .collect(Collectors.toList()));
             return Response.ok().build();
+        } catch (OrganizationUserRoleMgtClientException e) {
+            return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
+        } catch (OrganizationUserRoleMgtException e) {
+            return OrganizationUserRoleMgtEndpointUtil.handleServerErrorResponse(e, log);
+        } catch (Throwable throwable) {
+            return OrganizationUserRoleMgtEndpointUtil.handleUnexpectedServerError(throwable, log);
+        }
+    }
+
+    @Override
+    public Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId) {
+
+        try {
+            List<User> users = getOrganizationUserRoleManager().getUsersByOrganizationAndRole(organizationId, roleId);
+            return Response.ok().entity(getUserDTOsFromUsers(users)).build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
         } catch (OrganizationUserRoleMgtException e) {

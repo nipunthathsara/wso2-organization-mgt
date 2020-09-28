@@ -27,6 +27,7 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.Organi
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
 import org.wso2.carbon.identity.scim2.common.DAO.GroupDAO;
 import org.wso2.carbon.identity.scim2.common.exceptions.IdentitySCIMException;
@@ -101,8 +102,8 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
 //    }
 
     @Override
-    public List<String> getUserIdsByOrganizationAndRole(String organizationID, String roleId)
-            throws OrganizationUserRoleMgtServerException {
+    public List<User> getUsersByOrganizationAndRole(String organizationID, String roleId)
+            throws OrganizationUserRoleMgtException {
 
         OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
         return organizationUserRoleMgtDAO.getUserIdsByOrganizationAndRole(organizationID, roleId, getTenantId());

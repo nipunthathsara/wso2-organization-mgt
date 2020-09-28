@@ -697,6 +697,48 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Organization User Roles
+  '/organizations/{organization-id}/roles/{role-id}/users':
+    get:
+      summary: |
+        Retrieve the list of users who have specific role against an organization.
+      description: |
+        This API is used to get the user list of an organization with a specific role.
+      parameters:
+        - name: organization-id
+          in: path
+          description: 'ID of the organization of which, the users will be returned.'
+          required: true
+          type: string
+        - name: role-id
+          in: path
+          description: 'ID of the role of which, the user will be returned.'
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization User Roles
   '/organizations/{organization-id}/roles/{role-id}/users/{user-id}':
     delete:
       summary: |
@@ -1014,6 +1056,18 @@ definitions:
         type: array
         items:
           type: string
+  #-----------------------------------------------------
+  # User with userId and username
+  #-----------------------------------------------------
+  User:
+    type: object
+    required:
+      - roleId
+    properties:
+      userId:
+        type: string
+      username:
+        type: string
   #-----------------------------------------------------
   # Organization Patch Operation Object
   #-----------------------------------------------------
