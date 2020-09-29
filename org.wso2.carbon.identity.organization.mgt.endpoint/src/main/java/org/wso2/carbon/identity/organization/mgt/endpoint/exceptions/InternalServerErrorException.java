@@ -29,9 +29,7 @@ public class InternalServerErrorException extends WebApplicationException {
 
     public InternalServerErrorException(ErrorDTO errorDTO) {
 
-        super(Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity(errorDTO)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .build());
+        super(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorDTO)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build());
     }
 }

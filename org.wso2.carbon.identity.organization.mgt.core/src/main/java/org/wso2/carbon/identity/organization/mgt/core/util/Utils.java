@@ -139,8 +139,8 @@ public class Utils {
         } catch (ClassNotFoundException e) {
             throw handleServerException(ERROR_CODE_UNEXPECTED, "Error while loading user store manager class", e);
         }
-        if (!(UniqueIDReadWriteLDAPUserStoreManager.class.isAssignableFrom(className) ||
-                UniqueIDReadOnlyLDAPUserStoreManager.class.isAssignableFrom(className))) {
+        if (!(UniqueIDReadWriteLDAPUserStoreManager.class.isAssignableFrom(className)
+                || UniqueIDReadOnlyLDAPUserStoreManager.class.isAssignableFrom(className))) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS,
                     "Provided user store domain does not support organization management : " + userStoreDomain);
         }
@@ -153,9 +153,10 @@ public class Utils {
         List<RealmConfiguration> realmConfigurations = new ArrayList<>();
         try {
             // Add PRIMARY user store
-            realmConfig = OrganizationMgtDataHolder.getInstance().getRealmService()
-                    .getTenantUserRealm(tenantId).getRealmConfiguration();
-//            realmConfig = CarbonContext.getThreadLocalCarbonContext().getUserRealm().getRealmConfiguration();
+            realmConfig = OrganizationMgtDataHolder.getInstance().getRealmService().getTenantUserRealm(tenantId)
+                    .getRealmConfiguration();
+            //            realmConfig = CarbonContext.getThreadLocalCarbonContext().getUserRealm()
+            //            .getRealmConfiguration();
             realmConfigurations.add(realmConfig);
             do {
                 // Check for the tenant's secondary user stores
@@ -165,7 +166,8 @@ public class Utils {
                 }
             } while (realmConfig != null);
         } catch (UserStoreException e) {
-            throw handleServerException(ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR, "Error while obtaining realm configurations", e);
+            throw handleServerException(ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR,
+                    "Error while obtaining realm configurations", e);
         }
         return realmConfigurations;
     }
@@ -184,14 +186,10 @@ public class Utils {
         sb.append("\nDescription : " + organizationAdd.getDescription());
         sb.append("\nParent id : " + organizationAdd.getParent().getId());
         // Attributes cannot be null
-        organizationAdd.getAttributes().forEach(entry ->
-                attributesJoiner.add(entry.toString())
-        );
+        organizationAdd.getAttributes().forEach(entry -> attributesJoiner.add(entry.toString()));
         sb.append("\nAttributes : " + attributesJoiner.toString());
         // User store configs can not be null
-        organizationAdd.getUserStoreConfigs().forEach(entry ->
-                configJoiner.add(entry.toString())
-        );
+        organizationAdd.getUserStoreConfigs().forEach(entry -> configJoiner.add(entry.toString()));
         sb.append("\nUser Store Configs : " + configJoiner.toString());
         log.debug(sb.toString());
     }
@@ -223,23 +221,22 @@ public class Utils {
         sb.append("\nLast modified by $ref : " + organization.getMetadata().getLastModifiedBy().get$ref());
         sb.append("\nUser store configs : ");
         StringJoiner configJoiner = new StringJoiner(",");
-        organization.getUserStoreConfigs().entrySet().stream().forEach(
-                entry -> configJoiner.add(entry.getValue().toString())
-        );
+        organization.getUserStoreConfigs().entrySet().stream()
+                .forEach(entry -> configJoiner.add(entry.getValue().toString()));
         sb.append(configJoiner.toString());
         sb.append("\nAttributes : ");
         StringJoiner attributeJoiner = new StringJoiner(",");
-        organization.getAttributes().entrySet().stream().forEach(
-                entry -> attributeJoiner.add(entry.getValue().toString())
-        );
+        organization.getAttributes().entrySet().stream()
+                .forEach(entry -> attributeJoiner.add(entry.getValue().toString()));
         sb.append(attributeJoiner.toString());
         log.debug(sb.toString());
     }
 
     public static int getMaximumQueryLengthInBytes() {
 
-        return StringUtils.isBlank(MAX_QUERY_LENGTH_IN_BYTES_SQL)
-                ? 4194304 : Integer.parseInt(MAX_QUERY_LENGTH_IN_BYTES_SQL);
+        return StringUtils.isBlank(MAX_QUERY_LENGTH_IN_BYTES_SQL) ?
+                4194304 :
+                Integer.parseInt(MAX_QUERY_LENGTH_IN_BYTES_SQL);
     }
 
     public static JdbcTemplate getNewTemplate() {
@@ -252,11 +249,13 @@ public class Utils {
         return new JdbcTemplate(IdentityDatabaseUtil.getDataSource());
     }
 
-    public static String getUserIDFromUserName(String username, int tenantId) throws OrganizationManagementServerException {
+    public static String getUserIDFromUserName(String username, int tenantId)
+            throws OrganizationManagementServerException {
 
         try {
-            AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationMgtDataHolder.getInstance().
-                    getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
+            AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationMgtDataHolder
+                    .getInstance().
+                            getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
             return userStoreManager.getUserIDFromUserName(username);
         } catch (UserStoreException e) {
             throw handleServerException(ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
@@ -264,11 +263,13 @@ public class Utils {
         }
     }
 
-    public static String getUserNameFromUserID(String userId, int tenantId) throws OrganizationManagementServerException {
+    public static String getUserNameFromUserID(String userId, int tenantId)
+            throws OrganizationManagementServerException {
 
         try {
-            AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationMgtDataHolder.getInstance().
-                    getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
+            AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationMgtDataHolder
+                    .getInstance().
+                            getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
             return userStoreManager.getUserNameFromUserID(userId);
         } catch (UserStoreException e) {
             throw handleServerException(ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
@@ -276,9 +277,11 @@ public class Utils {
         }
     }
 
-    public static boolean checkForActiveUsers(String organizationId, int tenantId) throws OrganizationManagementException {
+    public static boolean checkForActiveUsers(String organizationId, int tenantId)
+            throws OrganizationManagementException {
 
-        String userStoreDomain = getOrganizationManager().getUserStoreConfigs(organizationId).get(USER_STORE_DOMAIN).getValue();
+        String userStoreDomain = getOrganizationManager().getUserStoreConfigs(organizationId).get(USER_STORE_DOMAIN)
+                .getValue();
         // Find realmConfigurations for the user store domain
         List<RealmConfiguration> realmConfigurations = getRealmConfigurations(tenantId);
         RealmConfiguration matchingRealmConfig = null;
@@ -289,33 +292,32 @@ public class Utils {
             }
         }
         if (matchingRealmConfig == null) {
-            throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR, "Couldn't find realm configurations for the user store domain : " + userStoreDomain);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
+                    "Couldn't find realm configurations for the user store domain : " + userStoreDomain);
         }
-        String orgIdClaimUri = !StringUtils.isBlank(IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI))
-                ? IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI).trim() : ORGANIZATION_ID_DEFAULT_CLAIM_URI;
+        String orgIdClaimUri = !StringUtils.isBlank(IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI)) ?
+                IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI).trim() :
+                ORGANIZATION_ID_DEFAULT_CLAIM_URI;
         try {
             // Get user store manager for the domain
-            UserStoreManager userStoreManager = OrganizationMgtDataHolder.getInstance().getRealmService().getUserRealm(matchingRealmConfig).getUserStoreManager();
+            UserStoreManager userStoreManager = OrganizationMgtDataHolder.getInstance().getRealmService()
+                    .getUserRealm(matchingRealmConfig).getUserStoreManager();
             // Get tenant user realm
-            org.wso2.carbon.user.api.UserRealm tenantUserRealm = CustomUserStoreDataHolder.getInstance().getRealmService()
-                    .getTenantUserRealm(tenantId);
+            org.wso2.carbon.user.api.UserRealm tenantUserRealm = CustomUserStoreDataHolder.getInstance()
+                    .getRealmService().getTenantUserRealm(tenantId);
             org.wso2.carbon.user.api.ClaimManager claimManager = tenantUserRealm.getClaimManager();
             // Find attribute name for the 'accountDisabled' claim
-            String accDisabledAttribute = claimManager.getAttributeName(
-                    userStoreDomain,
-                    ACCOUNT_DISABLED_CLAIM_URI
-            );
-            String orgIdAttribute = claimManager.getAttributeName(
-                    userStoreDomain,
-                    orgIdClaimUri
-            );
+            String accDisabledAttribute = claimManager.getAttributeName(userStoreDomain, ACCOUNT_DISABLED_CLAIM_URI);
+            String orgIdAttribute = claimManager.getAttributeName(userStoreDomain, orgIdClaimUri);
             ExpressionCondition accDisabledCondition = new ExpressionCondition("EQ", accDisabledAttribute, "false");
             ExpressionCondition orgIdCondition = new ExpressionCondition("EQ", orgIdAttribute, organizationId);
             OperationalCondition opCondition = new OperationalCondition("and", orgIdCondition, accDisabledCondition);
-            String[] userList = ((AbstractUserStoreManager) userStoreManager).getUserList(opCondition, userStoreDomain, null, 1, 0, null, null);
+            String[] userList = ((AbstractUserStoreManager) userStoreManager)
+                    .getUserList(opCondition, userStoreDomain, null, 1, 0, null, null);
             return userList.length > 0;
         } catch (org.wso2.carbon.user.api.UserStoreException e) {
-            throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR, "Error while checking for active users", e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR, "Error while checking for active users",
+                    e);
         }
     }
 
@@ -325,23 +327,27 @@ public class Utils {
                 .getOSGiService(OrganizationManager.class, null);
     }
 
-    public static Map<String, OrganizationMgtRole> populateManagementRoles(int tenantId) throws OrganizationManagementException {
+    public static Map<String, OrganizationMgtRole> populateManagementRoles(int tenantId)
+            throws OrganizationManagementException {
 
         Map<String, OrganizationMgtRole> organizationMgtRoles = new HashMap<>();
         for (OrganizationMgtRoles mgtRole : OrganizationMgtRoles.values()) {
             String role = IdentityUtil.getProperty(mgtRole.getPropertyName());
             if (StringUtils.isBlank(role)) {
-                throw handleServerException(ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR, "Organization Management roles can not be empty : " + mgtRole.getPropertyName());
+                throw handleServerException(ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR,
+                        "Organization Management roles can not be empty : " + mgtRole.getPropertyName());
             }
             role = role.trim();
             // If the domain is defined, it should be 'internal'
             if (role.contains("/") && !"Internal".equalsIgnoreCase(role.substring(0, role.indexOf("/")))) {
-                throw handleServerException(ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR, "Management roles should be 'INTERNAL' roles : " + role);
+                throw handleServerException(ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR,
+                        "Management roles should be 'INTERNAL' roles : " + role);
             } else {
                 // Remove the 'internal/' prefix from the role name
                 role = role.replaceAll("(?i)" + Pattern.quote("Internal/"), "");
             }
-            OrganizationAuthorizationDao authorizationDao = OrganizationMgtDataHolder.getInstance().getOrganizationAuthDao();
+            OrganizationAuthorizationDao authorizationDao = OrganizationMgtDataHolder.getInstance()
+                    .getOrganizationAuthDao();
             // Find hybrid role id of the internal role
             int hybridRoleId = authorizationDao.findHybridRoleIdFromRoleName(role, tenantId);
             // Find SCIM group id

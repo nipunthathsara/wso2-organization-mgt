@@ -42,69 +42,70 @@ import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleSe
 public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizationDao {
 
     @Override
-    public boolean isUserAuthorized(String userId, String organizationId, String permission) throws OrganizationManagementException {
+    public boolean isUserAuthorized(String userId, String organizationId, String permission)
+            throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
-            int mappingsCount = jdbcTemplate.fetchSingleRecord(IS_USER_AUTHORIZED,
-                    (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setString(++parameterIndex, userId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                        preparedStatement.setString(++parameterIndex, permission);
-                    });
+            int mappingsCount = jdbcTemplate
+                    .fetchSingleRecord(IS_USER_AUTHORIZED, (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
+                            preparedStatement -> {
+                                int parameterIndex = 0;
+                                preparedStatement.setString(++parameterIndex, userId);
+                                preparedStatement.setString(++parameterIndex, organizationId);
+                                preparedStatement.setString(++parameterIndex, permission);
+                            });
             return mappingsCount > 0;
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
-                    "Error while checking if the user is authorized. User : " + userId + ", organization id : " + organizationId + ", permission : " + permission, e);
+                    "Error while checking if the user is authorized. User : " + userId + ", organization id : "
+                            + organizationId + ", permission : " + permission, e);
         }
     }
 
     @Override
-    public OrganizationUserRoleMapping getAuthorizedUserRole(String userId, String organizationId, String permission) throws OrganizationManagementException {
+    public OrganizationUserRoleMapping getAuthorizedUserRole(String userId, String organizationId, String permission)
+            throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
-            return jdbcTemplate.fetchSingleRecord(GET_USER_AUTHORIZED_ROLE,
-                    (resultSet, rowNumber) -> {
-                        OrganizationUserRoleMapping orgUserRoleMapping = new OrganizationUserRoleMapping();
-                        orgUserRoleMapping.setRoleId(resultSet.getString(UM_ROLE_ID_COLUMN));
-                        orgUserRoleMapping.setHybridRoleId(resultSet.getInt(UM_HYBRID_ROLE_ID_COLUMN));
-                        return orgUserRoleMapping;
-                    },
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setString(++parameterIndex, userId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                        preparedStatement.setString(++parameterIndex, permission);
-                    });
+            return jdbcTemplate.fetchSingleRecord(GET_USER_AUTHORIZED_ROLE, (resultSet, rowNumber) -> {
+                OrganizationUserRoleMapping orgUserRoleMapping = new OrganizationUserRoleMapping();
+                orgUserRoleMapping.setRoleId(resultSet.getString(UM_ROLE_ID_COLUMN));
+                orgUserRoleMapping.setHybridRoleId(resultSet.getInt(UM_HYBRID_ROLE_ID_COLUMN));
+                return orgUserRoleMapping;
+            }, preparedStatement -> {
+                int parameterIndex = 0;
+                preparedStatement.setString(++parameterIndex, userId);
+                preparedStatement.setString(++parameterIndex, organizationId);
+                preparedStatement.setString(++parameterIndex, permission);
+            });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
-                    "Error obtaining authorized role information. User : " + userId + ", organization id : " + organizationId + ", permission : " + permission, e);
+                    "Error obtaining authorized role information. User : " + userId + ", organization id : "
+                            + organizationId + ", permission : " + permission, e);
         }
     }
 
     @Override
-    public void addOrganizationAndUserRoleMapping(String userId, String roleId, int hybridRoleId, int tenantId, String organizationId) throws OrganizationManagementException {
+    public void addOrganizationAndUserRoleMapping(String userId, String roleId, int hybridRoleId, int tenantId,
+            String organizationId) throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
-            jdbcTemplate.executeInsert(ADD_USER_ROLE_ORG_MAPPING,
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setString(++parameterIndex, generateUniqueID());
-                        preparedStatement.setString(++parameterIndex, userId);
-                        preparedStatement.setString(++parameterIndex, roleId);
-                        preparedStatement.setInt(++parameterIndex, hybridRoleId);
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    },
-                    new OrganizationUserRoleMapping(),
-                    false);
+            jdbcTemplate.executeInsert(ADD_USER_ROLE_ORG_MAPPING, preparedStatement -> {
+                int parameterIndex = 0;
+                preparedStatement.setString(++parameterIndex, generateUniqueID());
+                preparedStatement.setString(++parameterIndex, userId);
+                preparedStatement.setString(++parameterIndex, roleId);
+                preparedStatement.setInt(++parameterIndex, hybridRoleId);
+                preparedStatement.setInt(++parameterIndex, tenantId);
+                preparedStatement.setString(++parameterIndex, organizationId);
+            }, new OrganizationUserRoleMapping(), false);
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
-                    "Error while adding org-authorization mapping entry. Organization : " + organizationId + ", userId : " + userId + ", roleId : " + roleId + ", hybridRoleId : " + hybridRoleId, e);
+                    "Error while adding org-authorization mapping entry. Organization : " + organizationId
+                            + ", userId : " + userId + ", roleId : " + roleId + ", hybridRoleId : " + hybridRoleId, e);
         }
     }
 
@@ -113,8 +114,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             return jdbcTemplate.fetchSingleRecord(FIND_HYBRID_ID_FROM_ROLE_NAME,
-                    (resultSet, rowNumber) -> resultSet.getInt(UM_ID_COLUMN),
-                    preparedStatement -> {
+                    (resultSet, rowNumber) -> resultSet.getInt(UM_ID_COLUMN), preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setString(++parameterIndex, role);
                         preparedStatement.setInt(++parameterIndex, tenantId);
@@ -131,8 +131,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         JdbcTemplate jdbcTemplate = getNewIdentityTemplate();
         try {
             return jdbcTemplate.fetchSingleRecord(FIND_GROUP_ID_FROM_ROLE_NAME,
-                    (resultSet, rowNumber) -> resultSet.getString(ATTR_VALUE_COLUMN),
-                    preparedStatement -> {
+                    (resultSet, rowNumber) -> resultSet.getString(ATTR_VALUE_COLUMN), preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setString(++parameterIndex, role);
                         preparedStatement.setInt(++parameterIndex, tenantId);

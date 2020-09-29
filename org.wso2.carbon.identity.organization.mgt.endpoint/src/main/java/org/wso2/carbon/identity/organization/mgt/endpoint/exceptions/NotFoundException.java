@@ -31,10 +31,8 @@ public class NotFoundException extends WebApplicationException {
 
     public NotFoundException(ErrorDTO errorDTO) {
 
-        super(Response.status(Response.Status.NOT_FOUND)
-                .entity(errorDTO)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .build());
+        super(Response.status(Response.Status.NOT_FOUND).entity(errorDTO)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build());
         message = errorDTO.getDescription();
     }
 

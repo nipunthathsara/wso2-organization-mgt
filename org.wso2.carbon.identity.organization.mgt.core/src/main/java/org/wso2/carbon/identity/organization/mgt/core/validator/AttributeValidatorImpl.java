@@ -55,8 +55,9 @@ public class AttributeValidatorImpl implements AttributeValidator {
             String[] allowedValues = criteria.split(",");
             boolean isValid = Arrays.stream(allowedValues).anyMatch(s -> s.trim().equals(attribute.getValue()));
             if (!isValid) {
-                String errorMsg = "attribute key : " + attribute.getKey() +
-                        ", attribute value : " + attribute.getValue() + ", validation criteria : " + criteria;
+                String errorMsg =
+                        "attribute key : " + attribute.getKey() + ", attribute value : " + attribute.getValue()
+                                + ", validation criteria : " + criteria;
                 throw handleClientException(ERROR_CODE_INVALID_ATTRIBUTES, errorMsg);
             }
         }
@@ -69,14 +70,15 @@ public class AttributeValidatorImpl implements AttributeValidator {
         if (log.isDebugEnabled()) {
             log.debug("Loading attribute validator properties : " + ATTRIBUTE_VALIDATOR_PROPERTIES_FILE_NAME);
         }
-        File attributeProperties = new File(IdentityUtil.getIdentityConfigDirPath(), ATTRIBUTE_VALIDATOR_PROPERTIES_FILE_NAME);
+        File attributeProperties = new File(IdentityUtil.getIdentityConfigDirPath(),
+                ATTRIBUTE_VALIDATOR_PROPERTIES_FILE_NAME);
         if (attributeProperties.exists()) {
             try {
                 inStream = new FileInputStream(attributeProperties);
                 properties.load(inStream);
             } catch (IOException e) {
-                log.error(ERROR_CODE_ATTRIBUTE_VALIDATION_ERROR +
-                        "Error loading attribute validation properties : " + ATTRIBUTE_VALIDATOR_PROPERTIES_FILE_NAME, e);
+                log.error(ERROR_CODE_ATTRIBUTE_VALIDATION_ERROR + "Error loading attribute validation properties : "
+                        + ATTRIBUTE_VALIDATOR_PROPERTIES_FILE_NAME, e);
             } finally {
                 if (inStream != null) {
                     try {

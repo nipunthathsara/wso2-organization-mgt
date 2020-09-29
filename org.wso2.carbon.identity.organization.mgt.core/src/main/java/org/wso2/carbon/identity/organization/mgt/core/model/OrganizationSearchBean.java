@@ -84,51 +84,51 @@ public class OrganizationSearchBean implements SearchBean {
 
         String dbQualifiedFieldName = null;
         switch (fieldName) {
-            case ORGANIZATION_SEARCH_BEAN_FIELD_NAME:
-                dbQualifiedFieldName = VIEW_NAME_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_DISPLAY_NAME:
-                dbQualifiedFieldName = VIEW_DISPLAY_NAME_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_DESCRIPTION:
-                dbQualifiedFieldName = VIEW_DESCRIPTION_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_STATUS:
-                dbQualifiedFieldName = VIEW_STATUS_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_ID:
-                dbQualifiedFieldName = VIEW_PARENT_ID_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_NAME:
-                dbQualifiedFieldName = VIEW_PARENT_NAME_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_DISPLAY_NAME:
-                dbQualifiedFieldName = VIEW_PARENT_DISPLAY_NAME_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_CREATED:
-                dbQualifiedFieldName = VIEW_CREATED_TIME_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED:
-                dbQualifiedFieldName = VIEW_LAST_MODIFIED_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_CREATED_BY_ID:
-                dbQualifiedFieldName = VIEW_CREATED_BY_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED_BY_ID:
-                dbQualifiedFieldName = VIEW_LAST_MODIFIED_BY_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY:
-                dbQualifiedFieldName = VIEW_ATTR_KEY_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE:
-                dbQualifiedFieldName = VIEW_ATTR_VALUE_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY:
-                dbQualifiedFieldName = VIEW_CONFIG_KEY_COLUMN;
-                break;
-            case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE:
-                dbQualifiedFieldName = VIEW_CONFIG_VALUE_COLUMN;
-                break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_NAME:
+            dbQualifiedFieldName = VIEW_NAME_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_DISPLAY_NAME:
+            dbQualifiedFieldName = VIEW_DISPLAY_NAME_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_DESCRIPTION:
+            dbQualifiedFieldName = VIEW_DESCRIPTION_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_STATUS:
+            dbQualifiedFieldName = VIEW_STATUS_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_ID:
+            dbQualifiedFieldName = VIEW_PARENT_ID_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_NAME:
+            dbQualifiedFieldName = VIEW_PARENT_NAME_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_DISPLAY_NAME:
+            dbQualifiedFieldName = VIEW_PARENT_DISPLAY_NAME_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_CREATED:
+            dbQualifiedFieldName = VIEW_CREATED_TIME_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED:
+            dbQualifiedFieldName = VIEW_LAST_MODIFIED_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_CREATED_BY_ID:
+            dbQualifiedFieldName = VIEW_CREATED_BY_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED_BY_ID:
+            dbQualifiedFieldName = VIEW_LAST_MODIFIED_BY_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY:
+            dbQualifiedFieldName = VIEW_ATTR_KEY_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE:
+            dbQualifiedFieldName = VIEW_ATTR_VALUE_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY:
+            dbQualifiedFieldName = VIEW_CONFIG_KEY_COLUMN;
+            break;
+        case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE:
+            dbQualifiedFieldName = VIEW_CONFIG_VALUE_COLUMN;
+            break;
         }
         return dbQualifiedFieldName;
     }
@@ -145,10 +145,11 @@ public class OrganizationSearchBean implements SearchBean {
             throws PrimitiveConditionValidationException {
 
         //TODO Convert '2020-09-01 15:54:52.905' to '01-SEP-20 10.06.17.867000000 AM'
-        if (ORGANIZATION_SEARCH_BEAN_FIELD_CREATED.equals(primitiveCondition.getProperty()) ||
-                ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED.equals(primitiveCondition.getProperty()) &&
-                primitiveCondition.getValue() != null) {
-            primitiveCondition.setValue(java.sql.Timestamp.valueOf(primitiveCondition.getValue() + "0000000").toString());
+        if (ORGANIZATION_SEARCH_BEAN_FIELD_CREATED.equals(primitiveCondition.getProperty())
+                || ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED.equals(primitiveCondition.getProperty())
+                && primitiveCondition.getValue() != null) {
+            primitiveCondition
+                    .setValue(java.sql.Timestamp.valueOf(primitiveCondition.getValue() + "0000000").toString());
         }
         return primitiveCondition;
     }

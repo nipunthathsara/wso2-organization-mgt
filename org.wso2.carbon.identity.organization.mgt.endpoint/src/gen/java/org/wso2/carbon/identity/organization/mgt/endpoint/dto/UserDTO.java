@@ -16,40 +16,43 @@
 
 package org.wso2.carbon.identity.organization.mgt.endpoint.dto;
 
-import io.swagger.annotations.*;
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
 @ApiModel(description = "")
 public class UserDTO {
 
-    @Valid 
+    @Valid
     private String userId = null;
 
-    @Valid 
+    @Valid
     private String username = null;
 
     /**
-    **/
+     *
+     **/
     @ApiModelProperty(value = "")
     @JsonProperty("userId")
     public String getUserId() {
         return userId;
     }
+
     public void setUserId(String userId) {
         this.userId = userId;
     }
 
     /**
-    **/
+     *
+     **/
     @ApiModelProperty(value = "")
     @JsonProperty("username")
     public String getUsername() {
         return username;
     }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -59,10 +62,10 @@ public class UserDTO {
 
         StringBuilder sb = new StringBuilder();
         sb.append("class UserDTO {\n");
-        
+
         sb.append("    userId: ").append(userId).append("\n");
         sb.append("    username: ").append(username).append("\n");
-        
+
         sb.append("}\n");
         return sb.toString();
     }

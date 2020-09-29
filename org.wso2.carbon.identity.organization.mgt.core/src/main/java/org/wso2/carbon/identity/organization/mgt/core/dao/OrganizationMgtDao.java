@@ -35,6 +35,7 @@ public interface OrganizationMgtDao {
 
     /**
      * Create new {@link Organization} in the database.
+     *
      * @param tenantId
      * @param organization
      * @throws OrganizationManagementException
@@ -43,6 +44,7 @@ public interface OrganizationMgtDao {
 
     /**
      * Delete {@link Organization} by ID.
+     *
      * @param tenantId
      * @param organizationId
      * @throws OrganizationManagementException
@@ -51,6 +53,7 @@ public interface OrganizationMgtDao {
 
     /**
      * Check if the {@link Organization} exists by name in a given tenant.
+     *
      * @param tenantId
      * @param name
      * @return
@@ -60,6 +63,7 @@ public interface OrganizationMgtDao {
 
     /**
      * Check if the {@link Organization} exists by organization Id in a given tenant.
+     *
      * @param tenantId
      * @param id
      * @return
@@ -69,6 +73,7 @@ public interface OrganizationMgtDao {
 
     /**
      * Retrieve {@link Organization} by ID in the given tenant.
+     *
      * @param tenantId
      * @param organizationId
      * @return
@@ -78,6 +83,7 @@ public interface OrganizationMgtDao {
 
     /**
      * Retrieve Organization ID if the given organization name exists for the tenant.
+     *
      * @param tenantId
      * @param organizationName
      * @return
@@ -98,10 +104,11 @@ public interface OrganizationMgtDao {
      * @throws OrganizationManagementException
      */
     List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
-              String sortOrder, List<String> requestedAttributes, String userId) throws OrganizationManagementException;
+            String sortOrder, List<String> requestedAttributes, String userId) throws OrganizationManagementException;
 
     /**
      * Returns user store configs of the {@link Organization} identified by the given ID.
+     *
      * @param tenantId
      * @param organizationId
      * @return
@@ -111,7 +118,6 @@ public interface OrganizationMgtDao {
             throws OrganizationManagementException;
 
     /**
-     *
      * @param organizationId
      * @param userId
      * @return
@@ -126,8 +132,7 @@ public interface OrganizationMgtDao {
      * @param operation
      * @throws OrganizationManagementException
      */
-    void patchOrganization(String organizationId, Operation operation)
-            throws OrganizationManagementException;
+    void patchOrganization(String organizationId, Operation operation) throws OrganizationManagementException;
 
     /**
      * Patch user store configurations of the organization identified by the provided ID.
@@ -136,8 +141,7 @@ public interface OrganizationMgtDao {
      * @param operation
      * @throws OrganizationManagementException
      */
-    void patchUserStoreConfigs(String organizationId, Operation operation)
-            throws OrganizationManagementException;
+    void patchUserStoreConfigs(String organizationId, Operation operation) throws OrganizationManagementException;
 
     /**
      * @param tenantId

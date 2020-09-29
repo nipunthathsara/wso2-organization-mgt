@@ -56,11 +56,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.lang.Enum.valueOf;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.STARTS_WITH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_STATUS;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.LIKE_SYMBOL;
 
 /**
@@ -87,10 +84,11 @@ public class OrganizationMgtEndpointUtil {
         organizationAdd.setDisplayName(organizationAddDTO.getDisplayName());
         organizationAdd.setDescription(organizationAddDTO.getDescription());
         organizationAdd.getParent().setId(organizationAddDTO.getParentId());
-        organizationAdd.setAttributes(organizationAddDTO.getAttributes()
-                .stream().map(OrganizationMgtEndpointUtil::getAttributeFromDTO).collect(Collectors.toList()));
-        organizationAdd.setUserStoreConfigs(organizationAddDTO.getUserStoreConfigs()
-                .stream().map(OrganizationMgtEndpointUtil::getUserStoreConfigsFromDTO).collect(Collectors.toList()));
+        organizationAdd.setAttributes(
+                organizationAddDTO.getAttributes().stream().map(OrganizationMgtEndpointUtil::getAttributeFromDTO)
+                        .collect(Collectors.toList()));
+        organizationAdd.setUserStoreConfigs(organizationAddDTO.getUserStoreConfigs().stream()
+                .map(OrganizationMgtEndpointUtil::getUserStoreConfigsFromDTO).collect(Collectors.toList()));
         return organizationAdd;
     }
 
@@ -166,7 +164,8 @@ public class OrganizationMgtEndpointUtil {
         return new UserStoreConfig(userStoreConfigDTO.getKey().toString(), userStoreConfigDTO.getValue());
     }
 
-    public static List<UserStoreConfigDTO> getUserStoreConfigDTOsFromUserStoreConfigs(Collection<UserStoreConfig> configs) {
+    public static List<UserStoreConfigDTO> getUserStoreConfigDTOsFromUserStoreConfigs(
+            Collection<UserStoreConfig> configs) {
 
         List<UserStoreConfigDTO> configDTOs = new ArrayList<>();
         for (UserStoreConfig config : configs) {
@@ -268,46 +267,40 @@ public class OrganizationMgtEndpointUtil {
         return false;
     }
 
-    public static NotFoundException buildNotFoundRequestException(String description, String code,
-                                                                  Log log, Throwable e) {
+    public static NotFoundException buildNotFoundRequestException(String description, String code, Log log,
+            Throwable e) {
 
         ErrorDTO errorDTO = getErrorDTO(Response.Status.NOT_FOUND.toString(), description, code);
         logDebug(log, e);
         return new NotFoundException(errorDTO);
     }
 
-    public static ConflictRequestException buildConflictRequestException(String description, String code,
-                                                                         Log log, Throwable e) {
+    public static ConflictRequestException buildConflictRequestException(String description, String code, Log log,
+            Throwable e) {
 
         ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
         logDebug(log, e);
         return new ConflictRequestException(errorDTO);
     }
 
-    public static ForbiddenException buildForbiddenException(String description, String code,
-                                                             Log log, Throwable e) {
+    public static ForbiddenException buildForbiddenException(String description, String code, Log log, Throwable e) {
 
         ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
         logDebug(log, e);
         return new ForbiddenException(errorDTO);
     }
 
-    public static BadRequestException buildBadRequestException(String description, String code,
-                                                               Log log, Throwable e) {
+    public static BadRequestException buildBadRequestException(String description, String code, Log log, Throwable e) {
 
         ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
         logDebug(log, e);
         return new BadRequestException(errorDTO);
     }
 
-    public static InternalServerErrorException buildInternalServerErrorException(String code,
-                                                                                 Log log, Throwable e) {
+    public static InternalServerErrorException buildInternalServerErrorException(String code, Log log, Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(
-                Response.Status.INTERNAL_SERVER_ERROR.toString(),
-                Response.Status.INTERNAL_SERVER_ERROR.toString(),
-                code
-        );
+        ErrorDTO errorDTO = getErrorDTO(Response.Status.INTERNAL_SERVER_ERROR.toString(),
+                Response.Status.INTERNAL_SERVER_ERROR.toString(), code);
         logError(log, e);
         return new InternalServerErrorException(errorDTO);
     }
@@ -333,11 +326,9 @@ public class OrganizationMgtEndpointUtil {
                 } else if (primitiveStatement.getProperty().equals(STARTS_WITH.toString())) {
                     value = LIKE_SYMBOL.concat(((String) value));
                 }
-                return new PrimitiveCondition(
-                        primitiveStatement.getProperty(),
+                return new PrimitiveCondition(primitiveStatement.getProperty(),
                         getPrimitiveOperatorFromOdata(primitiveStatement.getCondition()),
-                        primitiveStatement.getValue()
-                );
+                        primitiveStatement.getValue());
             }
             return null;
         } else {
@@ -348,10 +339,7 @@ public class OrganizationMgtEndpointUtil {
                     conditions.add(buildCondition);
                 }
             }
-            return new ComplexCondition(
-                    getComplexOperatorFromOdata(searchCondition.getConditionType()),
-                    conditions
-            );
+            return new ComplexCondition(getComplexOperatorFromOdata(searchCondition.getConditionType()), conditions);
         }
     }
 
@@ -360,24 +348,24 @@ public class OrganizationMgtEndpointUtil {
 
         ConditionType.PrimitiveOperator primitiveConditionType = null;
         switch (odataConditionType) {
-            case EQUALS:
-                primitiveConditionType = ConditionType.PrimitiveOperator.EQUALS;
-                break;
-            case GREATER_OR_EQUALS:
-                primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_OR_EQUALS;
-                break;
-            case LESS_OR_EQUALS:
-                primitiveConditionType = ConditionType.PrimitiveOperator.LESS_OR_EQUALS;
-                break;
-            case GREATER_THAN:
-                primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_THAN;
-                break;
-            case NOT_EQUALS:
-                primitiveConditionType = ConditionType.PrimitiveOperator.NOT_EQUALS;
-                break;
-            case LESS_THAN:
-                primitiveConditionType = ConditionType.PrimitiveOperator.LESS_THAN;
-                break;
+        case EQUALS:
+            primitiveConditionType = ConditionType.PrimitiveOperator.EQUALS;
+            break;
+        case GREATER_OR_EQUALS:
+            primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_OR_EQUALS;
+            break;
+        case LESS_OR_EQUALS:
+            primitiveConditionType = ConditionType.PrimitiveOperator.LESS_OR_EQUALS;
+            break;
+        case GREATER_THAN:
+            primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_THAN;
+            break;
+        case NOT_EQUALS:
+            primitiveConditionType = ConditionType.PrimitiveOperator.NOT_EQUALS;
+            break;
+        case LESS_THAN:
+            primitiveConditionType = ConditionType.PrimitiveOperator.LESS_THAN;
+            break;
         }
         return primitiveConditionType;
     }
@@ -387,12 +375,12 @@ public class OrganizationMgtEndpointUtil {
 
         ConditionType.ComplexOperator complexConditionType = null;
         switch (odataConditionType) {
-            case OR:
-                complexConditionType = ConditionType.ComplexOperator.OR;
-                break;
-            case AND:
-                complexConditionType = ConditionType.ComplexOperator.AND;
-                break;
+        case OR:
+            complexConditionType = ConditionType.ComplexOperator.OR;
+            break;
+        case AND:
+            complexConditionType = ConditionType.ComplexOperator.AND;
+            break;
         }
         return complexConditionType;
     }

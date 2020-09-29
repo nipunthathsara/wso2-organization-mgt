@@ -95,26 +95,21 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         Timestamp currentTime = new java.sql.Timestamp(new Date().getTime());
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
-            jdbcTemplate.executeInsert(INSERT_ORGANIZATION,
-                    preparedStatement -> {
-                        int parameterIndex = 1;
-                        preparedStatement.setString(parameterIndex, organization.getId());
-                        preparedStatement.setInt(++parameterIndex, organization.getTenantId());
-                        preparedStatement.setString(++parameterIndex, organization.getName());
-                        preparedStatement.setString(++parameterIndex, organization.getDisplayName());
-                        preparedStatement.setString(++parameterIndex, organization.getDescription());
-                        preparedStatement.setTimestamp(++parameterIndex, currentTime, calendar);
-                        preparedStatement.setTimestamp(++parameterIndex, currentTime, calendar);
-                        preparedStatement.setString(++parameterIndex, organization.getMetadata().getCreatedBy().getId());
-                        preparedStatement.setString(++parameterIndex,
-                                organization.getMetadata().getLastModifiedBy().getId());
-                        preparedStatement.setInt(++parameterIndex, organization.hasAttributes() ? 1 : 0);
-                        preparedStatement.setString(++parameterIndex, organization.getStatus().toString());
-                        preparedStatement.setString(++parameterIndex, organization.getParent().getId());
-                    },
-                    organization,
-                    false
-            );
+            jdbcTemplate.executeInsert(INSERT_ORGANIZATION, preparedStatement -> {
+                int parameterIndex = 1;
+                preparedStatement.setString(parameterIndex, organization.getId());
+                preparedStatement.setInt(++parameterIndex, organization.getTenantId());
+                preparedStatement.setString(++parameterIndex, organization.getName());
+                preparedStatement.setString(++parameterIndex, organization.getDisplayName());
+                preparedStatement.setString(++parameterIndex, organization.getDescription());
+                preparedStatement.setTimestamp(++parameterIndex, currentTime, calendar);
+                preparedStatement.setTimestamp(++parameterIndex, currentTime, calendar);
+                preparedStatement.setString(++parameterIndex, organization.getMetadata().getCreatedBy().getId());
+                preparedStatement.setString(++parameterIndex, organization.getMetadata().getLastModifiedBy().getId());
+                preparedStatement.setInt(++parameterIndex, organization.hasAttributes() ? 1 : 0);
+                preparedStatement.setString(++parameterIndex, organization.getStatus().toString());
+                preparedStatement.setString(++parameterIndex, organization.getParent().getId());
+            }, organization, false);
             if (organization.hasAttributes()) {
                 insertOrganizationAttributes(jdbcTemplate, organization);
             }
@@ -122,14 +117,14 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             organization.getMetadata().setCreated(currentTime.toInstant().toString());
             organization.getMetadata().setLastModified(currentTime.toInstant().toString());
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_ORGANIZATION_ADD_ERROR, "Organization name " + organization.getName()
-                    + ", Tenant Id " + organization.getTenantId(), e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_ADD_ERROR,
+                    "Organization name " + organization.getName() + ", Tenant Id " + organization.getTenantId(), e);
         }
     }
 
     @Override
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
-                                               String sortOrder, List<String> requestedAttributes, String userId) throws OrganizationManagementException {
+            String sortOrder, List<String> requestedAttributes, String userId) throws OrganizationManagementException {
 
         PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -154,9 +149,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         // Get organization IDs
         List<String> orgIds;
         try {
-            orgIds = jdbcTemplate.executeQuery(query,
-                    (resultSet, rowNumber) ->
-                            resultSet.getString(VIEW_ID_COLUMN),
+            orgIds = jdbcTemplate.executeQuery(query, (resultSet, rowNumber) -> resultSet.getString(VIEW_ID_COLUMN),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         // Populate tenant ID
@@ -164,17 +157,20 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         // Populate user Id
                         preparedStatement.setString(++parameterIndex, userId);
                         // Populate generated conditions if any
-                        for (int count = 0; placeholderSQL.getData() != null && count < placeholderSQL.getData().size(); count++) {
+                        for (int count = 0;
+                             placeholderSQL.getData() != null && count < placeholderSQL.getData().size(); count++) {
                             if (placeholderSQL.getData().get(count).getClass().equals(Integer.class)) {
-                                preparedStatement.setInt(++parameterIndex, (Integer) placeholderSQL.getData().get(count));
+                                preparedStatement
+                                        .setInt(++parameterIndex, (Integer) placeholderSQL.getData().get(count));
                             } else {
-                                preparedStatement.setString(++parameterIndex, (String) placeholderSQL.getData().get(count));
+                                preparedStatement
+                                        .setString(++parameterIndex, (String) placeholderSQL.getData().get(count));
                             }
                         }
                     });
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
-                    "Error while retrieving organization IDs.", e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR, "Error while retrieving organization IDs.",
+                    e);
         }
         if (orgIds.isEmpty()) {
             return new ArrayList<>();
@@ -193,34 +189,38 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         validateQueryLength(query);
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
-            organizationRowDataCollectors = jdbcTemplate.executeQuery(query,
-                    (resultSet, rowNumber) -> {
-                        OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
-                        collector.setId(resultSet.getString(VIEW_ID_COLUMN));
-                        collector.setName(resultSet.getString(VIEW_NAME_COLUMN));
-                        collector.setDisplayName(resultSet.getString(VIEW_DISPLAY_NAME_COLUMN));
-                        collector.setDescription(resultSet.getString(VIEW_DESCRIPTION_COLUMN));
-                        collector.setParentId(resultSet.getString(VIEW_PARENT_ID_COLUMN));
-                        collector.setParentName(resultSet.getString(VIEW_PARENT_NAME_COLUMN));
-                        collector.setParentDisplayName(resultSet.getString(VIEW_PARENT_DISPLAY_NAME_COLUMN));
-                        collector.setStatus(Organization.OrgStatus.valueOf(resultSet.getString(VIEW_STATUS_COLUMN)));
-                        collector.setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED_COLUMN, calendar));
-                        collector.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME_COLUMN, calendar));
-                        collector.setCreatedBy(resultSet.getString(VIEW_CREATED_BY_COLUMN));
-                        collector.setLastModifiedBy(resultSet.getString(VIEW_LAST_MODIFIED_BY_COLUMN));
-                        collector.setHasAttributes(resultSet.getInt(VIEW_HAS_ATTRIBUTES_COLUMN) == 1 ? true : false);
-                        collector.setAttributeKey(resultSet.getString(VIEW_ATTR_KEY_COLUMN));
-                        collector.setAttributeValue(resultSet.getString(VIEW_ATTR_VALUE_COLUMN));
-                        return collector;
-                    });
+            organizationRowDataCollectors = jdbcTemplate.executeQuery(query, (resultSet, rowNumber) -> {
+                OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
+                collector.setId(resultSet.getString(VIEW_ID_COLUMN));
+                collector.setName(resultSet.getString(VIEW_NAME_COLUMN));
+                collector.setDisplayName(resultSet.getString(VIEW_DISPLAY_NAME_COLUMN));
+                collector.setDescription(resultSet.getString(VIEW_DESCRIPTION_COLUMN));
+                collector.setParentId(resultSet.getString(VIEW_PARENT_ID_COLUMN));
+                collector.setParentName(resultSet.getString(VIEW_PARENT_NAME_COLUMN));
+                collector.setParentDisplayName(resultSet.getString(VIEW_PARENT_DISPLAY_NAME_COLUMN));
+                collector.setStatus(Organization.OrgStatus.valueOf(resultSet.getString(VIEW_STATUS_COLUMN)));
+                collector.setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED_COLUMN, calendar));
+                collector.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME_COLUMN, calendar));
+                collector.setCreatedBy(resultSet.getString(VIEW_CREATED_BY_COLUMN));
+                collector.setLastModifiedBy(resultSet.getString(VIEW_LAST_MODIFIED_BY_COLUMN));
+                collector.setHasAttributes(resultSet.getInt(VIEW_HAS_ATTRIBUTES_COLUMN) == 1 ? true : false);
+                collector.setAttributeKey(resultSet.getString(VIEW_ATTR_KEY_COLUMN));
+                collector.setAttributeValue(resultSet.getString(VIEW_ATTR_VALUE_COLUMN));
+                return collector;
+            });
             // Build organizations from the DB results.
             // Append only the requested attributes to the organizations.
-            Map<String, Organization> organizationMap = (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?
-                    new HashMap<>() : buildOrganizationsFromRawData(organizationRowDataCollectors, requestedAttributes);
-            // When sorting is required, organization IDs were fetched sorted from the DB. But the collected organizations may not.
+            Map<String, Organization> organizationMap = (organizationRowDataCollectors == null
+                    || organizationRowDataCollectors.size() == 0) ?
+                    new HashMap<>() :
+                    buildOrganizationsFromRawData(organizationRowDataCollectors, requestedAttributes);
+            // When sorting is required, organization IDs were fetched sorted from the DB. But the collected
+            // organizations may not.
             // Therefore, sort the organization as per the order of their IDs.
             //TODO sort even if sorting is not required
-            return sortBy != null ? sortCollectedOrganizations(organizationMap, orgIds) : new ArrayList<>(organizationMap.values());
+            return sortBy != null ?
+                    sortCollectedOrganizations(organizationMap, orgIds) :
+                    new ArrayList<>(organizationMap.values());
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
                     "Error while constructing organizations by IDs", e);
@@ -233,8 +233,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = getNewTemplate();
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
-            organizationRowDataCollectors = jdbcTemplate.executeQuery(GET_ORGANIZATION_BY_ID,
-                    (resultSet, rowNumber) -> {
+            organizationRowDataCollectors = jdbcTemplate
+                    .executeQuery(GET_ORGANIZATION_BY_ID, (resultSet, rowNumber) -> {
                         OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
                         collector.setId(organizationId);
                         collector.setName(resultSet.getString(VIEW_NAME_COLUMN));
@@ -253,15 +253,14 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         collector.setAttributeKey(resultSet.getString(VIEW_ATTR_KEY_COLUMN));
                         collector.setAttributeValue(resultSet.getString(VIEW_ATTR_VALUE_COLUMN));
                         return collector;
-                    },
-                    preparedStatement -> {
+                    }, preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, organizationId);
-                    }
-            );
+                    });
             return (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?
-                    null : buildOrganizationFromRawData(organizationRowDataCollectors);
+                    null :
+                    buildOrganizationFromRawData(organizationRowDataCollectors);
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_BY_ID_ERROR, organizationId, e);
         }
@@ -273,19 +272,19 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             // Delete organization from UM_ORG table and cascade the deletion to other two tables
-            jdbcTemplate.executeUpdate(DELETE_ORGANIZATION_BY_ID,
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    });
+            jdbcTemplate.executeUpdate(DELETE_ORGANIZATION_BY_ID, preparedStatement -> {
+                int parameterIndex = 0;
+                preparedStatement.setInt(++parameterIndex, tenantId);
+                preparedStatement.setString(++parameterIndex, organizationId);
+            });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_DELETE_ERROR, "Organization Id " + organizationId, e);
         }
     }
 
     @Override
-    public List<String> getChildOrganizationIds(String organizationId, String userId) throws OrganizationManagementException {
+    public List<String> getChildOrganizationIds(String organizationId, String userId)
+            throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         // This API can either be called internally (disabling organization)
@@ -312,18 +311,19 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             validateQueryLength(query);
         }
         try {
-            List<String> childOrganizationIds = jdbcTemplate.executeQuery(query,
-                    (resultSet, rowNumber) -> resultSet.getString(VIEW_ID_COLUMN),
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                        if (!isInternalCall) {
-                            preparedStatement.setString(++parameterIndex, userId);
-                        }
-                    });
+            List<String> childOrganizationIds = jdbcTemplate
+                    .executeQuery(query, (resultSet, rowNumber) -> resultSet.getString(VIEW_ID_COLUMN),
+                            preparedStatement -> {
+                                int parameterIndex = 0;
+                                preparedStatement.setString(++parameterIndex, organizationId);
+                                if (!isInternalCall) {
+                                    preparedStatement.setString(++parameterIndex, userId);
+                                }
+                            });
             return childOrganizationIds;
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_CHILDREN_ERROR, "Organization Id " + organizationId, e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_CHILDREN_ERROR, "Organization Id " + organizationId,
+                    e);
         }
     }
 
@@ -333,15 +333,14 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
-            List<UserStoreConfig> userStoreConfigs = jdbcTemplate.executeQuery(GET_USER_STORE_CONFIGS_BY_ORG_ID,
-                    (resultSet, rowNumber) -> {
+            List<UserStoreConfig> userStoreConfigs = jdbcTemplate
+                    .executeQuery(GET_USER_STORE_CONFIGS_BY_ORG_ID, (resultSet, rowNumber) -> {
                         UserStoreConfig config = new UserStoreConfig();
                         config.setId(resultSet.getString(VIEW_CONFIG_ID_COLUMN));
                         config.setKey(resultSet.getString(VIEW_CONFIG_KEY_COLUMN));
                         config.setValue(resultSet.getString(VIEW_CONFIG_VALUE_COLUMN));
                         return config;
-                    },
-                    preparedStatement -> {
+                    }, preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, organizationId);
@@ -359,9 +358,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             int orgCount = jdbcTemplate.fetchSingleRecord(CHECK_ORGANIZATION_EXIST_BY_NAME,
-                    (resultSet, rowNumber) ->
-                            resultSet.getInt(COUNT_COLUMN),
-                    preparedStatement -> {
+                    (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN), preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, name);
@@ -379,14 +376,11 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             int orgCount = jdbcTemplate.fetchSingleRecord(CHECK_ORGANIZATION_EXIST_BY_ID,
-                    (resultSet, rowNumber) ->
-                            resultSet.getInt(COUNT_COLUMN),
-                    preparedStatement -> {
+                    (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN), preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, id);
-                    }
-            );
+                    });
             return orgCount > 0;
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_ID_ERROR,
@@ -395,8 +389,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     @Override
-    public void patchOrganization(String organizationId, Operation operation)
-            throws OrganizationManagementException {
+    public void patchOrganization(String organizationId, Operation operation) throws OrganizationManagementException {
 
         String path = operation.getPath();
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -408,8 +401,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 patchAttribute(jdbcTemplate, organizationId, operation);
             } catch (DataAccessException e) {
                 throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
-                        "Error while patching attribute : " + attributeKey +
-                                ", value : " + operation.getValue() + ", op : " + operation.getOp() + ", org : " + organizationId, e);
+                        "Error while patching attribute : " + attributeKey + ", value : " + operation.getValue()
+                                + ", op : " + operation.getOp() + ", org : " + organizationId, e);
             }
         } else {
             // Updating a primary field
@@ -432,16 +425,16 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 log.debug("Organization patch query : " + query);
             }
             try {
-                jdbcTemplate.executeUpdate(query,
-                        preparedStatement -> {
-                            int parameterIndex = 0;
-                            preparedStatement.setString(++parameterIndex, operation.getOp().equals(PATCH_OP_REMOVE) ? null : operation.getValue());
-                            preparedStatement.setString(++parameterIndex, organizationId);
-                        });
+                jdbcTemplate.executeUpdate(query, preparedStatement -> {
+                    int parameterIndex = 0;
+                    preparedStatement.setString(++parameterIndex,
+                            operation.getOp().equals(PATCH_OP_REMOVE) ? null : operation.getValue());
+                    preparedStatement.setString(++parameterIndex, organizationId);
+                });
             } catch (DataAccessException e) {
                 throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
-                        "Error while updating the primary field : " + path +
-                                ", value : " + operation.getValue() + ", org : " + organizationId, e);
+                        "Error while updating the primary field : " + path + ", value : " + operation.getValue()
+                                + ", org : " + organizationId, e);
             }
         }
     }
@@ -453,9 +446,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             return jdbcTemplate.fetchSingleRecord(GET_ORGANIZATION_ID_BY_NAME,
-                    (resultSet, rowNumber) ->
-                            resultSet.getString(VIEW_ID_COLUMN),
-                    preparedStatement -> {
+                    (resultSet, rowNumber) -> resultSet.getString(VIEW_ID_COLUMN), preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, organizationName);
@@ -474,8 +465,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         if (RDN.equals(operation.getPath())) {
             // Set both RDN and DN appropriately
             Map<String, UserStoreConfig> userStoreConfigs = getUserStoreConfigsByOrgId(
-                    PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(),
-                    organizationId);
+                    PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(), organizationId);
             String dn = userStoreConfigs.get(DN).getValue();
             dn = dn.replace(String.format(DN_PLACE_HOLDER, userStoreConfigs.get(RDN).getValue()),
                     String.format(DN_PLACE_HOLDER, operation.getValue()));
@@ -495,13 +485,12 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     private void updateUserStoreConfig(JdbcTemplate template, String organizationId, String key, String value)
             throws DataAccessException {
 
-        template.executeUpdate(PATCH_USER_STORE_CONFIG,
-                preparedStatement -> {
-                    int parameterIndex = 0;
-                    preparedStatement.setString(++parameterIndex, value);
-                    preparedStatement.setString(++parameterIndex, organizationId);
-                    preparedStatement.setString(++parameterIndex, key);
-                });
+        template.executeUpdate(PATCH_USER_STORE_CONFIG, preparedStatement -> {
+            int parameterIndex = 0;
+            preparedStatement.setString(++parameterIndex, value);
+            preparedStatement.setString(++parameterIndex, organizationId);
+            preparedStatement.setString(++parameterIndex, key);
+        });
     }
 
     @Override
@@ -511,9 +500,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             int attrCount = jdbcTemplate.fetchSingleRecord(CHECK_ATTRIBUTE_EXIST_BY_KEY,
-                    (resultSet, rowNumber) ->
-                            resultSet.getInt(COUNT_COLUMN),
-                    preparedStatement -> {
+                    (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN), preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, organizationId);
@@ -533,13 +520,12 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         Timestamp currentTime = new java.sql.Timestamp(new Date().getTime());
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
-            jdbcTemplate.executeUpdate(UPDATE_ORGANIZATION_METADATA,
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setTimestamp(++parameterIndex, currentTime, calendar);
-                        preparedStatement.setString(++parameterIndex, metadata.getLastModifiedBy().getId());
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    });
+            jdbcTemplate.executeUpdate(UPDATE_ORGANIZATION_METADATA, preparedStatement -> {
+                int parameterIndex = 0;
+                preparedStatement.setTimestamp(++parameterIndex, currentTime, calendar);
+                preparedStatement.setString(++parameterIndex, metadata.getLastModifiedBy().getId());
+                preparedStatement.setString(++parameterIndex, organizationId);
+            });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
                     "Error while updating organization metadata : " + organizationId, e);
@@ -550,15 +536,14 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
-            int matchingEntries = jdbcTemplate.fetchSingleRecord(CHECK_RDN_AVAILABILITY,
-                    (resultSet, rowNumber) ->
-                            resultSet.getInt(COUNT_COLUMN),
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, parentId);
-                        preparedStatement.setString(++parameterIndex, rdn);
-                    });
+            int matchingEntries = jdbcTemplate
+                    .fetchSingleRecord(CHECK_RDN_AVAILABILITY, (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
+                            preparedStatement -> {
+                                int parameterIndex = 0;
+                                preparedStatement.setInt(++parameterIndex, tenantId);
+                                preparedStatement.setString(++parameterIndex, parentId);
+                                preparedStatement.setString(++parameterIndex, rdn);
+                            });
             return matchingEntries == 0;
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR,
@@ -572,27 +557,21 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         String attributeKey = operation.getPath().replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim();
         // Insert or update attribute
         if (operation.getOp().equals(PATCH_OP_ADD) || operation.getOp().equals(PATCH_OP_REPLACE)) {
-            template.executeInsert(INSERT_OR_UPDATE_ATTRIBUTE,
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        // On update, unique ID and Org ID will not be updated
-                        preparedStatement.setString(++parameterIndex, generateUniqueID());
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                        preparedStatement.setString(++parameterIndex, attributeKey);
-                        preparedStatement.setString(++parameterIndex, operation.getValue());
-                    },
-                    new Attribute(),
-                    false
-            );
+            template.executeInsert(INSERT_OR_UPDATE_ATTRIBUTE, preparedStatement -> {
+                int parameterIndex = 0;
+                // On update, unique ID and Org ID will not be updated
+                preparedStatement.setString(++parameterIndex, generateUniqueID());
+                preparedStatement.setString(++parameterIndex, organizationId);
+                preparedStatement.setString(++parameterIndex, attributeKey);
+                preparedStatement.setString(++parameterIndex, operation.getValue());
+            }, new Attribute(), false);
         } else {
             // Remove attribute
-            template.executeUpdate(REMOVE_ATTRIBUTE,
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                        preparedStatement.setString(++parameterIndex, operation.getPath());
-                    }
-            );
+            template.executeUpdate(REMOVE_ATTRIBUTE, preparedStatement -> {
+                int parameterIndex = 0;
+                preparedStatement.setString(++parameterIndex, organizationId);
+                preparedStatement.setString(++parameterIndex, operation.getPath());
+            });
         }
         validateHasAttributesField(template, organizationId);
     }
@@ -603,66 +582,54 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         int attrCount;
         try {
             attrCount = template.fetchSingleRecord(CHECK_ORG_HAS_ATTRIBUTES,
-                    (resultSet, rowNumber) ->
-                            resultSet.getInt(COUNT_COLUMN),
-                    preparedStatement -> {
+                    (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN), preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setString(++parameterIndex, organizationId);
                     });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR,
-                    "Error while checking if the organization has any attributes for the organization Id " + organizationId, e);
+                    "Error while checking if the organization has any attributes for the organization Id "
+                            + organizationId, e);
         }
         try {
-            template.executeUpdate(UPDATE_HAS_ATTRIBUTES_FIELD,
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, attrCount > 0 ? 1 : 0);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    }
-            );
+            template.executeUpdate(UPDATE_HAS_ATTRIBUTES_FIELD, preparedStatement -> {
+                int parameterIndex = 0;
+                preparedStatement.setInt(++parameterIndex, attrCount > 0 ? 1 : 0);
+                preparedStatement.setString(++parameterIndex, organizationId);
+            });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR,
                     "Error while updating HAS_ATTRIBUTES field of the organization Id " + organizationId, e);
         }
     }
 
-
     private void insertOrganizationAttributes(JdbcTemplate template, Organization organization)
             throws DataAccessException, OrganizationManagementClientException {
 
         String query = buildQueryForAttributes(organization);
-        template.executeInsert(query,
-                preparedStatement -> {
-                    int parameterIndex = 0;
-                    for (Map.Entry<String, Attribute> entry : organization.getAttributes().entrySet()) {
-                        preparedStatement.setString(++parameterIndex, generateUniqueID());
-                        preparedStatement.setString(++parameterIndex, organization.getId());
-                        preparedStatement.setString(++parameterIndex, entry.getValue().getKey());
-                        preparedStatement.setString(++parameterIndex, entry.getValue().getValue());
-                    }
-                },
-                organization,
-                false
-        );
+        template.executeInsert(query, preparedStatement -> {
+            int parameterIndex = 0;
+            for (Map.Entry<String, Attribute> entry : organization.getAttributes().entrySet()) {
+                preparedStatement.setString(++parameterIndex, generateUniqueID());
+                preparedStatement.setString(++parameterIndex, organization.getId());
+                preparedStatement.setString(++parameterIndex, entry.getValue().getKey());
+                preparedStatement.setString(++parameterIndex, entry.getValue().getValue());
+            }
+        }, organization, false);
     }
 
     private void insertOrUpdateUserStoreConfigs(JdbcTemplate template, Organization organization)
             throws DataAccessException {
 
         for (Map.Entry<String, UserStoreConfig> entry : organization.getUserStoreConfigs().entrySet()) {
-            template.executeInsert(INSERT_OR_UPDATE_USER_STORE_CONFIG,
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        // On update, unique ID and Org ID will not be updated
-                        preparedStatement.setString(++parameterIndex, generateUniqueID());
-                        preparedStatement.setString(++parameterIndex, organization.getId());
-                        preparedStatement.setString(++parameterIndex, entry.getValue().getKey());
-                        preparedStatement.setString(++parameterIndex, entry.getValue().getValue());
-                    },
-                    organization,
-                    false
-            );
+            template.executeInsert(INSERT_OR_UPDATE_USER_STORE_CONFIG, preparedStatement -> {
+                int parameterIndex = 0;
+                // On update, unique ID and Org ID will not be updated
+                preparedStatement.setString(++parameterIndex, generateUniqueID());
+                preparedStatement.setString(++parameterIndex, organization.getId());
+                preparedStatement.setString(++parameterIndex, entry.getValue().getKey());
+                preparedStatement.setString(++parameterIndex, entry.getValue().getValue());
+            }, organization, false);
         }
     }
 
@@ -677,16 +644,18 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         sb.append(INSERT_ATTRIBUTES_CONCLUDE);
         if (sb.toString().getBytes().length > getMaximumQueryLengthInBytes()) {
             if (log.isDebugEnabled()) {
-                log.debug("Error building SQL query for the attribute insert. Number of attributes: " +
-                        organization.getAttributes().size() + " exceeds the maximum query length: " +
-                        MAX_QUERY_LENGTH_IN_BYTES_SQL);
+                log.debug("Error building SQL query for the attribute insert. Number of attributes: " + organization
+                        .getAttributes().size() + " exceeds the maximum query length: "
+                        + MAX_QUERY_LENGTH_IN_BYTES_SQL);
             }
-            throw handleClientException(ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED, "Too much attributes for the creation request. Try patch.");
+            throw handleClientException(ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED,
+                    "Too much attributes for the creation request. Try patch.");
         }
         return sb.toString();
     }
 
-    private Organization buildOrganizationFromRawData(List<OrganizationRowDataCollector> organizationRowDataCollectors) {
+    private Organization buildOrganizationFromRawData(
+            List<OrganizationRowDataCollector> organizationRowDataCollectors) {
 
         Organization organization = new Organization();
         organizationRowDataCollectors.forEach(collector -> {
@@ -705,18 +674,17 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 organization.getMetadata().getLastModifiedBy().setId(collector.getLastModifiedBy());
                 organization.setHasAttributes(collector.hasAttributes());
             }
-            if (organization.hasAttributes() && collector.getAttributeKey() != null
-                    && !organization.getAttributes().containsKey(collector.getAttributeKey())) {
-                organization.getAttributes()
-                        .put(collector.getAttributeKey(),
-                                new Attribute(collector.getAttributeKey(), collector.getAttributeValue()));
+            if (organization.hasAttributes() && collector.getAttributeKey() != null && !organization.getAttributes()
+                    .containsKey(collector.getAttributeKey())) {
+                organization.getAttributes().put(collector.getAttributeKey(),
+                        new Attribute(collector.getAttributeKey(), collector.getAttributeValue()));
             }
         });
         return organization;
     }
 
-    private Map<String, Organization> buildOrganizationsFromRawData(List<OrganizationRowDataCollector> organizationRowDataCollectors,
-                                                                    List<String> requestedAttributes) {
+    private Map<String, Organization> buildOrganizationsFromRawData(
+            List<OrganizationRowDataCollector> organizationRowDataCollectors, List<String> requestedAttributes) {
 
         Map<String, Organization> organizationMap = new HashMap<>();
         for (OrganizationRowDataCollector collector : organizationRowDataCollectors) {
@@ -742,14 +710,11 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             }
             // Populate with attributes if any
             // Populate attributes if requested specifically, or requested all the attributes '*'
-            if (organization.hasAttributes()
-                    && collector.getAttributeKey() != null
-                    && (requestedAttributes.contains(collector.getAttributeKey()) || requestedAttributes.contains("*"))
+            if (organization.hasAttributes() && collector.getAttributeKey() != null && (
+                    requestedAttributes.contains(collector.getAttributeKey()) || requestedAttributes.contains("*"))
                     && !organization.getAttributes().containsKey(collector.getAttributeKey())) {
-                organization.getAttributes().put(
-                        collector.getAttributeKey(),
-                        new Attribute(collector.getAttributeKey(), collector.getAttributeValue())
-                );
+                organization.getAttributes().put(collector.getAttributeKey(),
+                        new Attribute(collector.getAttributeKey(), collector.getAttributeValue()));
             }
         }
         return organizationMap;
@@ -759,16 +724,16 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         if (query.getBytes().length > getMaximumQueryLengthInBytes()) {
             if (log.isDebugEnabled()) {
-                log.debug("Error building SQL query. Get organizations expression " +
-                        "query length: " + query.length() + " exceeds the maximum limit: " +
-                        MAX_QUERY_LENGTH_IN_BYTES_SQL);
+                log.debug("Error building SQL query. Get organizations expression " + "query length: " + query.length()
+                        + " exceeds the maximum limit: " + MAX_QUERY_LENGTH_IN_BYTES_SQL);
             }
-            throw handleClientException(ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED, "Query length exceeded the maximum limit.");
+            throw handleClientException(ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED,
+                    "Query length exceeded the maximum limit.");
         }
     }
 
-    private PlaceholderSQL buildQuery(Condition condition, int offset, int limit,
-                                      String sortBy, String sortOrder) throws OrganizationManagementException {
+    private PlaceholderSQL buildQuery(Condition condition, int offset, int limit, String sortBy, String sortOrder)
+            throws OrganizationManagementException {
 
         boolean paginationReq = offset > -1 && limit > 0;
         boolean searchReq = condition != null;
@@ -778,8 +743,9 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         PlaceholderSQL placeholderSQL;
         try {
-            placeholderSQL = searchReq ? condition.buildQuery(
-                    new PrimitiveConditionValidator(new OrganizationSearchBean())) : new PlaceholderSQL();
+            placeholderSQL = searchReq ?
+                    condition.buildQuery(new PrimitiveConditionValidator(new OrganizationSearchBean())) :
+                    new PlaceholderSQL();
         } catch (PrimitiveConditionValidationException e) {
             log.error("Error passing the condition ", e);
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST, "Error passing the condition");
@@ -806,7 +772,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     private List<Organization> sortCollectedOrganizations(Map<String, Organization> organizationMap,
-                                                          List<String> organizationIds) {
+            List<String> organizationIds) {
 
         List<Organization> organizations = new ArrayList<>();
         for (String id : organizationIds) {
@@ -822,8 +788,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         try {
             roleIds = jdbcTemplate.executeQuery(GET_ROLE_IDS_FOR_PERMISSION,
                     (resultSet, rowNumber) -> resultSet.getString(UM_ROLE_ID_COLUMN),
-                    preparedStatement -> preparedStatement.setString(1, permission)
-            );
+                    preparedStatement -> preparedStatement.setString(1, permission));
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
                     "Error obtaining authorized list of roles for the permission : " + permission, e);

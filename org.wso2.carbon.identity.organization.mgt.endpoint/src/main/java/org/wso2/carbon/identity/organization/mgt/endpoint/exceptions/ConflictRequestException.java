@@ -31,10 +31,8 @@ public class ConflictRequestException extends WebApplicationException {
 
     public ConflictRequestException(ErrorDTO errorDTO) {
 
-        super(Response.status(Response.Status.CONFLICT)
-                .entity(errorDTO)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .build());
+        super(Response.status(Response.Status.CONFLICT).entity(errorDTO)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build());
         message = errorDTO.getDescription();
     }
 

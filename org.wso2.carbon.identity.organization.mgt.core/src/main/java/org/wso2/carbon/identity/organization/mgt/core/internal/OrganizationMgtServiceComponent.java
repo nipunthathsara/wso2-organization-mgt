@@ -33,7 +33,6 @@ import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
-import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidator;
 import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
@@ -45,10 +44,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 /**
  * OSGI service component for organization management core bundle.
  */
-@Component(
-        name = "carbon.organization.mgt.component",
-        immediate = true
-)
+@Component(name = "carbon.organization.mgt.component",
+           immediate = true)
 public class OrganizationMgtServiceComponent {
 
     private static final Log log = LogFactory.getLog(OrganizationMgtServiceComponent.class);
@@ -66,10 +63,11 @@ public class OrganizationMgtServiceComponent {
             OrganizationMgtDataHolder.getInstance().setOrganizationAuthDao(new OrganizationAuthorizationDaoImpl());
             OrganizationMgtDataHolder.getInstance().setOrganizationMgtRoles(populateManagementRoles(-1234));
             BundleContext bundleContext = componentContext.getBundleContext();
-            bundleContext.registerService(OrganizationManager.class.getName(),
-                    new OrganizationManagerImpl(), null);
-            String attributeValidatorClass = !StringUtils.isBlank(IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR))
-                    ? IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR).trim() : DEFAULT_ATTRIBUTE_VALIDATOR_CLASS;
+            bundleContext.registerService(OrganizationManager.class.getName(), new OrganizationManagerImpl(), null);
+            String attributeValidatorClass = !StringUtils
+                    .isBlank(IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR)) ?
+                    IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR).trim() :
+                    DEFAULT_ATTRIBUTE_VALIDATOR_CLASS;
             //TODO fix class loading error
             OrganizationMgtDataHolder.getInstance().setAttributeValidator(new AttributeValidatorImpl());
             if (log.isDebugEnabled()) {
@@ -80,12 +78,11 @@ public class OrganizationMgtServiceComponent {
         }
     }
 
-    @Reference(
-            name = "realm.service",
-            service = org.wso2.carbon.user.core.service.RealmService.class,
-            cardinality = ReferenceCardinality.MANDATORY,
-            policy = ReferencePolicy.DYNAMIC,
-            unbind = "unsetRealmService")
+    @Reference(name = "realm.service",
+               service = org.wso2.carbon.user.core.service.RealmService.class,
+               cardinality = ReferenceCardinality.MANDATORY,
+               policy = ReferencePolicy.DYNAMIC,
+               unbind = "unsetRealmService")
     protected void setRealmService(RealmService realmService) {
 
         if (log.isDebugEnabled()) {
@@ -102,13 +99,11 @@ public class OrganizationMgtServiceComponent {
         OrganizationMgtDataHolder.getInstance().setRealmService(null);
     }
 
-    @Reference(
-            name = "configuration.context.service",
-            service = ConfigurationContextService.class,
-            cardinality = ReferenceCardinality.MANDATORY,
-            policy = ReferencePolicy.DYNAMIC,
-            unbind = "unsetConfigurationContextService"
-    )
+    @Reference(name = "configuration.context.service",
+               service = ConfigurationContextService.class,
+               cardinality = ReferenceCardinality.MANDATORY,
+               policy = ReferencePolicy.DYNAMIC,
+               unbind = "unsetConfigurationContextService")
     protected void setConfigurationContextService(ConfigurationContextService configurationContextService) {
 
         if (log.isDebugEnabled()) {

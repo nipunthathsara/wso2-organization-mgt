@@ -31,10 +31,8 @@ public class BadRequestException extends WebApplicationException {
 
     public BadRequestException(ErrorDTO errorDTO) {
 
-        super(Response.status(Response.Status.BAD_REQUEST)
-                .entity(errorDTO)
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .build());
+        super(Response.status(Response.Status.BAD_REQUEST).entity(errorDTO)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build());
         message = errorDTO.getDescription();
     }
 

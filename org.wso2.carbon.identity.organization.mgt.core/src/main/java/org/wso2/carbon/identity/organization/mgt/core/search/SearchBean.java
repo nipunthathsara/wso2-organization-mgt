@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.search;
 
-
 import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditionValidationException;
 
 /**

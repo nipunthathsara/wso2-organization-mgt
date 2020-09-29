@@ -16,43 +16,49 @@
 
 package org.wso2.carbon.identity.organization.mgt.endpoint.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.ArrayList;
 import java.util.List;
-import io.swagger.annotations.*;
-import com.fasterxml.jackson.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
 @ApiModel(description = "")
 public class UserRoleMappingDTO {
 
-    @Valid 
-    @NotNull(message = "Property roleId cannot be null.") 
+    @Valid
+    @NotNull(message = "Property roleId cannot be null.")
     private String roleId = null;
 
-    @Valid 
+    @Valid
     private List<String> users = new ArrayList<String>();
 
     /**
-    **/
-    @ApiModelProperty(required = true, value = "")
+     *
+     **/
+    @ApiModelProperty(required = true,
+                      value = "")
     @JsonProperty("roleId")
     public String getRoleId() {
         return roleId;
     }
+
     public void setRoleId(String roleId) {
         this.roleId = roleId;
     }
 
     /**
-    **/
+     *
+     **/
     @ApiModelProperty(value = "")
     @JsonProperty("users")
     public List<String> getUsers() {
         return users;
     }
+
     public void setUsers(List<String> users) {
         this.users = users;
     }
@@ -62,10 +68,10 @@ public class UserRoleMappingDTO {
 
         StringBuilder sb = new StringBuilder();
         sb.append("class UserRoleMappingDTO {\n");
-        
+
         sb.append("    roleId: ").append(roleId).append("\n");
         sb.append("    users: ").append(users).append("\n");
-        
+
         sb.append("}\n");
         return sb.toString();
     }

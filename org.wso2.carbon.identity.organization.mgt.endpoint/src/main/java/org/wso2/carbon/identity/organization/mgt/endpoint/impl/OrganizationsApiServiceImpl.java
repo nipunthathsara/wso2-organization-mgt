@@ -38,13 +38,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
 
@@ -56,12 +53,10 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsPost(OrganizationAddDTO organizationAddDTO) {
-        // TODO remove 'null' fields from the response
+
         try {
-            Organization organization = getOrganizationManager().addOrganization(
-                    getOrganizationAddFromDTO(organizationAddDTO),
-                    false
-            );
+            Organization organization = getOrganizationManager()
+                    .addOrganization(getOrganizationAddFromDTO(organizationAddDTO), false);
             return Response.created(getResourceURI(organization))
                     .entity(getBasicOrganizationDTOFromOrganization(organization)).build();
         } catch (OrganizationManagementClientException e) {
@@ -92,26 +87,23 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsGet(SearchContext searchContext, Integer offset, Integer limit, String sortBy,
-                                     String sortOrder, String attributes) {
+            String sortOrder, String attributes) {
 
         try {
             if ((limit != null && limit < 1) || (offset != null && offset < 0)) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
-                        "Invalid pagination arguments. 'limit' should be greater than 0 and 'offset' should be greater than -1");
+                        "Invalid pagination arguments. 'limit' should be greater than 0 and 'offset' should be "
+                                + "greater than -1");
             }
             // If pagination parameters not defined in the request, set them to -1
             limit = (limit == null) ? -1 : limit;
             offset = (offset == null) ? -1 : offset;
-            List<String> requestedAttributes = attributes == null ? new ArrayList<>()
-                    : Arrays.stream(attributes.split(",")).map(String::trim).collect(Collectors.toList());
+            List<String> requestedAttributes = attributes == null ?
+                    new ArrayList<>() :
+                    Arrays.stream(attributes.split(",")).map(String::trim).collect(Collectors.toList());
             List<Organization> organizations = getOrganizationManager()
-                    .getOrganizations(
-                            getSearchCondition(searchContext, OrganizationSearchBean.class),
-                            offset,
-                            limit,
-                            sortBy,
-                            sortOrder,
-                            requestedAttributes);
+                    .getOrganizations(getSearchCondition(searchContext, OrganizationSearchBean.class), offset, limit,
+                            sortBy, sortOrder, requestedAttributes);
             return Response.ok().entity(getOrganizationDTOsFromOrganizations(organizations)).build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);
@@ -170,11 +162,9 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     public Response organizationsOrganizationIdPatch(String organizationId, List<OperationDTO> operations) {
 
         try {
-            getOrganizationManager().patchOrganization(
-                    organizationId,
+            getOrganizationManager().patchOrganization(organizationId,
                     operations.stream().map(op -> new Operation(op.getOp(), op.getPath(), op.getValue()))
-                            .collect(Collectors.toList())
-            );
+                            .collect(Collectors.toList()));
             return Response.ok().build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);
@@ -189,11 +179,9 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     public Response organizationsOrganizationIdRolesPatch(String organizationId, List<OperationDTO> operations) {
 
         try {
-            getOrganizationUserRoleManager().patchOrganizationAndUserRoleMapping(organizationId,
-                    operations.stream()
-                            .map(op -> new org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation(
-                                    op.getOp(), op.getPath(), op.getValue()))
-                            .collect(Collectors.toList()));
+            getOrganizationUserRoleManager().patchOrganizationAndUserRoleMapping(organizationId, operations.stream()
+                    .map(op -> new org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation(op.getOp(),
+                            op.getPath(), op.getValue())).collect(Collectors.toList()));
             return Response.ok().build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
@@ -209,9 +197,8 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
         try {
             getOrganizationUserRoleManager().addOrganizationAndUserRoleMappings(organizationId,
-            userRoles.stream()
-                    .map(mapping -> new UserRoleMapping(mapping.getRoleId(), mapping.getUsers()))
-                    .collect(Collectors.toList()));
+                    userRoles.stream().map(mapping -> new UserRoleMapping(mapping.getRoleId(), mapping.getUsers()))
+                            .collect(Collectors.toList()));
             return Response.ok().build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
@@ -239,11 +226,10 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, String roleId,
-                                                                            String userId) {
+            String userId) {
 
         try {
-            getOrganizationUserRoleManager()
-                    .deleteOrganizationAndUserRoleMapping(organizationId, userId, roleId);
+            getOrganizationUserRoleManager().deleteOrganizationAndUserRoleMapping(organizationId, userId, roleId);
             return Response.accepted().build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
@@ -258,7 +244,8 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     public Response organizationsOrganizationIdUserstoreConfigsGet(String organizationId) {
 
         try {
-            Map<String, UserStoreConfig> userStoreConfigs = getOrganizationManager().getUserStoreConfigs(organizationId);
+            Map<String, UserStoreConfig> userStoreConfigs = getOrganizationManager()
+                    .getUserStoreConfigs(organizationId);
             return Response.ok(getUserStoreConfigDTOsFromUserStoreConfigs(userStoreConfigs.values())).build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);
@@ -271,14 +258,12 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsOrganizationIdUserstoreConfigsPatch(String organizationId,
-                                                                     List<OperationDTO> operations) {
+            List<OperationDTO> operations) {
 
         try {
-            getOrganizationManager().patchUserStoreConfigs(
-                    organizationId,
+            getOrganizationManager().patchUserStoreConfigs(organizationId,
                     operations.stream().map(op -> new Operation(op.getOp(), op.getPath(), op.getValue()))
-                            .collect(Collectors.toList())
-            );
+                            .collect(Collectors.toList()));
             return Response.ok().build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);

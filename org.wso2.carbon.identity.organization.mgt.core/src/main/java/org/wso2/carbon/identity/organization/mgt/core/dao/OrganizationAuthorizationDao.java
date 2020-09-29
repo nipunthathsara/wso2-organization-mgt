@@ -19,7 +19,6 @@
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
-import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 
 /**
@@ -38,7 +37,8 @@ public interface OrganizationAuthorizationDao {
      * @return
      * @throws OrganizationManagementException
      */
-    boolean isUserAuthorized(String userId, String organizationId, String permission) throws OrganizationManagementException;
+    boolean isUserAuthorized(String userId, String organizationId, String permission)
+            throws OrganizationManagementException;
 
     /**
      * Get role name (fetch first match) which the user was authorized by
@@ -49,7 +49,8 @@ public interface OrganizationAuthorizationDao {
      * @return
      * @throws OrganizationManagementException
      */
-    OrganizationUserRoleMapping getAuthorizedUserRole(String userId, String organizationId, String permission) throws OrganizationManagementException;
+    OrganizationUserRoleMapping getAuthorizedUserRole(String userId, String organizationId, String permission)
+            throws OrganizationManagementException;
 
     /**
      * Add an entry to the 'UM_USER_ROLE_ORG' table.
@@ -61,7 +62,8 @@ public interface OrganizationAuthorizationDao {
      * @param organizationId
      * @throws OrganizationManagementException
      */
-    void addOrganizationAndUserRoleMapping(String userId, String roleId, int hybridRoleId, int tenantId, String organizationId) throws OrganizationManagementException;
+    void addOrganizationAndUserRoleMapping(String userId, String roleId, int hybridRoleId, int tenantId,
+            String organizationId) throws OrganizationManagementException;
 
     /**
      * Find the 'UM_ID' by 'UM_ROLE_NAME' from the 'UM_HYBRID_ROLE' table.

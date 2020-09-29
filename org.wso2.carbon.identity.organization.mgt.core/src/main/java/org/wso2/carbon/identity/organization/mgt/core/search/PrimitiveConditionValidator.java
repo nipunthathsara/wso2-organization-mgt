@@ -22,7 +22,6 @@ import org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType;
 import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditionValidationException;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationSearchBean;
 
-
 import java.lang.reflect.Field;
 
 public class PrimitiveConditionValidator {
@@ -41,7 +40,8 @@ public class PrimitiveConditionValidator {
      * @return A db qualified {@link PrimitiveCondition}.
      * @throws PrimitiveConditionValidationException
      */
-    public PrimitiveCondition validate(PrimitiveCondition primitiveCondition) throws PrimitiveConditionValidationException {
+    public PrimitiveCondition validate(PrimitiveCondition primitiveCondition)
+            throws PrimitiveConditionValidationException {
 
         if (searchBean == null) {
             throw new NullPointerException("Invalid search bean: null in the PrimitiveCondition validate.");
@@ -52,33 +52,28 @@ public class PrimitiveConditionValidator {
 
         if (property == null || operator == null || value == null) {
             throw new PrimitiveConditionValidationException(
-                    "Invalid primitive condition parameters found in: property = " + property
-                            + (operator == null ? ", condition = null" : "")
-                            + (value == null ? ", value = null" : "")
-                            + "."
-            );
+                    "Invalid primitive condition parameters found in: property = " + property + (operator == null ?
+                            ", condition = null" :
+                            "") + (value == null ? ", value = null" : "") + ".");
         }
         try {
             Field field = this.searchBean.getClass().getDeclaredField(property);
             if (!field.getType().getName().equals(value.getClass().getName())) {
                 throw new PrimitiveConditionValidationException(
-                        "Value for the property: " + property + " is expected to be: " + field.getType().getName() +
-                                " but found: " + value.getClass().getName()
-                );
+                        "Value for the property: " + property + " is expected to be: " + field.getType().getName()
+                                + " but found: " + value.getClass().getName());
             }
         } catch (NoSuchFieldException e) {
             throw new PrimitiveConditionValidationException(
-                    "Property: " + property + " is not found in the allowed search properties present in the bean " +
-                            "class: " + OrganizationSearchBean.class.getName()
-            );
+                    "Property: " + property + " is not found in the allowed search properties present in the bean "
+                            + "class: " + OrganizationSearchBean.class.getName());
         }
 
         // If parameter validation are a success then build a database qualified primitive condition.
         PrimitiveCondition dbQualifiedPrimitiveCondition;
         dbQualifiedPrimitiveCondition = this.searchBean.mapPrimitiveCondition(primitiveCondition);
-        dbQualifiedPrimitiveCondition.setProperty(this.searchBean.getDBQualifiedFieldName(
-                dbQualifiedPrimitiveCondition.getProperty()
-        ));
+        dbQualifiedPrimitiveCondition
+                .setProperty(this.searchBean.getDBQualifiedFieldName(dbQualifiedPrimitiveCondition.getProperty()));
         return dbQualifiedPrimitiveCondition;
     }
 }

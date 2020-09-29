@@ -21,66 +21,57 @@ package org.wso2.carbon.identity.organization.mgt.core.constant;
 public class ConditionType {
 
     public enum ComplexOperator {
-        OR,
-        AND,
-        NOT;
+        OR, AND, NOT;
 
         public String toSQL() {
 
             String op = null;
             switch (this) {
-                case OR:
-                    op = this.toString();
-                    break;
-                case AND:
-                    op = this.toString();
-                    break;
-                case NOT:
-                    op = this.toString();
-                    break;
+            case OR:
+                op = this.toString();
+                break;
+            case AND:
+                op = this.toString();
+                break;
+            case NOT:
+                op = this.toString();
+                break;
             }
             return op;
         }
     }
 
     public enum PrimitiveOperator {
-        EQUALS,
-        NOT_EQUALS,
-        LESS_THAN,
-        GREATER_THAN,
-        LESS_OR_EQUALS,
-        GREATER_OR_EQUALS,
-        STARTS_WITH,
-        ENDS_WITH;
+        EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, LESS_OR_EQUALS, GREATER_OR_EQUALS, STARTS_WITH, ENDS_WITH;
 
         public String toSQL() {
 
             String op = null;
             switch (this) {
-                case EQUALS:
-                    op = "=";
-                    break;
-                case NOT_EQUALS:
-                    op = "<>";
-                    break;
-                case GREATER_THAN:
-                    op = ">";
-                    break;
-                case GREATER_OR_EQUALS:
-                    op = ">=";
-                    break;
-                case LESS_THAN:
-                    op = "<";
-                    break;
-                case LESS_OR_EQUALS:
-                    op = "<=";
-                    break;
-                case STARTS_WITH:
-                    op = "LIKE";
-                    break;
-                case ENDS_WITH:
-                    op = "LIKE";
-                    break;
+            case EQUALS:
+                op = "=";
+                break;
+            case NOT_EQUALS:
+                op = "<>";
+                break;
+            case GREATER_THAN:
+                op = ">";
+                break;
+            case GREATER_OR_EQUALS:
+                op = ">=";
+                break;
+            case LESS_THAN:
+                op = "<";
+                break;
+            case LESS_OR_EQUALS:
+                op = "<=";
+                break;
+            case STARTS_WITH:
+                op = "LIKE";
+                break;
+            case ENDS_WITH:
+                op = "LIKE";
+                break;
             }
             return op;
         }

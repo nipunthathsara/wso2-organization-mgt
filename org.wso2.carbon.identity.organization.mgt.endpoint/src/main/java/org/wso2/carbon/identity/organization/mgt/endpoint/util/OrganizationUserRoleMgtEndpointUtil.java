@@ -20,12 +20,7 @@ package org.wso2.carbon.identity.organization.mgt.endpoint.util;
 
 import org.apache.commons.logging.Log;
 
-import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.MetaDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.MetaUserDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ParentDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.BadRequestException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ConflictRequestException;
@@ -38,7 +33,6 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
@@ -90,45 +84,40 @@ public class OrganizationUserRoleMgtEndpointUtil {
         return false;
     }
 
-    public static NotFoundException buildNotFoundRequestException(String description, String code,
-                                                                  Log log, Throwable e) {
+    public static NotFoundException buildNotFoundRequestException(String description, String code, Log log,
+            Throwable e) {
 
         ErrorDTO errorDTO = getErrorDTO(Response.Status.NOT_FOUND.toString(), description, code);
         logDebug(log, e);
         return new NotFoundException(errorDTO);
     }
 
-    public static ConflictRequestException buildConflictRequestException(String description, String code,
-                                                                         Log log, Throwable e) {
+    public static ConflictRequestException buildConflictRequestException(String description, String code, Log log,
+            Throwable e) {
 
         ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
         logDebug(log, e);
         return new ConflictRequestException(errorDTO);
     }
 
-    public static ForbiddenException buildForbiddenException(String description, String code,
-                                                             Log log, Throwable e) {
+    public static ForbiddenException buildForbiddenException(String description, String code, Log log, Throwable e) {
 
         ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
         logDebug(log, e);
         return new ForbiddenException(errorDTO);
     }
 
-    public static BadRequestException buildBadRequestException(String description, String code,
-                                                               Log log, Throwable e) {
+    public static BadRequestException buildBadRequestException(String description, String code, Log log, Throwable e) {
 
         ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
         logDebug(log, e);
         return new BadRequestException(errorDTO);
     }
 
-    public static InternalServerErrorException buildInternalServerErrorException(String code,
-                                                                                 Log log, Throwable e) {
+    public static InternalServerErrorException buildInternalServerErrorException(String code, Log log, Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(
-                Response.Status.INTERNAL_SERVER_ERROR.toString(),
-                Response.Status.INTERNAL_SERVER_ERROR.toString(),
-                code);
+        ErrorDTO errorDTO = getErrorDTO(Response.Status.INTERNAL_SERVER_ERROR.toString(),
+                Response.Status.INTERNAL_SERVER_ERROR.toString(), code);
         logError(log, e);
         return new InternalServerErrorException(errorDTO);
     }

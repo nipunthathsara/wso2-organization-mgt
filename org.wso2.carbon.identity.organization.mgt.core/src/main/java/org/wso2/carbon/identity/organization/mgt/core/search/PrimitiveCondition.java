@@ -73,12 +73,10 @@ public class PrimitiveCondition implements Condition {
             throws PrimitiveConditionValidationException {
 
         PlaceholderSQL placeholderSQL = new PlaceholderSQL();
-        PrimitiveCondition dbQualifiedPrimitiveCondition =
-                primitiveConditionValidator.validate(this);
+        PrimitiveCondition dbQualifiedPrimitiveCondition = primitiveConditionValidator.validate(this);
         placeholderSQL.setQuery(
                 dbQualifiedPrimitiveCondition.getProperty() + " " + dbQualifiedPrimitiveCondition.getOperator().toSQL()
-                        + " ?"
-        );
+                        + " ?");
         ArrayList<Object> data = new ArrayList<>();
         data.add(dbQualifiedPrimitiveCondition.getValue());
         placeholderSQL.setData(data);

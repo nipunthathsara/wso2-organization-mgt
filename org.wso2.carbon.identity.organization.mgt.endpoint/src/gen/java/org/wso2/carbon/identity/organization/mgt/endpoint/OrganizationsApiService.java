@@ -17,30 +17,18 @@
 package org.wso2.carbon.identity.organization.mgt.endpoint;
 
 import org.apache.cxf.jaxrs.ext.search.SearchContext;
-import org.wso2.carbon.identity.organization.mgt.endpoint.*;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.*;
-
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.BasicOrganizationDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 
 import java.util.List;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserStoreConfigDTO;
-
-import java.util.List;
-
-import java.io.InputStream;
-import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 
 import javax.ws.rs.core.Response;
 
 public abstract class OrganizationsApiService {
-    public abstract Response organizationsGet(SearchContext searchContext, Integer offset, Integer limit, String sortBy, String sortOrder, String attributes);
+    public abstract Response organizationsGet(SearchContext searchContext, Integer offset, Integer limit, String sortBy,
+            String sortOrder, String attributes);
 
     public abstract Response organizationsImportPost(OrganizationAddDTO organization);
 
@@ -52,17 +40,21 @@ public abstract class OrganizationsApiService {
 
     public abstract Response organizationsOrganizationIdPatch(String organizationId, List<OperationDTO> operations);
 
-    public abstract Response organizationsOrganizationIdRolesPatch(String organizationId, List<OperationDTO> operations);
+    public abstract Response organizationsOrganizationIdRolesPatch(String organizationId,
+            List<OperationDTO> operations);
 
-    public abstract Response organizationsOrganizationIdRolesPost(String organizationId, List<UserRoleMappingDTO> userRoles);
+    public abstract Response organizationsOrganizationIdRolesPost(String organizationId,
+            List<UserRoleMappingDTO> userRoles);
 
     public abstract Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId);
 
-    public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, String roleId, String userId);
+    public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId,
+            String roleId, String userId);
 
     public abstract Response organizationsOrganizationIdUserstoreConfigsGet(String organizationId);
 
-    public abstract Response organizationsOrganizationIdUserstoreConfigsPatch(String organizationId, List<OperationDTO> operations);
+    public abstract Response organizationsOrganizationIdUserstoreConfigsPatch(String organizationId,
+            List<OperationDTO> operations);
 
     public abstract Response organizationsPost(OrganizationAddDTO organization);
 }
