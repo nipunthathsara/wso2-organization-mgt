@@ -25,6 +25,7 @@ import org.apache.cxf.jaxrs.ext.search.SearchContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType;
+import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
@@ -251,7 +252,12 @@ public class OrganizationMgtEndpointUtil {
 
     private static boolean isNotFoundError(OrganizationManagementClientException e) {
 
-        //TODO implement once error codes are finalized
+        for (OrganizationMgtConstants.NotFoundErrorMessages notFoundError : OrganizationMgtConstants.NotFoundErrorMessages
+                .values()) {
+            if (notFoundError.toString().equals(e.getErrorCode())) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -263,7 +269,12 @@ public class OrganizationMgtEndpointUtil {
 
     private static boolean isForbiddenError(OrganizationManagementClientException e) {
 
-        //TODO implement once error codes are finalized
+        for (OrganizationMgtConstants.ForbiddenErrorMessages forbiddenError : OrganizationMgtConstants.ForbiddenErrorMessages
+                .values()) {
+            if (forbiddenError.toString().equals(e.getErrorCode())) {
+                return true;
+            }
+        }
         return false;
     }
 

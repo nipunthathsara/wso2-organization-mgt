@@ -158,4 +158,14 @@ public class OrganizationMgtConstants {
             return message;
         }
     }
+
+    public enum ForbiddenErrorMessages {
+
+        ORGMGT_00014;
+    }
+
+    public enum NotFoundErrorMessages {
+
+        ORGMGT_00004;
+    }
 }
