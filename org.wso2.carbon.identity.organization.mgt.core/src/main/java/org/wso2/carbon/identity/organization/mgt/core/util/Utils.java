@@ -22,7 +22,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
-import org.wso2.carbon.custom.userstore.manager.internal.CustomUserStoreDataHolder;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.core.persistence.UmPersistenceManager;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
@@ -295,7 +294,7 @@ public class Utils {
             throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
                     "Couldn't find realm configurations for the user store domain : " + userStoreDomain);
         }
-        String orgIdClaimUri = !StringUtils.isBlank(IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI)) ?
+        String orgIdClaimUri = StringUtils.isNotBlank(IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI)) ?
                 IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI).trim() :
                 ORGANIZATION_ID_DEFAULT_CLAIM_URI;
         try {
@@ -303,15 +302,15 @@ public class Utils {
             UserStoreManager userStoreManager = OrganizationMgtDataHolder.getInstance().getRealmService()
                     .getUserRealm(matchingRealmConfig).getUserStoreManager();
             // Get tenant user realm
-            org.wso2.carbon.user.api.UserRealm tenantUserRealm = CustomUserStoreDataHolder.getInstance()
+            org.wso2.carbon.user.api.UserRealm tenantUserRealm = OrganizationMgtDataHolder.getInstance()
                     .getRealmService().getTenantUserRealm(tenantId);
             org.wso2.carbon.user.api.ClaimManager claimManager = tenantUserRealm.getClaimManager();
-            // Find attribute name for the 'accountDisabled' claim
+            // Find the attribute name for 'accountDisabled' claim
             String accDisabledAttribute = claimManager.getAttributeName(userStoreDomain, ACCOUNT_DISABLED_CLAIM_URI);
             String orgIdAttribute = claimManager.getAttributeName(userStoreDomain, orgIdClaimUri);
             ExpressionCondition accDisabledCondition = new ExpressionCondition("EQ", accDisabledAttribute, "false");
             ExpressionCondition orgIdCondition = new ExpressionCondition("EQ", orgIdAttribute, organizationId);
-            OperationalCondition opCondition = new OperationalCondition("and", orgIdCondition, accDisabledCondition);
+            OperationalCondition opCondition = new OperationalCondition("AND", orgIdCondition, accDisabledCondition);
             String[] userList = ((AbstractUserStoreManager) userStoreManager)
                     .getUserList(opCondition, userStoreDomain, null, 1, 0, null, null);
             return userList.length > 0;

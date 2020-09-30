@@ -791,26 +791,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
     }
 
-    private String getTenantDomain() {
-
-        return PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
-    }
-
-    private int getTenantId() {
-
-        return PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
-    }
-
-    private String getAuthenticatedUserId() throws OrganizationManagementServerException {
-
-        return getUserIDFromUserName(getAuthenticatedUsername(), getTenantId());
-    }
-
-    private String getAuthenticatedUsername() {
-
-        return PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
-    }
-
     private boolean isUserAuthorizedToCreateOrganization(String parentId) throws OrganizationManagementException {
 
         // If you are going to create a root level organization,
@@ -844,24 +824,57 @@ public class OrganizationManagerImpl implements OrganizationManager {
         OrganizationMgtRole organizationManager = organizationMgtRoles.get(ORGANIZATION_MGT_ROLE.toString());
         tempGroupIds.add(organizationManager.getGroupId());
         // Add an entry for 'organization management' purposes
-        authorizationDao.addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationManager.getGroupId(),
-                organizationManager.getHybridRoleId(), getTenantId(), organizationId);
+        authorizationDao.addOrganizationAndUserRoleMapping(
+                getAuthenticatedUserId(),
+                organizationManager.getGroupId(),
+                organizationManager.getHybridRoleId(),
+                getTenantId(),
+                organizationId
+        );
         OrganizationMgtRole organizationUserManager = organizationMgtRoles.get(ORGANIZATION_USER_MGT_ROLE.toString());
         // If the 'OrganizationMgtRole' and the 'OrganizationUserMgtRole' are the same, avoid adding duplicate entries
         if (!tempGroupIds.contains(organizationUserManager.getGroupId())) {
             tempGroupIds.add(organizationUserManager.getGroupId());
             // Add an entry for 'organization user management' purposes
-            authorizationDao
-                    .addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationUserManager.getGroupId(),
-                            organizationUserManager.getHybridRoleId(), getTenantId(), organizationId);
+            authorizationDao.addOrganizationAndUserRoleMapping(
+                    getAuthenticatedUserId(),
+                    organizationUserManager.getGroupId(),
+                    organizationUserManager.getHybridRoleId(),
+                    getTenantId(),
+                    organizationId
+            );
         }
         OrganizationMgtRole organizationRoleManager = organizationMgtRoles.get(ORGANIZATION_ROLE_MGT_ROLE.toString());
         // If the 'OrganizationRoleMgtRole' is the same as any of the above, avoid adding duplicate entries
         if (!tempGroupIds.contains(organizationRoleManager.getGroupId())) {
             // Add an entry for 'organization role management' purposes
-            authorizationDao
-                    .addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationRoleManager.getGroupId(),
-                            organizationRoleManager.getHybridRoleId(), getTenantId(), organizationId);
+            authorizationDao.addOrganizationAndUserRoleMapping(
+                    getAuthenticatedUserId(),
+                    organizationRoleManager.getGroupId(),
+                    organizationRoleManager.getHybridRoleId(),
+                    getTenantId(),
+                    organizationId
+            );
         }
+    }
+
+    private String getTenantDomain() {
+
+        return PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+    }
+
+    private int getTenantId() {
+
+        return PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
+    }
+
+    private String getAuthenticatedUserId() throws OrganizationManagementServerException {
+
+        return getUserIDFromUserName(getAuthenticatedUsername(), getTenantId());
+    }
+
+    private String getAuthenticatedUsername() {
+
+        return PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
     }
 }
