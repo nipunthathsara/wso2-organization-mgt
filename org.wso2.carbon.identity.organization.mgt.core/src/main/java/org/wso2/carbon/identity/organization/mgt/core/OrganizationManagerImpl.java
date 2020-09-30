@@ -122,7 +122,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
         validateAddOrganizationRequest(organizationAdd);
         Organization organization = generateOrganizationFromRequest(organizationAdd);
         // We can't perform this from the authorization valve. Hence, authorize from here
-        //TODO add creator with full permission
         boolean isAuthorized = isUserAuthorizedToCreateOrganization(organization.getParent().getId());
         if (!isAuthorized) {
             throw handleClientException(ERROR_CODE_UNAUTHORIZED_ACTION,
