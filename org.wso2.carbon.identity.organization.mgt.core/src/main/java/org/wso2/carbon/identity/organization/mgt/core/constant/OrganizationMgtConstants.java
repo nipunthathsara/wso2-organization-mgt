@@ -69,6 +69,8 @@ public class OrganizationMgtConstants {
     public static final String ORGANIZATION_EDIT_PERMISSION = "/permission/admin/manage/identity/organizationmgt/update";
     public static final String ORGANIZATION_CREATE_PERMISSION = "/permission/admin/manage/identity/organizationmgt/create";
     public static final String ORGANIZATION_DELETE_PERMISSION = "/permission/admin/manage/identity/organizationmgt/delete";
+    public static final String USER_MGT_BASE_PERMISSION = "/permission/admin/manage/identity/usermgt";
+    public static final String ROLE_MGT_BASE_PERMISSION = "/permission/admin/manage/identity/rolemgt";
     public static final String UI_EXECUTE = "ui.execute";
 
     // Identity property keys for organization mgt roles
