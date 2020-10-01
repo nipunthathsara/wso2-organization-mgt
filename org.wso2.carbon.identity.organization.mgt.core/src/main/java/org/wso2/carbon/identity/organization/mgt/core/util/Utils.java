@@ -233,8 +233,7 @@ public class Utils {
 
     public static int getMaximumQueryLengthInBytes() {
 
-        return StringUtils.isBlank(MAX_QUERY_LENGTH_IN_BYTES_SQL) ?
-                4194304 :
+        return StringUtils.isBlank(MAX_QUERY_LENGTH_IN_BYTES_SQL) ? 4194304 :
                 Integer.parseInt(MAX_QUERY_LENGTH_IN_BYTES_SQL);
     }
 
@@ -253,8 +252,7 @@ public class Utils {
 
         try {
             AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationMgtDataHolder
-                    .getInstance().
-                            getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
+                    .getInstance().getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
             return userStoreManager.getUserIDFromUserName(username);
         } catch (UserStoreException e) {
             throw handleServerException(ERROR_CODE_USER_STORE_OPERATIONS_ERROR,

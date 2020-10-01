@@ -247,14 +247,13 @@ public class SQLConstants {
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND PARENT_ID = ? AND CONFIG_KEY = 'RDN' AND CONFIG_VALUE = ?";
-    //TODO fix the base permission here
     public static final String GET_ROLE_IDS_FOR_PERMISSION =
             "SELECT\n" +
             "    UM_ROLE_ID\n" +
             "FROM\n" +
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
-            "    UM_RESOURCE_ID = ? OR UM_RESOURCE_ID = '" + ORGANIZATION_BASE_PERMISSION + "'";
+            "    UM_RESOURCE_ID = ? OR UM_RESOURCE_ID = ?";
     public static final String IS_USER_AUTHORIZED =
             "SELECT" +
             "    COUNT(1)\n" +
@@ -262,13 +261,6 @@ public class SQLConstants {
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
             "    UM_USER_ID = ? AND ORG_ID = ? AND (UM_RESOURCE_ID = ? OR UM_RESOURCE_ID = ?)";
-    public static final String GET_USER_AUTHORIZED_ROLE =
-            "SELECT" +
-            "    UM_ROLE_ID\n" +
-            "FROM\n" +
-            "    ORG_AUTHZ_VIEW\n" +
-            "WHERE\n" +
-            "    UM_USER_ID = ? AND ORG_ID = ? AND (UM_RESOURCE_ID = ? OR UM_RESOURCE_ID = '" + ORGANIZATION_BASE_PERMISSION + "')";
     public static final String ADD_USER_ROLE_ORG_MAPPING =
             "INSERT INTO\n" +
             "    UM_USER_ROLE_ORG\n" +

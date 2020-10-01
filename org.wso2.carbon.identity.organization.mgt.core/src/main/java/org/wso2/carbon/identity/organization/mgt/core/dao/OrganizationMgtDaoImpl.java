@@ -66,6 +66,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
@@ -77,6 +78,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_BASE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.*;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getMaximumQueryLengthInBytes;
@@ -311,15 +314,16 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             validateQueryLength(query);
         }
         try {
-            List<String> childOrganizationIds = jdbcTemplate
-                    .executeQuery(query, (resultSet, rowNumber) -> resultSet.getString(VIEW_ID_COLUMN),
-                            preparedStatement -> {
-                                int parameterIndex = 0;
+            List<String> childOrganizationIds = jdbcTemplate.executeQuery(
+                    query,
+                    (resultSet, rowNumber) -> resultSet.getString(VIEW_ID_COLUMN),
+                    preparedStatement -> {
+                               int parameterIndex = 0;
                                 preparedStatement.setString(++parameterIndex, organizationId);
                                 if (!isInternalCall) {
                                     preparedStatement.setString(++parameterIndex, userId);
                                 }
-                            });
+                    });
             return childOrganizationIds;
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_CHILDREN_ERROR, "Organization Id " + organizationId,
@@ -588,7 +592,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR,
-                    "Error while checking if the organization has any attributes for the organization Id "
+                    "Error while checking if the organization has any attributes for the organization Id : "
                             + organizationId, e);
         }
         try {
@@ -649,7 +653,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         + MAX_QUERY_LENGTH_IN_BYTES_SQL);
             }
             throw handleClientException(ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED,
-                    "Too much attributes for the creation request. Try patch.");
+                    "Too much attributes for the creation request. Try patching.");
         }
         return sb.toString();
     }
@@ -747,7 +751,9 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     condition.buildQuery(new PrimitiveConditionValidator(new OrganizationSearchBean())) :
                     new PlaceholderSQL();
         } catch (PrimitiveConditionValidationException e) {
-            log.error("Error passing the condition ", e);
+            if (log.isDebugEnabled()) {
+                log.debug("Error passing the condition ", e);
+            }
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST, "Error passing the condition");
         }
 
@@ -785,10 +791,17 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             throws OrganizationManagementServerException {
 
         List<String> roleIds;
+        String basePermission = permission.contains(USER_MGT_BASE_PERMISSION) ? USER_MGT_BASE_PERMISSION :
+                (permission.contains(ROLE_MGT_BASE_PERMISSION) ? ROLE_MGT_BASE_PERMISSION :
+                        (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION : ""));
         try {
             roleIds = jdbcTemplate.executeQuery(GET_ROLE_IDS_FOR_PERMISSION,
                     (resultSet, rowNumber) -> resultSet.getString(UM_ROLE_ID_COLUMN),
-                    preparedStatement -> preparedStatement.setString(1, permission));
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex, permission);
+                        preparedStatement.setString(++parameterIndex, basePermission);
+                    });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
                     "Error obtaining authorized list of roles for the permission : " + permission, e);

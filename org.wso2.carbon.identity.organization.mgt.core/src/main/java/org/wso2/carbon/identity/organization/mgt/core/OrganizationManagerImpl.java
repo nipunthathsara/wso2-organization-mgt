@@ -191,9 +191,16 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         // Validate pagination and sorting parameters
         sortBy = getMatchingColumnNameForSortingParameter(sortBy);
-        List<Organization> organizations = organizationMgtDao
-                .getOrganizations(condition, getTenantId(), offset, limit, sortBy, sortOrder, requestedAttributes,
-                        getAuthenticatedUserId());
+        List<Organization> organizations = organizationMgtDao.getOrganizations(
+                condition,
+                getTenantId(),
+                offset,
+                limit,
+                sortBy,
+                sortOrder,
+                requestedAttributes,
+                getAuthenticatedUserId()
+        );
         // Populate derivable information of the organizations
         for (Organization organization : organizations) {
             if (!ROOT.equals(organization.getParent().getId())) {

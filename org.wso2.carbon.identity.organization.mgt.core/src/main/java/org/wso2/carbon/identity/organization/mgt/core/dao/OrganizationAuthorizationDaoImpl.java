@@ -30,13 +30,10 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ADD_USER_ROLE_ORG_MAPPING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_GROUP_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_HYBRID_ID_FROM_ROLE_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_AUTHORIZED_ROLE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.IS_USER_AUTHORIZED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_HYBRID_ROLE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ID_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ROLE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewIdentityTemplate;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewTemplate;
@@ -66,30 +63,6 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
                     "Error while checking if the user is authorized. User : " + userId + ", organization id : "
-                            + organizationId + ", permission : " + permission, e);
-        }
-    }
-
-    @Override
-    public OrganizationUserRoleMapping getAuthorizedUserRole(String userId, String organizationId, String permission)
-            throws OrganizationManagementException {
-
-        JdbcTemplate jdbcTemplate = getNewTemplate();
-        try {
-            return jdbcTemplate.fetchSingleRecord(GET_USER_AUTHORIZED_ROLE, (resultSet, rowNumber) -> {
-                OrganizationUserRoleMapping orgUserRoleMapping = new OrganizationUserRoleMapping();
-                orgUserRoleMapping.setRoleId(resultSet.getString(UM_ROLE_ID_COLUMN));
-                orgUserRoleMapping.setHybridRoleId(resultSet.getInt(UM_HYBRID_ROLE_ID_COLUMN));
-                return orgUserRoleMapping;
-            }, preparedStatement -> {
-                int parameterIndex = 0;
-                preparedStatement.setString(++parameterIndex, userId);
-                preparedStatement.setString(++parameterIndex, organizationId);
-                preparedStatement.setString(++parameterIndex, permission);
-            });
-        } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
-                    "Error obtaining authorized role information. User : " + userId + ", organization id : "
                             + organizationId + ", permission : " + permission, e);
         }
     }

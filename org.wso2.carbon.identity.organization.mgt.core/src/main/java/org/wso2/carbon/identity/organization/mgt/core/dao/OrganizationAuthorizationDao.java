@@ -41,18 +41,6 @@ public interface OrganizationAuthorizationDao {
             throws OrganizationManagementException;
 
     /**
-     * Get role name (fetch first match) which the user was authorized by
-     *
-     * @param userId
-     * @param organizationId
-     * @param permission
-     * @return
-     * @throws OrganizationManagementException
-     */
-    OrganizationUserRoleMapping getAuthorizedUserRole(String userId, String organizationId, String permission)
-            throws OrganizationManagementException;
-
-    /**
      * Add an entry to the 'UM_USER_ROLE_ORG' table.
      *
      * @param userId
