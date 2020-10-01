@@ -152,7 +152,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         // Get organization IDs
         List<String> orgIds;
         try {
-            orgIds = jdbcTemplate.executeQuery(query, (resultSet, rowNumber) -> resultSet.getString(VIEW_ID_COLUMN),
+            orgIds = jdbcTemplate.executeQuery(query,
+                    (resultSet, rowNumber) -> resultSet.getString(VIEW_ID_COLUMN),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         // Populate tenant ID
@@ -220,7 +221,6 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             // When sorting is required, organization IDs were fetched sorted from the DB. But the collected
             // organizations may not.
             // Therefore, sort the organization as per the order of their IDs.
-            //TODO sort even if sorting is not required
             return sortBy != null ?
                     sortCollectedOrganizations(organizationMap, orgIds) :
                     new ArrayList<>(organizationMap.values());

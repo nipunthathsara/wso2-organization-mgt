@@ -304,7 +304,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
     @Override
     public List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException {
 
-        //TODO test
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST,
                     "Provided organization Id is empty");
