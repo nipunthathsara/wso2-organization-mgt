@@ -166,12 +166,16 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                             if (placeholderSQL.getData().get(count).getClass().equals(Integer.class)) {
                                 preparedStatement
                                         .setInt(++parameterIndex, (Integer) placeholderSQL.getData().get(count));
+                            } else if (placeholderSQL.getData().get(count).getClass().equals(Timestamp.class)) {
+                                preparedStatement
+                                        .setTimestamp(++parameterIndex,
+                                                (Timestamp) placeholderSQL.getData().get(count), calendar);
                             } else {
                                 preparedStatement
                                         .setString(++parameterIndex, (String) placeholderSQL.getData().get(count));
                             }
                         }
-                    });
+                        });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR, "Error while retrieving organization IDs.",
                     e);

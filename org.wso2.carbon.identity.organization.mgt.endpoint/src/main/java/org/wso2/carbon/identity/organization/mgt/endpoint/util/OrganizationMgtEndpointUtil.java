@@ -52,11 +52,18 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.NotFoundExc
 import org.wso2.carbon.identity.organization.user.role.mgt.core.OrganizationUserRoleManager;
 
 import javax.ws.rs.core.Response;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
+import static java.time.ZoneOffset.UTC;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.STARTS_WITH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.LIKE_SYMBOL;
@@ -328,18 +335,27 @@ public class OrganizationMgtEndpointUtil {
         if (searchCondition == null) {
             return null;
         }
-        if (!(searchCondition.getStatement() == null)) {
+        if (searchCondition.getStatement() != null) {
             PrimitiveStatement primitiveStatement = searchCondition.getStatement();
-            if (!(primitiveStatement.getProperty() == null)) {
-                Object value = primitiveStatement.getValue();
-                if (primitiveStatement.getProperty().equals(STARTS_WITH.toString())) {
-                    value = ((String) value).concat(LIKE_SYMBOL);
-                } else if (primitiveStatement.getProperty().equals(STARTS_WITH.toString())) {
-                    value = LIKE_SYMBOL.concat(((String) value));
+            if (primitiveStatement.getProperty() != null) {
+                if ("created".equals(primitiveStatement.getProperty()) || "lastModified".equals(primitiveStatement.getProperty())) {
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss.SSS");
+                    Date date = null;
+                    try {
+                        date = format.parse(primitiveStatement.getValue().toString());
+                    } catch (ParseException e) {
+                        // TODO handle this shit
+                        e.printStackTrace();
+                    }
+                    PrimitiveStatement statement = new PrimitiveStatement(primitiveStatement.getProperty(),
+                            new Timestamp(date.getTime()), Timestamp.class, primitiveStatement.getCondition());
+                    return new PrimitiveCondition(statement.getProperty(), getPrimitiveOperatorFromOdata(statement.getCondition()),
+                            statement.getValue());
                 }
                 return new PrimitiveCondition(primitiveStatement.getProperty(),
                         getPrimitiveOperatorFromOdata(primitiveStatement.getCondition()),
                         primitiveStatement.getValue());
+
             }
             return null;
         } else {

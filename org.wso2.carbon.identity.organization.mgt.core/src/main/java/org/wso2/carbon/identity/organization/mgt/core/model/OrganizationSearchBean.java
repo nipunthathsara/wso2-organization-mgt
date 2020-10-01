@@ -22,6 +22,8 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditi
 import org.wso2.carbon.identity.organization.mgt.core.search.PrimitiveCondition;
 import org.wso2.carbon.identity.organization.mgt.core.search.SearchBean;
 
+import java.sql.Timestamp;
+
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_CREATED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_CREATED_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_DISPLAY_NAME;
@@ -64,8 +66,8 @@ public class OrganizationSearchBean implements SearchBean {
     private String parentName;
     private String parentDisplayName;
     //TODO fix time search : Caused by: java.sql.SQLDataException: ORA-01843: not a valid month
-    private String created;
-    private String lastModified;
+    private Timestamp created;
+    private Timestamp lastModified;
     private String createdBy;
     private String lastModifiedBy;
     private String attributeKey;
@@ -145,12 +147,6 @@ public class OrganizationSearchBean implements SearchBean {
             throws PrimitiveConditionValidationException {
 
         //TODO Convert '2020-09-01 15:54:52.905' to '01-SEP-20 10.06.17.867000000 AM'
-        if (ORGANIZATION_SEARCH_BEAN_FIELD_CREATED.equals(primitiveCondition.getProperty())
-                || ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED.equals(primitiveCondition.getProperty())
-                && primitiveCondition.getValue() != null) {
-            primitiveCondition
-                    .setValue(java.sql.Timestamp.valueOf(primitiveCondition.getValue() + "0000000").toString());
-        }
         return primitiveCondition;
     }
 
@@ -210,19 +206,19 @@ public class OrganizationSearchBean implements SearchBean {
         this.parentDisplayName = parentDisplayName;
     }
 
-    public String getCreated() {
+    public Timestamp getCreated() {
         return created;
     }
 
-    public void setCreated(String created) {
+    public void setCreated(Timestamp created) {
         this.created = created;
     }
 
-    public String getLastModified() {
+    public Timestamp getLastModified() {
         return lastModified;
     }
 
-    public void setLastModified(String lastModified) {
+    public void setLastModified(Timestamp lastModified) {
         this.lastModified = lastModified;
     }
 
