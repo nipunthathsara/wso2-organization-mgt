@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.exception;
 
+
 public class OrganizationManagementServerException extends OrganizationManagementException {
 
     public OrganizationManagementServerException() {
