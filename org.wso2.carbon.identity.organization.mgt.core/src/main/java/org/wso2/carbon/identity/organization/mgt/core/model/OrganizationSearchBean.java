@@ -18,44 +18,52 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditionValidationException;
 import org.wso2.carbon.identity.organization.mgt.core.search.PrimitiveCondition;
 import org.wso2.carbon.identity.organization.mgt.core.search.SearchBean;
 
 import java.sql.Timestamp;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_CREATED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_CREATED_BY_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_DESCRIPTION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_DISPLAY_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED_BY_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_DISPLAY_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_STATUS;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_DESCRIPTION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_BY_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DISPLAY_NAME_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_BY_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_DISPLAY_NAME_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_NAME_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_STATUS_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_KEY_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_KEY_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_VALUE_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_BY_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DISPLAY_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_BY_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_DISPLAY_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_STATUS_COLUMN;
 
+/**
+ * Organization search model.
+ */
 public class OrganizationSearchBean implements SearchBean {
+
+    private static final Log log = LogFactory.getLog(OrganizationSearchBean.class);
 
     // Allowed search criteria
     private String name;
@@ -86,51 +94,55 @@ public class OrganizationSearchBean implements SearchBean {
 
         String dbQualifiedFieldName = null;
         switch (fieldName) {
-        case ORGANIZATION_SEARCH_BEAN_FIELD_NAME:
-            dbQualifiedFieldName = VIEW_NAME_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_DISPLAY_NAME:
-            dbQualifiedFieldName = VIEW_DISPLAY_NAME_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_DESCRIPTION:
-            dbQualifiedFieldName = VIEW_DESCRIPTION_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_STATUS:
-            dbQualifiedFieldName = VIEW_STATUS_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_ID:
-            dbQualifiedFieldName = VIEW_PARENT_ID_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_NAME:
-            dbQualifiedFieldName = VIEW_PARENT_NAME_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_DISPLAY_NAME:
-            dbQualifiedFieldName = VIEW_PARENT_DISPLAY_NAME_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_CREATED:
-            dbQualifiedFieldName = VIEW_CREATED_TIME_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED:
-            dbQualifiedFieldName = VIEW_LAST_MODIFIED_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_CREATED_BY_ID:
-            dbQualifiedFieldName = VIEW_CREATED_BY_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED_BY_ID:
-            dbQualifiedFieldName = VIEW_LAST_MODIFIED_BY_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY:
-            dbQualifiedFieldName = VIEW_ATTR_KEY_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE:
-            dbQualifiedFieldName = VIEW_ATTR_VALUE_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY:
-            dbQualifiedFieldName = VIEW_CONFIG_KEY_COLUMN;
-            break;
-        case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE:
-            dbQualifiedFieldName = VIEW_CONFIG_VALUE_COLUMN;
-            break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_NAME:
+                dbQualifiedFieldName = VIEW_NAME_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_DISPLAY_NAME:
+                dbQualifiedFieldName = VIEW_DISPLAY_NAME_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_DESCRIPTION:
+                dbQualifiedFieldName = VIEW_DESCRIPTION_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_STATUS:
+                dbQualifiedFieldName = VIEW_STATUS_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_ID:
+                dbQualifiedFieldName = VIEW_PARENT_ID_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_NAME:
+                dbQualifiedFieldName = VIEW_PARENT_NAME_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_DISPLAY_NAME:
+                dbQualifiedFieldName = VIEW_PARENT_DISPLAY_NAME_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_CREATED:
+                dbQualifiedFieldName = VIEW_CREATED_TIME_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED:
+                dbQualifiedFieldName = VIEW_LAST_MODIFIED_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_CREATED_BY_ID:
+                dbQualifiedFieldName = VIEW_CREATED_BY_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED_BY_ID:
+                dbQualifiedFieldName = VIEW_LAST_MODIFIED_BY_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY:
+                dbQualifiedFieldName = VIEW_ATTR_KEY_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE:
+                dbQualifiedFieldName = VIEW_ATTR_VALUE_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY:
+                dbQualifiedFieldName = VIEW_CONFIG_KEY_COLUMN;
+                break;
+            case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE:
+                dbQualifiedFieldName = VIEW_CONFIG_VALUE_COLUMN;
+                break;
+            default:
+                if (log.isDebugEnabled()) {
+                    log.debug("Unknown filed found in the search criteria: " + fieldName);
+                }
         }
         return dbQualifiedFieldName;
     }
@@ -206,18 +218,22 @@ public class OrganizationSearchBean implements SearchBean {
         this.parentDisplayName = parentDisplayName;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Timestamp getCreated() {
         return created;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public void setCreated(Timestamp created) {
         this.created = created;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Timestamp getLastModified() {
         return lastModified;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public void setLastModified(Timestamp lastModified) {
         this.lastModified = lastModified;
     }

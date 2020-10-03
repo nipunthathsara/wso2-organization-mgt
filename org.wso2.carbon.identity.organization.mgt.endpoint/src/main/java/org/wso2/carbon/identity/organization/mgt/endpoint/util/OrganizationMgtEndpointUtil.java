@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.organization.mgt.endpoint.util;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.jaxrs.ext.search.PrimitiveStatement;
 import org.apache.cxf.jaxrs.ext.search.SearchCondition;
 import org.apache.cxf.jaxrs.ext.search.SearchContext;
@@ -51,27 +52,27 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.InternalSer
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.NotFoundException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.OrganizationUserRoleManager;
 
-import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 
-import static java.time.ZoneOffset.UTC;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.STARTS_WITH;
+import javax.ws.rs.core.Response;
+
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_DATE_FORMAT;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.LIKE_SYMBOL;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 
 /**
  * This class provides util functions to the Organization Management endpoint.
  */
 public class OrganizationMgtEndpointUtil {
+
+    private static final Log log = LogFactory.getLog(OrganizationMgtEndpointUtil.class);
 
     public static OrganizationManager getOrganizationManager() {
 
@@ -113,7 +114,7 @@ public class OrganizationMgtEndpointUtil {
         parentDTO.setId(organization.getParent().getId());
         parentDTO.setName(organization.getParent().getName());
         parentDTO.setDisplayName(organization.getParent().getDisplayName());
-        parentDTO.setRef(organization.getParent().get$ref());
+        parentDTO.setRef(organization.getParent().getRef());
         basicOrganizationDTO.setParent(parentDTO);
         // Set metadata
         MetaDTO metaDTO = new MetaDTO();
@@ -122,9 +123,9 @@ public class OrganizationMgtEndpointUtil {
         metaDTO.setCreated(organization.getMetadata().getCreated());
         metaDTO.setLastModified(organization.getMetadata().getLastModified());
         metaDTO.getCreatedBy().setId(organization.getMetadata().getCreatedBy().getId());
-        metaDTO.getCreatedBy().setRef(organization.getMetadata().getCreatedBy().get$ref());
+        metaDTO.getCreatedBy().setRef(organization.getMetadata().getCreatedBy().getRef());
         metaDTO.getLastModifiedBy().setId(organization.getMetadata().getLastModifiedBy().getId());
-        metaDTO.getLastModifiedBy().setRef(organization.getMetadata().getLastModifiedBy().get$ref());
+        metaDTO.getLastModifiedBy().setRef(organization.getMetadata().getLastModifiedBy().getRef());
         basicOrganizationDTO.setMeta(metaDTO);
         return basicOrganizationDTO;
     }
@@ -142,7 +143,7 @@ public class OrganizationMgtEndpointUtil {
         parentDTO.setId(organization.getParent().getId());
         parentDTO.setName(organization.getParent().getName());
         parentDTO.setDisplayName(organization.getParent().getDisplayName());
-        parentDTO.setRef(organization.getParent().get$ref());
+        parentDTO.setRef(organization.getParent().getRef());
         organizationDTO.setParent(parentDTO);
         // Set metadata
         MetaDTO metaDTO = new MetaDTO();
@@ -151,10 +152,10 @@ public class OrganizationMgtEndpointUtil {
         metaDTO.setCreated(organization.getMetadata().getCreated());
         metaDTO.setLastModified(organization.getMetadata().getLastModified());
         metaDTO.getCreatedBy().setId(organization.getMetadata().getCreatedBy().getId());
-        metaDTO.getCreatedBy().setRef(organization.getMetadata().getCreatedBy().get$ref());
+        metaDTO.getCreatedBy().setRef(organization.getMetadata().getCreatedBy().getRef());
         metaDTO.getCreatedBy().setUsername(organization.getMetadata().getCreatedBy().getUsername());
         metaDTO.getLastModifiedBy().setId(organization.getMetadata().getLastModifiedBy().getId());
-        metaDTO.getLastModifiedBy().setRef(organization.getMetadata().getLastModifiedBy().get$ref());
+        metaDTO.getLastModifiedBy().setRef(organization.getMetadata().getLastModifiedBy().getRef());
         metaDTO.getLastModifiedBy().setUsername(organization.getMetadata().getLastModifiedBy().getUsername());
         organizationDTO.setMeta(metaDTO);
         organizationDTO.setAttributes(organization.getAttributes().values().stream()
@@ -200,7 +201,7 @@ public class OrganizationMgtEndpointUtil {
             parentDTO.setId(org.getParent().getId());
             parentDTO.setName(org.getParent().getName());
             parentDTO.setDisplayName(org.getParent().getDisplayName());
-            parentDTO.setRef(org.getParent().get$ref());
+            parentDTO.setRef(org.getParent().getRef());
             organizationDTO.setParent(parentDTO);
             // Set metadata
             MetaDTO metaDTO = new MetaDTO();
@@ -209,9 +210,9 @@ public class OrganizationMgtEndpointUtil {
             metaDTO.setCreated(org.getMetadata().getCreated());
             metaDTO.setLastModified(org.getMetadata().getLastModified());
             metaDTO.getCreatedBy().setId(org.getMetadata().getCreatedBy().getId());
-            metaDTO.getCreatedBy().setRef(org.getMetadata().getCreatedBy().get$ref());
+            metaDTO.getCreatedBy().setRef(org.getMetadata().getCreatedBy().getRef());
             metaDTO.getLastModifiedBy().setId(org.getMetadata().getLastModifiedBy().getId());
-            metaDTO.getLastModifiedBy().setRef(org.getMetadata().getLastModifiedBy().get$ref());
+            metaDTO.getLastModifiedBy().setRef(org.getMetadata().getLastModifiedBy().getRef());
             organizationDTO.setMeta(metaDTO);
             // Set attributes if any
             if (org.hasAttributes()) {
@@ -231,36 +232,36 @@ public class OrganizationMgtEndpointUtil {
         return attributeDTO;
     }
 
-    public static Response handleBadRequestResponse(OrganizationManagementClientException e, Log LOG) {
+    public static Response handleBadRequestResponse(OrganizationManagementClientException e, Log log) {
 
         if (isNotFoundError(e)) {
-            throw OrganizationMgtEndpointUtil.buildNotFoundRequestException(e.getMessage(), e.getErrorCode(), LOG, e);
+            throw OrganizationMgtEndpointUtil.buildNotFoundRequestException(e.getMessage(), e.getErrorCode(), log, e);
         }
 
         if (isConflictError(e)) {
-            throw OrganizationMgtEndpointUtil.buildConflictRequestException(e.getMessage(), e.getErrorCode(), LOG, e);
+            throw OrganizationMgtEndpointUtil.buildConflictRequestException(e.getMessage(), e.getErrorCode(), log, e);
         }
 
         if (isForbiddenError(e)) {
-            throw OrganizationMgtEndpointUtil.buildForbiddenException(e.getMessage(), e.getErrorCode(), LOG, e);
+            throw OrganizationMgtEndpointUtil.buildForbiddenException(e.getMessage(), e.getErrorCode(), log, e);
         }
-        throw OrganizationMgtEndpointUtil.buildBadRequestException(e.getMessage(), e.getErrorCode(), LOG, e);
+        throw OrganizationMgtEndpointUtil.buildBadRequestException(e.getMessage(), e.getErrorCode(), log, e);
     }
 
-    public static Response handleServerErrorResponse(OrganizationManagementException e, Log LOG) {
+    public static Response handleServerErrorResponse(OrganizationManagementException e, Log log) {
 
-        throw buildInternalServerErrorException(e.getErrorCode(), LOG, e);
+        throw buildInternalServerErrorException(e.getErrorCode(), log, e);
     }
 
-    public static Response handleUnexpectedServerError(Throwable e, Log LOG) {
+    public static Response handleUnexpectedServerError(Throwable e, Log log) {
 
-        throw buildInternalServerErrorException(ERROR_CODE_UNEXPECTED.getCode(), LOG, e);
+        throw buildInternalServerErrorException(ERROR_CODE_UNEXPECTED.getCode(), log, e);
     }
 
     private static boolean isNotFoundError(OrganizationManagementClientException e) {
 
-        for (OrganizationMgtConstants.NotFoundErrorMessages notFoundError : OrganizationMgtConstants.NotFoundErrorMessages
-                .values()) {
+        for (OrganizationMgtConstants.NotFoundErrorMessages notFoundError :
+                OrganizationMgtConstants.NotFoundErrorMessages.values()) {
             if (notFoundError.toString().equals(e.getErrorCode())) {
                 return true;
             }
@@ -276,8 +277,8 @@ public class OrganizationMgtEndpointUtil {
 
     private static boolean isForbiddenError(OrganizationManagementClientException e) {
 
-        for (OrganizationMgtConstants.ForbiddenErrorMessages forbiddenError : OrganizationMgtConstants.ForbiddenErrorMessages
-                .values()) {
+        for (OrganizationMgtConstants.ForbiddenErrorMessages forbiddenError :
+                OrganizationMgtConstants.ForbiddenErrorMessages.values()) {
             if (forbiddenError.toString().equals(e.getErrorCode())) {
                 return true;
             }
@@ -323,13 +324,15 @@ public class OrganizationMgtEndpointUtil {
         return new InternalServerErrorException(errorDTO);
     }
 
-    public static <T> Condition getSearchCondition(SearchContext searchContext, Class<T> reference) {
+    public static <T> Condition getSearchCondition(SearchContext searchContext, Class<T> reference)
+            throws OrganizationManagementClientException {
 
         SearchCondition<T> searchCondition = searchContext.getCondition(reference);
         return buildSearchCondition(searchCondition);
     }
 
-    private static Condition buildSearchCondition(SearchCondition searchCondition) {
+    private static Condition buildSearchCondition(SearchCondition searchCondition)
+            throws OrganizationManagementClientException {
 
         // No search condition defined
         if (searchCondition == null) {
@@ -338,18 +341,20 @@ public class OrganizationMgtEndpointUtil {
         if (searchCondition.getStatement() != null) {
             PrimitiveStatement primitiveStatement = searchCondition.getStatement();
             if (primitiveStatement.getProperty() != null) {
-                if ("created".equals(primitiveStatement.getProperty()) || "lastModified".equals(primitiveStatement.getProperty())) {
+                if ("created".equals(primitiveStatement.getProperty()) ||
+                        "lastModified".equals(primitiveStatement.getProperty())) {
                     SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss.SSS");
                     Date date = null;
                     try {
                         date = format.parse(primitiveStatement.getValue().toString());
                     } catch (ParseException e) {
-                        // TODO handle this shit
-                        e.printStackTrace();
+                        throw handleClientException(ERROR_CODE_INVALID_DATE_FORMAT,
+                                "Invalid date format.");
                     }
                     PrimitiveStatement statement = new PrimitiveStatement(primitiveStatement.getProperty(),
                             new Timestamp(date.getTime()), Timestamp.class, primitiveStatement.getCondition());
-                    return new PrimitiveCondition(statement.getProperty(), getPrimitiveOperatorFromOdata(statement.getCondition()),
+                    return new PrimitiveCondition(statement.getProperty(),
+                            getPrimitiveOperatorFromOdata(statement.getCondition()),
                             statement.getValue());
                 }
                 return new PrimitiveCondition(primitiveStatement.getProperty(),
@@ -375,24 +380,28 @@ public class OrganizationMgtEndpointUtil {
 
         ConditionType.PrimitiveOperator primitiveConditionType = null;
         switch (odataConditionType) {
-        case EQUALS:
-            primitiveConditionType = ConditionType.PrimitiveOperator.EQUALS;
-            break;
-        case GREATER_OR_EQUALS:
-            primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_OR_EQUALS;
-            break;
-        case LESS_OR_EQUALS:
-            primitiveConditionType = ConditionType.PrimitiveOperator.LESS_OR_EQUALS;
-            break;
-        case GREATER_THAN:
-            primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_THAN;
-            break;
-        case NOT_EQUALS:
-            primitiveConditionType = ConditionType.PrimitiveOperator.NOT_EQUALS;
-            break;
-        case LESS_THAN:
-            primitiveConditionType = ConditionType.PrimitiveOperator.LESS_THAN;
-            break;
+            case EQUALS:
+                primitiveConditionType = ConditionType.PrimitiveOperator.EQUALS;
+                break;
+            case GREATER_OR_EQUALS:
+                primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_OR_EQUALS;
+                break;
+            case LESS_OR_EQUALS:
+                primitiveConditionType = ConditionType.PrimitiveOperator.LESS_OR_EQUALS;
+                break;
+            case GREATER_THAN:
+                primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_THAN;
+                break;
+            case NOT_EQUALS:
+                primitiveConditionType = ConditionType.PrimitiveOperator.NOT_EQUALS;
+                break;
+            case LESS_THAN:
+                primitiveConditionType = ConditionType.PrimitiveOperator.LESS_THAN;
+                break;
+            default:
+                if (log.isDebugEnabled()) {
+                    log.debug("Invalid primitive operator found: " + odataConditionType);
+                }
         }
         return primitiveConditionType;
     }
@@ -402,12 +411,16 @@ public class OrganizationMgtEndpointUtil {
 
         ConditionType.ComplexOperator complexConditionType = null;
         switch (odataConditionType) {
-        case OR:
-            complexConditionType = ConditionType.ComplexOperator.OR;
-            break;
-        case AND:
-            complexConditionType = ConditionType.ComplexOperator.AND;
-            break;
+            case OR:
+                complexConditionType = ConditionType.ComplexOperator.OR;
+                break;
+            case AND:
+                complexConditionType = ConditionType.ComplexOperator.AND;
+                break;
+            default:
+                if (log.isDebugEnabled()) {
+                    log.debug("Invalid complex operator found: " + odataConditionType);
+                }
         }
         return complexConditionType;
     }

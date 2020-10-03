@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.model;
 
+/**
+ * Organization userstore configs.
+ */
 public class UserStoreConfig {
 
     private String key;

@@ -26,7 +26,7 @@ public class Parent {
     private String name;
     private String displayName;
     private String id;
-    private String $ref;
+    private String ref;
 
     public String getId() {
         return id;
@@ -36,12 +36,12 @@ public class Parent {
         this.id = id;
     }
 
-    public String get$ref() {
-        return $ref;
+    public String getRef() {
+        return ref;
     }
 
-    public void set$ref(String $ref) {
-        this.$ref = $ref;
+    public void setRef(String ref) {
+        this.ref = ref;
     }
 
     public String getName() {

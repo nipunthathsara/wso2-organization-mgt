@@ -18,17 +18,15 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core.dao;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
-//import org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants;
-//import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils;
 import org.wso2.carbon.user.api.UserStoreException;
-import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 
 import java.util.ArrayList;
@@ -53,8 +51,12 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Util
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.getNewTemplate;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.handleServerException;
 
+/**
+ * Organization User Role Mgt DAO Implementation.
+ */
 public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDAO {
 
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings,
                                                    Integer tenantID)
@@ -81,12 +83,6 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         }
     }
 
-//    @Override
-//    public List<Organization> getOrganizationsByUserAndRole(String userId, String roleId, Integer tenantID) {
-//
-//        return null;
-//    }
-
     @Override
     public List<User> getUserIdsByOrganizationAndRole(String organizationId, String roleId, Integer tenantID)
             throws OrganizationUserRoleMgtServerException {
@@ -104,8 +100,9 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         preparedStatement.setString(++parameterIndex, roleId);
                         preparedStatement.setInt(++parameterIndex, tenantID);
                     });
-            for(String userId: userIds) {
-                AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager)Utils.getUserStoreManager(tenantID);
+            for (String userId : userIds) {
+                AbstractUserStoreManager userStoreManager =
+                        (AbstractUserStoreManager) Utils.getUserStoreManager(tenantID);
                 org.wso2.carbon.user.core.common.User user = userStoreManager.getUser(userId, null);
                 users.add(new User(user.getUserID(), user.getUsername()));
             }

@@ -24,7 +24,7 @@ package org.wso2.carbon.identity.organization.mgt.core.model;
 public class MetaUser {
 
     private String id;
-    private String $ref;
+    private String ref;
     private String username;
 
     public String getId() {
@@ -35,12 +35,12 @@ public class MetaUser {
         this.id = id;
     }
 
-    public String get$ref() {
-        return $ref;
+    public String getRef() {
+        return ref;
     }
 
-    public void set$ref(String $ref) {
-        this.$ref = $ref;
+    public void setRef(String ref) {
+        this.ref = ref;
     }
 
     public String getUsername() {

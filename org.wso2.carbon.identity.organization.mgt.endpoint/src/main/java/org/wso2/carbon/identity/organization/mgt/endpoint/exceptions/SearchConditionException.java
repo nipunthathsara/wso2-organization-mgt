@@ -20,6 +20,9 @@ package org.wso2.carbon.identity.organization.mgt.endpoint.exceptions;
 
 import javax.ws.rs.WebApplicationException;
 
+/**
+ * Search Condition Exception
+ */
 public class SearchConditionException extends WebApplicationException {
 
     public SearchConditionException(String message) {

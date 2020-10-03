@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.model;
 
+/**
+ * Organization mgt role.
+ */
 public class OrganizationMgtRole {
 
     private String roleName;

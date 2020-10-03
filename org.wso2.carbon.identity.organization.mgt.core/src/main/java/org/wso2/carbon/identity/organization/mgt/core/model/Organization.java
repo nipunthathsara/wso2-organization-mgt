@@ -38,7 +38,13 @@ public class Organization {
     private Map<String, Attribute> attributes = new HashMap<>();
     private Map<String, UserStoreConfig> userStoreConfigs = new HashMap<>();
 
-    public enum OrgStatus {ACTIVE, DISABLED}
+    /**
+     * Allowed organization status.
+     */
+    public enum OrgStatus {
+        ACTIVE,
+        DISABLED
+    }
 
     public String getId() {
         return id;

@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core.exception;
 
+/**
+ * Organization User Role Mgt Client Exception
+ */
 public class OrganizationUserRoleMgtClientException extends OrganizationUserRoleMgtException {
 
     public OrganizationUserRoleMgtClientException() {

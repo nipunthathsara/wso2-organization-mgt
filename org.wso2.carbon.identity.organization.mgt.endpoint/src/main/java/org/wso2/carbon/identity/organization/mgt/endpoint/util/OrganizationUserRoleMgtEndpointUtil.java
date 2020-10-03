@@ -19,7 +19,6 @@
 package org.wso2.carbon.identity.organization.mgt.endpoint.util;
 
 import org.apache.commons.logging.Log;
-
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.BadRequestException;
@@ -38,32 +37,35 @@ import javax.ws.rs.core.Response;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 
+/**
+ * Organization User Role Mgt Endpoint Util.
+ */
 public class OrganizationUserRoleMgtEndpointUtil {
 
-    public static Response handleBadRequestResponse(OrganizationUserRoleMgtClientException e, Log LOG) {
+    public static Response handleBadRequestResponse(OrganizationUserRoleMgtClientException e, Log log) {
 
         if (isNotFoundError(e)) {
-            throw OrganizationMgtEndpointUtil.buildNotFoundRequestException(e.getMessage(), e.getErrorCode(), LOG, e);
+            throw OrganizationMgtEndpointUtil.buildNotFoundRequestException(e.getMessage(), e.getErrorCode(), log, e);
         }
 
         if (isConflictError(e)) {
-            throw OrganizationMgtEndpointUtil.buildConflictRequestException(e.getMessage(), e.getErrorCode(), LOG, e);
+            throw OrganizationMgtEndpointUtil.buildConflictRequestException(e.getMessage(), e.getErrorCode(), log, e);
         }
 
         if (isForbiddenError(e)) {
-            throw OrganizationMgtEndpointUtil.buildForbiddenException(e.getMessage(), e.getErrorCode(), LOG, e);
+            throw OrganizationMgtEndpointUtil.buildForbiddenException(e.getMessage(), e.getErrorCode(), log, e);
         }
-        throw OrganizationMgtEndpointUtil.buildBadRequestException(e.getMessage(), e.getErrorCode(), LOG, e);
+        throw OrganizationMgtEndpointUtil.buildBadRequestException(e.getMessage(), e.getErrorCode(), log, e);
     }
 
-    public static Response handleServerErrorResponse(OrganizationUserRoleMgtException e, Log LOG) {
+    public static Response handleServerErrorResponse(OrganizationUserRoleMgtException e, Log log) {
 
-        throw buildInternalServerErrorException(e.getErrorCode(), LOG, e);
+        throw buildInternalServerErrorException(e.getErrorCode(), log, e);
     }
 
-    public static Response handleUnexpectedServerError(Throwable e, Log LOG) {
+    public static Response handleUnexpectedServerError(Throwable e, Log log) {
 
-        throw buildInternalServerErrorException(ERROR_CODE_UNEXPECTED.getCode(), LOG, e);
+        throw buildInternalServerErrorException(ERROR_CODE_UNEXPECTED.getCode(), log, e);
     }
 
     private static boolean isNotFoundError(OrganizationUserRoleMgtClientException e) {

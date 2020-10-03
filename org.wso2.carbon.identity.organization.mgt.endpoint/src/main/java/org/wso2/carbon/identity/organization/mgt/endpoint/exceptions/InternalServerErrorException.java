@@ -25,6 +25,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+/**
+ * Internal Server Error Exception
+ */
 public class InternalServerErrorException extends WebApplicationException {
 
     public InternalServerErrorException(ErrorDTO errorDTO) {

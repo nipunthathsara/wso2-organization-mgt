@@ -37,6 +37,9 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 
+/**
+ * Organization attribute validator.
+ */
 public class AttributeValidatorImpl implements AttributeValidator {
 
     private static final Log log = LogFactory.getLog(AttributeValidatorImpl.class);

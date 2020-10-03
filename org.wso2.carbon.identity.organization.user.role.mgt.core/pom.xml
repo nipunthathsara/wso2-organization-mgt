@@ -80,42 +80,21 @@
                 </exclusion>
             </exclusions>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.testng</groupId>-->
-<!--            <artifactId>testng</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.powermock</groupId>-->
-<!--            <artifactId>powermock-module-testng</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.powermock</groupId>-->
-<!--            <artifactId>powermock-api-mockito</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.wso2.carbon.identity.framework</groupId>-->
-<!--            <artifactId>org.wso2.carbon.identity.organization.mgt.core</artifactId>-->
-<!--            <version>5.17.5</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>org.wso2.carbon.identity.framework</groupId>
-            <artifactId>org.wso2.carbon.identity.core</artifactId>
-            <version>5.17.5</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity.inbound.provisioning.scim2</groupId>
             <artifactId>org.wso2.carbon.identity.scim2.common</artifactId>
             <version>1.5.1</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+            <version>3.0.1</version>
         </dependency>
     </dependencies>
 

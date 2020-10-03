@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
 
+/**
+ * User representation
+ */
 public class User {
 
     private String userId;

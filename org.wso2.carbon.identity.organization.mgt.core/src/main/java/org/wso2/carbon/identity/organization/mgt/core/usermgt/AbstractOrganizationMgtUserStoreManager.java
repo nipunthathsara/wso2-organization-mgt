@@ -9,6 +9,9 @@ import org.wso2.carbon.user.core.profile.ProfileConfigurationManager;
 
 import java.util.Map;
 
+/**
+ * Abstract Organization Mgt UserStore Manager.
+ */
 public abstract class AbstractOrganizationMgtUserStoreManager extends UniqueIDReadWriteLDAPUserStoreManager {
 
     public AbstractOrganizationMgtUserStoreManager() {

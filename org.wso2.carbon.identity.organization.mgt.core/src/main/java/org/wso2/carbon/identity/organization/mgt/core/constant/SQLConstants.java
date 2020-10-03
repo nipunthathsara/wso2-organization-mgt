@@ -20,8 +20,9 @@ package org.wso2.carbon.identity.organization.mgt.core.constant;
 
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
-
+/**
+ * SQL constants.
+ */
 public class SQLConstants {
 
     public static final String MAX_QUERY_LENGTH_IN_BYTES_SQL =
@@ -70,7 +71,7 @@ public class SQLConstants {
             "    TENANT_ID = ? AND NAME = ?";
     public static final String COUNT_COLUMN = "COUNT(1)";
     public static final String VIEW_ID_COLUMN = "ID";
-    public static final String VIEW_TENANT_ID__COLUMN = "TENANT_ID";
+    public static final String VIEW_TENANT_ID_COLUMN = "TENANT_ID";
     public static final String VIEW_NAME_COLUMN = "NAME";
     public static final String VIEW_DISPLAY_NAME_COLUMN = "DISPLAY_NAME";
     public static final String VIEW_DESCRIPTION_COLUMN = "DESCRIPTION";
@@ -108,7 +109,8 @@ public class SQLConstants {
     public static final String INSERT_ORGANIZATION =
             "INSERT INTO \n" +
             "    UM_ORG\n" +
-            "    (ID, TENANT_ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, LAST_MODIFIED_BY, HAS_ATTRIBUTES, STATUS, PARENT_ID)\n" +
+            "    (ID, TENANT_ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, " +
+                    "LAST_MODIFIED_BY, HAS_ATTRIBUTES, STATUS, PARENT_ID)\n" +
             "VALUES\n" +
             "    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String INSERT_ATTRIBUTES =
@@ -160,9 +162,9 @@ public class SQLConstants {
             "    O.TENANT_ID = ? AND O.ID = ?";
     public static final String GET_ORGANIZATION_BY_ID =
             "SELECT\n" +
-            "    DISTINCT V.ID, V.NAME, V.DISPLAY_NAME, V.DESCRIPTION, V.PARENT_ID, V.PARENT_NAME, V.PARENT_DISPLAY_NAME,\n" +
-            "    V.STATUS, V.CREATED_TIME, V.LAST_MODIFIED, V.CREATED_BY, V.LAST_MODIFIED_BY, V.HAS_ATTRIBUTES, V.ATTR_ID,\n" +
-            "    V.ATTR_KEY, V.ATTR_VALUE\n" +
+            "    DISTINCT V.ID, V.NAME, V.DISPLAY_NAME, V.DESCRIPTION, V.PARENT_ID, V.PARENT_NAME, " +
+            "    V.PARENT_DISPLAY_NAME, V.STATUS, V.CREATED_TIME, V.LAST_MODIFIED, V.CREATED_BY, V.LAST_MODIFIED_BY, " +
+            "    V.HAS_ATTRIBUTES, V.ATTR_ID, V.ATTR_KEY, V.ATTR_VALUE\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +
@@ -184,19 +186,20 @@ public class SQLConstants {
     // ORDER BY with DISTINCT requires to have the columns in the SELECT clause.
     public static final String GET_ALL_ORGANIZATION_IDS =
             "SELECT\n" +
-            "    DISTINCT ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, LAST_MODIFIED_BY, STATUS, PARENT_NAME, PARENT_DISPLAY_NAME\n" +
+            "    DISTINCT ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, " +
+            "    LAST_MODIFIED_BY, STATUS, PARENT_NAME, PARENT_DISPLAY_NAME\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND UM_USER_ID = ? AND UM_ROLE_ID IN (#)";
     public static final String ORDER_BY =
-            "\nORDER BY" +
-            "\n   %s %s";
+            "%nORDER BY" +
+            "%n   %s %s";
     public static final String PAGINATION =
-            "\nOFFSET" +
-            "\n   %s ROWS" +
-            "\nFETCH NEXT" +
-            "\n   %s ROWS ONLY";
+            "%n OFFSET" +
+            "%n   %s ROWS" +
+            "%n FETCH NEXT" +
+            "%n   %s ROWS ONLY";
     public static final String GET_ORGANIZATIONS_BY_IDS =
             "SELECT\n" +
             "    DISTINCT V.ID,\n" +

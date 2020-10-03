@@ -21,9 +21,12 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.internal;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAO;
 import org.wso2.carbon.user.core.service.RealmService;
 
+/**
+ * Organization User Role Mgt Data Holder.
+ */
 public class OrganizationUserRoleMgtDataHolder {
 
-    private static OrganizationUserRoleMgtDataHolder orgAndUserRoleMgtDataHolder =
+    private static final OrganizationUserRoleMgtDataHolder orgAndUserRoleMgtDataHolder =
             new OrganizationUserRoleMgtDataHolder();
     private OrganizationUserRoleMgtDAO orgAndUSerRoleMgtDao;
     private RealmService realmService;
