@@ -56,17 +56,16 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 
-import static java.time.ZoneOffset.UTC;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.STARTS_WITH;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.LIKE_SYMBOL;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CREATED;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.DATE_SEARCH_FORMAT;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.LAST_MODIFIED;
 
 /**
  * This class provides util functions to the Organization Management endpoint.
@@ -259,7 +258,8 @@ public class OrganizationMgtEndpointUtil {
 
     private static boolean isNotFoundError(OrganizationManagementClientException e) {
 
-        for (OrganizationMgtConstants.NotFoundErrorMessages notFoundError : OrganizationMgtConstants.NotFoundErrorMessages
+        for (OrganizationMgtConstants.NotFoundErrorMessages notFoundError :
+                OrganizationMgtConstants.NotFoundErrorMessages
                 .values()) {
             if (notFoundError.toString().equals(e.getErrorCode())) {
                 return true;
@@ -276,7 +276,8 @@ public class OrganizationMgtEndpointUtil {
 
     private static boolean isForbiddenError(OrganizationManagementClientException e) {
 
-        for (OrganizationMgtConstants.ForbiddenErrorMessages forbiddenError : OrganizationMgtConstants.ForbiddenErrorMessages
+        for (OrganizationMgtConstants.ForbiddenErrorMessages forbiddenError :
+                OrganizationMgtConstants.ForbiddenErrorMessages
                 .values()) {
             if (forbiddenError.toString().equals(e.getErrorCode())) {
                 return true;
@@ -323,13 +324,15 @@ public class OrganizationMgtEndpointUtil {
         return new InternalServerErrorException(errorDTO);
     }
 
-    public static <T> Condition getSearchCondition(SearchContext searchContext, Class<T> reference) {
+    public static <T> Condition getSearchCondition(SearchContext searchContext, Class<T> reference)
+            throws OrganizationManagementException {
 
         SearchCondition<T> searchCondition = searchContext.getCondition(reference);
         return buildSearchCondition(searchCondition);
     }
 
-    private static Condition buildSearchCondition(SearchCondition searchCondition) {
+    private static Condition buildSearchCondition(SearchCondition searchCondition)
+            throws OrganizationManagementException {
 
         // No search condition defined
         if (searchCondition == null) {
@@ -338,19 +341,24 @@ public class OrganizationMgtEndpointUtil {
         if (searchCondition.getStatement() != null) {
             PrimitiveStatement primitiveStatement = searchCondition.getStatement();
             if (primitiveStatement.getProperty() != null) {
-                if ("created".equals(primitiveStatement.getProperty()) || "lastModified".equals(primitiveStatement.getProperty())) {
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss.SSS");
-                    Date date = null;
+                if (CREATED.equals(primitiveStatement.getProperty()) || LAST_MODIFIED
+                        .equals(primitiveStatement.getProperty())) {
+                    SimpleDateFormat format = new SimpleDateFormat(DATE_SEARCH_FORMAT);
+                    Date date;
                     try {
                         date = format.parse(primitiveStatement.getValue().toString());
                     } catch (ParseException e) {
-                        // TODO handle this shit
-                        e.printStackTrace();
+                        throw new OrganizationManagementClientException(
+                                ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST.getMessage() + "'created' and "
+                                        + "'lastModified' search criteria should be of " + DATE_SEARCH_FORMAT
+                                        + " format.",
+                                ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST.getCode(),
+                                e);
                     }
                     PrimitiveStatement statement = new PrimitiveStatement(primitiveStatement.getProperty(),
                             new Timestamp(date.getTime()), Timestamp.class, primitiveStatement.getCondition());
-                    return new PrimitiveCondition(statement.getProperty(), getPrimitiveOperatorFromOdata(statement.getCondition()),
-                            statement.getValue());
+                    return new PrimitiveCondition(statement.getProperty(),
+                            getPrimitiveOperatorFromOdata(statement.getCondition()), statement.getValue());
                 }
                 return new PrimitiveCondition(primitiveStatement.getProperty(),
                         getPrimitiveOperatorFromOdata(primitiveStatement.getCondition()),
