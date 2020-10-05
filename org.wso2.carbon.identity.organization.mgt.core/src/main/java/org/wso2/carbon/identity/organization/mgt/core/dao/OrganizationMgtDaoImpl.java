@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
@@ -37,12 +38,14 @@ import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import org.wso2.carbon.identity.organization.mgt.core.search.PlaceholderSQL;
 import org.wso2.carbon.identity.organization.mgt.core.search.PrimitiveConditionValidator;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.TimeZone;
@@ -55,7 +58,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_NAME_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_DELETE_ERROR;
@@ -66,27 +68,80 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DISPLAY_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_STATUS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DESCRIPTION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DISPLAY_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_STATUS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_BASE_PERMISSION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.*;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ATTRIBUTE_EXIST_BY_KEY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORG_HAS_ATTRIBUTES;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_RDN_AVAILABILITY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_BY_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_AUTHORIZED_CHILD_ORG_IDS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATIONS_BY_IDS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_BY_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_ID_BY_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ROLE_IDS_FOR_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_STORE_CONFIGS_BY_ORG_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES_CONCLUDE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_ATTRIBUTE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_USER_STORE_CONFIG;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORDER_BY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PAGINATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_ORGANIZATION_CONCLUDE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_USER_STORE_CONFIG;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.REMOVE_ATTRIBUTE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ROLE_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UPDATE_HAS_ATTRIBUTES_FIELD;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UPDATE_ORGANIZATION_METADATA;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_KEY_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_VALUE_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_KEY_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_VALUE_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_BY_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DISPLAY_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_HAS_ATTRIBUTES_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_BY_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_DISPLAY_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_STATUS_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getMaximumQueryLengthInBytes;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewTemplate;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 
+/**
+ * Organization mgt dao implementation.
+ */
 public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
     private static final Log log = LogFactory.getLog(OrganizationMgtDaoImpl.class);
@@ -125,6 +180,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
     }
 
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
             String sortOrder, List<String> requestedAttributes, String userId) throws OrganizationManagementException {
@@ -289,6 +345,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
     }
 
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public List<String> getChildOrganizationIds(String organizationId, String userId)
             throws OrganizationManagementException {
@@ -396,6 +453,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
     }
 
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public void patchOrganization(String organizationId, Operation operation) throws OrganizationManagementException {
 
@@ -611,6 +669,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
     }
 
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     private void insertOrganizationAttributes(JdbcTemplate template, Organization organization)
             throws DataAccessException, OrganizationManagementClientException {
 
@@ -650,7 +709,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
         // Multiple insertions require a 'SELECT 1 FROM Dual' at the end
         sb.append(INSERT_ATTRIBUTES_CONCLUDE);
-        if (sb.toString().getBytes().length > getMaximumQueryLengthInBytes()) {
+        if (sb.toString().getBytes(StandardCharsets.UTF_8).length > getMaximumQueryLengthInBytes()) {
             if (log.isDebugEnabled()) {
                 log.debug("Error building SQL query for the attribute insert. Number of attributes: " + organization
                         .getAttributes().size() + " exceeds the maximum query length: "
@@ -730,7 +789,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
     private void validateQueryLength(String query) throws OrganizationManagementClientException {
 
-        if (query.getBytes().length > getMaximumQueryLengthInBytes()) {
+        if (query.getBytes(StandardCharsets.UTF_8).length > getMaximumQueryLengthInBytes()) {
             if (log.isDebugEnabled()) {
                 log.debug("Error building SQL query. Get organizations expression " + "query length: " + query.length()
                         + " exceeds the maximum limit: " + MAX_QUERY_LENGTH_IN_BYTES_SQL);
@@ -746,7 +805,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         boolean paginationReq = offset > -1 && limit > 0;
         boolean searchReq = condition != null;
         // Ascending if not specified otherwise.
-        sortOrder = sortOrder != null && "DESC".equals(sortOrder.trim().toUpperCase()) ? "DESC" : "ASC";
+        sortOrder = sortOrder != null && "DESC".equals(sortOrder.trim().toUpperCase(Locale.ENGLISH)) ? "DESC" : "ASC";
         boolean sortingReq = sortBy != null;
 
         PlaceholderSQL placeholderSQL;

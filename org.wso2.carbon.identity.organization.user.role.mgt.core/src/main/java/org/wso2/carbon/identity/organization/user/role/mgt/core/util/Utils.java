@@ -33,6 +33,9 @@ import org.wso2.carbon.user.core.service.RealmService;
 
 import java.util.UUID;
 
+/**
+ * Utility functions for role management.
+ */
 public class Utils {
 
     private static final Log log = LogFactory.getLog(Utils.class);
@@ -61,7 +64,6 @@ public class Utils {
         return new OrganizationUserRoleMgtServerException(message, error.getCode(), e);
     }
 
-
     public static OrganizationUserRoleMgtServerException handleServerException(
             OrganizationUserRoleMgtConstants.ErrorMessages error, String data) {
 
@@ -75,6 +77,7 @@ public class Utils {
     }
 
     public static JdbcTemplate getNewTemplate() {
+
         return new JdbcTemplate(UmPersistenceManager.getInstance().getDataSource());
     }
 
@@ -83,7 +86,8 @@ public class Utils {
         return UUID.randomUUID().toString();
     }
 
-    public static UserStoreManager getUserStoreManager(int tenantId) throws org.wso2.carbon.user.api.UserStoreException {
+    public static UserStoreManager getUserStoreManager(int tenantId)
+            throws org.wso2.carbon.user.api.UserStoreException {
 
         UserStoreManager userStoreManager = null;
         RealmService realmService = OrganizationUserRoleMgtDataHolder.getInstance().getRealmService();

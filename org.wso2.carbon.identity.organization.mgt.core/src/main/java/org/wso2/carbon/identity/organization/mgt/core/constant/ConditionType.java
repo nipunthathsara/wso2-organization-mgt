@@ -18,8 +18,14 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.constant;
 
+/**
+ * Condition types.
+ */
 public class ConditionType {
 
+    /**
+     * Complex operators.
+     */
     public enum ComplexOperator {
         OR, AND, NOT;
 
@@ -27,20 +33,19 @@ public class ConditionType {
 
             String op = null;
             switch (this) {
-            case OR:
-                op = this.toString();
-                break;
-            case AND:
-                op = this.toString();
-                break;
-            case NOT:
-                op = this.toString();
-                break;
+                case OR:
+                case AND:
+                case NOT:
+                    op = this.toString();
+                    break;
             }
             return op;
         }
     }
 
+    /**
+     * Primitive operators.
+     */
     public enum PrimitiveOperator {
         EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, LESS_OR_EQUALS, GREATER_OR_EQUALS, STARTS_WITH, ENDS_WITH;
 

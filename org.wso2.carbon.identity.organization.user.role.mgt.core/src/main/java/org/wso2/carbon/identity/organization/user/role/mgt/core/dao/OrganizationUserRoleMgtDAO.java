@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core.dao;
 
-//import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
@@ -26,12 +25,14 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 
 import java.util.List;
 
+/**
+ * Organization User Role Mgt DAO.
+ */
 public interface OrganizationUserRoleMgtDAO {
 
-    void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMapping, Integer tenantID)
+    void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMapping,
+                                            Integer tenantID)
             throws OrganizationUserRoleMgtException;
-
-//    List<Organization> getOrganizationsByUserAndRole(String userId, String roleId, Integer tenantID);
 
     List<User> getUserIdsByOrganizationAndRole(String organizationID, String roleId, Integer tenantID)
             throws OrganizationUserRoleMgtServerException;
@@ -39,7 +40,8 @@ public interface OrganizationUserRoleMgtDAO {
     void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, String roleId, Integer tenantId)
             throws OrganizationUserRoleMgtException;
 
-    boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, String roleId, Integer tenantId)
+    boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, String roleId,
+                                                   Integer tenantId)
             throws OrganizationUserRoleMgtException;
 
     Integer getRoleIdBySCIMGroupName(String roleName, Integer tenantId) throws OrganizationUserRoleMgtServerException;

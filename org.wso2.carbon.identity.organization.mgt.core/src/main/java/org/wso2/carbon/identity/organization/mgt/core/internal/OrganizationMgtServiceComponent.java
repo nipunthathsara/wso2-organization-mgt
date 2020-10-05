@@ -37,9 +37,9 @@ import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidat
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.populateManagementRoles;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DEFAULT_ATTRIBUTE_VALIDATOR_CLASS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ATTRIBUTE_VALIDATOR;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.populateManagementRoles;
 
 /**
  * OSGI service component for organization management core bundle.

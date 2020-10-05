@@ -22,12 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
-
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ATTRIBUTE_VALIDATION_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ATTRIBUTES;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
-
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 
 import java.io.File;
@@ -38,7 +32,14 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ATTRIBUTE_VALIDATOR_PROPERTIES_FILE_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ATTRIBUTE_VALIDATION_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ATTRIBUTES;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 
+/**
+ * Organization attribute validator.
+ */
 public class AttributeValidatorImpl implements AttributeValidator {
 
     private static final Log log = LogFactory.getLog(AttributeValidatorImpl.class);

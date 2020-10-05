@@ -19,7 +19,6 @@
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
-import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 
 /**
  * This interface is used to query 'UM_USER_ROLE_ORG' table and 'ORG_AUTHZ_VIEW' view which are also being accessed

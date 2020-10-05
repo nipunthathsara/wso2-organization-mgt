@@ -2,6 +2,9 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
 
 import java.util.List;
 
+/**
+ * User Role Mapping.
+ */
 public class UserRoleMapping {
 
     private List<String> userIds;

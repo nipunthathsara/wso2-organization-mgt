@@ -22,7 +22,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
-import org.wso2.carbon.custom.userstore.manager.CustomUserStoreManager;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
@@ -39,6 +38,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
+import org.wso2.carbon.identity.organization.mgt.core.usermgt.AbstractOrganizationMgtUserStoreManager;
 import org.wso2.carbon.user.api.AuthorizationManager;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserRealm;
@@ -48,13 +48,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST;
@@ -66,6 +66,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNAUTHORIZED_ACTION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_RESOURCE_BASE_PATH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_MGT_ROLE;
@@ -74,12 +75,12 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DISPLAY_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_STATUS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DESCRIPTION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DISPLAY_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_STATUS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PRIMARY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
@@ -137,10 +138,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Set metadata
         organization.getMetadata().getCreatedBy().setId(getAuthenticatedUserId());
         organization.getMetadata().getCreatedBy()
-                .set$ref(String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(), getAuthenticatedUserId()));
+                .setRef(String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(), getAuthenticatedUserId()));
         organization.getMetadata().getLastModifiedBy().setId(getAuthenticatedUserId());
         organization.getMetadata().getLastModifiedBy()
-                .set$ref(String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(), getAuthenticatedUserId()));
+                .setRef(String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(), getAuthenticatedUserId()));
         setUserStoreConfigs(organization);
         logOrganizationObject(organization);
         if (!isImport) {
@@ -169,15 +170,15 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         // Set derivable attributes
         if (!ROOT.equals(organization.getParent().getId())) {
-            organization.getParent().set$ref(String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(),
+            organization.getParent().setRef(String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(),
                     organization.getParent().getId()));
         }
-        organization.getMetadata().getCreatedBy().set$ref(
+        organization.getMetadata().getCreatedBy().setRef(
                 String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
                         organization.getMetadata().getCreatedBy().getId()));
         organization.getMetadata().getCreatedBy()
                 .setUsername(getUserNameFromUserID(organization.getMetadata().getCreatedBy().getId(), getTenantId()));
-        organization.getMetadata().getLastModifiedBy().set$ref(
+        organization.getMetadata().getLastModifiedBy().setRef(
                 String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
                         organization.getMetadata().getLastModifiedBy().getId()));
         organization.getMetadata().getLastModifiedBy().setUsername(
@@ -204,13 +205,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Populate derivable information of the organizations
         for (Organization organization : organizations) {
             if (!ROOT.equals(organization.getParent().getId())) {
-                organization.getParent().set$ref(String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(),
+                organization.getParent().setRef(String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(),
                         organization.getParent().getId()));
             }
-            organization.getMetadata().getCreatedBy().set$ref(
+            organization.getMetadata().getCreatedBy().setRef(
                     String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
                             organization.getMetadata().getCreatedBy().getId()));
-            organization.getMetadata().getLastModifiedBy().set$ref(
+            organization.getMetadata().getLastModifiedBy().setRef(
                     String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
                             organization.getMetadata().getLastModifiedBy().getId()));
         }
@@ -381,11 +382,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
                         "User store config attribute keys or values cannot be empty.");
             }
             // Sanitize input
-            config.setKey(config.getKey().trim().toUpperCase());
+            config.setKey(config.getKey().trim().toUpperCase(Locale.ENGLISH));
             config.setValue(config.getValue().trim());
             // Set user store domain value to upper case
             if (config.getKey().equals(USER_STORE_DOMAIN)) {
-                config.setValue(config.getValue().toUpperCase());
+                config.setValue(config.getValue().toUpperCase(Locale.ENGLISH));
             }
             // User store configs may only contain RDN and USER_STORE_DOMAIN. (DN to be derived and added later)
             if (!(config.getKey().equals(RDN) || config.getKey().equals(USER_STORE_DOMAIN))) {
@@ -417,7 +418,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             organizationAdd.getParent().setName(parentOrg.getName());
             organizationAdd.getParent().setDisplayName(parentOrg.getDisplayName());
             organizationAdd.getParent()
-                    .set$ref(String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), parentId));
+                    .setRef(String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), parentId));
         } else {
             organizationAdd.getParent().setName(ROOT);
             organizationAdd.getParent().setDisplayName(ROOT);
@@ -463,7 +464,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organization.getParent().setId(organizationAdd.getParent().getId());
         organization.getParent().setName(organizationAdd.getParent().getName());
         organization.getParent().setDisplayName(organizationAdd.getParent().getDisplayName());
-        organization.getParent().set$ref(organizationAdd.getParent().get$ref());
+        organization.getParent().setRef(organizationAdd.getParent().getRef());
         organization.setStatus(Organization.OrgStatus.ACTIVE);
         organization.setHasAttributes(!organizationAdd.getAttributes().isEmpty());
         // Convert attributes 'list' to a 'map' for better accessibility
@@ -517,27 +518,27 @@ public class OrganizationManagerImpl implements OrganizationManager {
         if (sortBy == null) {
             return null;
         }
-        switch (sortBy.trim().toLowerCase()) {
-        case "name":
-            return VIEW_NAME_COLUMN;
-        case "displayname":
-            return VIEW_DISPLAY_NAME_COLUMN;
-        case "description":
-            return VIEW_DESCRIPTION_COLUMN;
-        case "created":
-            return VIEW_CREATED_TIME_COLUMN;
-        case "lastmodified":
-            return VIEW_LAST_MODIFIED_COLUMN;
-        case "status":
-            return VIEW_STATUS_COLUMN;
-        case "parentname":
-            return VIEW_PARENT_NAME_COLUMN;
-        case "parentdisplayname":
-            return VIEW_PARENT_DISPLAY_NAME_COLUMN;
-        default:
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
-                    "Invalid sort parameter. 'sortOrder' [ASC | DESC] and 'sortBy' [name | description |"
-                            + " displayName | status | lastModified | created | parentName | parentDisplayName]");
+        switch (sortBy.trim().toLowerCase(Locale.ENGLISH)) {
+            case "name":
+                return VIEW_NAME_COLUMN;
+            case "displayname":
+                return VIEW_DISPLAY_NAME_COLUMN;
+            case "description":
+                return VIEW_DESCRIPTION_COLUMN;
+            case "created":
+                return VIEW_CREATED_TIME_COLUMN;
+            case "lastmodified":
+                return VIEW_LAST_MODIFIED_COLUMN;
+            case "status":
+                return VIEW_STATUS_COLUMN;
+            case "parentname":
+                return VIEW_PARENT_NAME_COLUMN;
+            case "parentdisplayname":
+                return VIEW_PARENT_DISPLAY_NAME_COLUMN;
+            default:
+                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
+                        "Invalid sort parameter. 'sortOrder' [ASC | DESC] and 'sortBy' [name | description |"
+                                + " displayName | status | lastModified | created | parentName | parentDisplayName]");
         }
     }
 
@@ -550,7 +551,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                         "Patch operation is not defined");
             }
-            String op = operation.getOp().trim().toLowerCase();
+            String op = operation.getOp().trim().toLowerCase(Locale.ENGLISH);
             if (!(PATCH_OP_ADD.equals(op) || PATCH_OP_REMOVE.equals(op) || PATCH_OP_REPLACE.equals(op))) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                         "Patch op must be either ['add', 'replace', 'remove']");
@@ -563,13 +564,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
             }
             String path = operation.getPath().trim();
             // Set path to lower case
-            if (path.toLowerCase().startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
+            if (path.toLowerCase(Locale.ENGLISH).startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
                 // Convert only the '/attributes/' part to lower case to treat the attribute name case sensitively
                 path = path.replaceAll("(?i)" + Pattern.quote(PATCH_PATH_ORG_ATTRIBUTES), PATCH_PATH_ORG_ATTRIBUTES);
             } else if (path.equalsIgnoreCase(PATCH_PATH_ORG_DISPLAY_NAME)) {
                 path = PATCH_PATH_ORG_DISPLAY_NAME;
             } else {
-                path = path.toLowerCase();
+                path = path.toLowerCase(Locale.ENGLISH);
             }
             // Is valid path
             if (!(path.equals(PATCH_PATH_ORG_NAME) || path.equals(PATCH_PATH_ORG_DISPLAY_NAME) || path
@@ -604,7 +605,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             // STATUS may only contain 'ACTIVE' and 'DISABLED' values
             if (path.equals(PATCH_PATH_ORG_STATUS)) {
                 try {
-                    value = Organization.OrgStatus.valueOf(value.toUpperCase()).toString();
+                    value = Organization.OrgStatus.valueOf(value.toUpperCase(Locale.ENGLISH)).toString();
                 } catch (IllegalArgumentException e) {
                     throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                             "STATUS field could only contain 'ACTIVE' and 'DISABLED'. Provided : " + value);
@@ -670,7 +671,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                         "Patch operation is not defined");
             }
-            String op = operation.getOp().trim().toLowerCase();
+            String op = operation.getOp().trim().toLowerCase(Locale.ENGLISH);
             if (!PATCH_OP_REPLACE.equals(op)) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                         "Configuration patch may only contain 'replace' operation");
@@ -681,7 +682,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                         "Patch operation path is not defined");
             }
-            String path = operation.getPath().trim().toUpperCase();
+            String path = operation.getPath().trim().toUpperCase(Locale.ENGLISH);
             // Only the RDN can be patched
             if (!RDN.equalsIgnoreCase(path)) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
@@ -767,8 +768,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             }
             UserStoreManager userStoreManager = tenantUserRealm.getUserStoreManager()
                     .getSecondaryUserStoreManager(userStoreDomain);
-            if (userStoreManager instanceof CustomUserStoreManager) {
-                ((CustomUserStoreManager) userStoreManager).createOu(dn);
+            if (userStoreManager instanceof AbstractOrganizationMgtUserStoreManager) {
+                ((AbstractOrganizationMgtUserStoreManager) userStoreManager).createOu(dn);
                 if (log.isDebugEnabled()) {
                     log.debug("Created subdirectory : " + dn + ", in the user store domain : " + userStoreDomain);
                 }

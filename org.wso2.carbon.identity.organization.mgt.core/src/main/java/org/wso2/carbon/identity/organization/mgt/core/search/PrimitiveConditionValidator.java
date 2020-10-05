@@ -24,6 +24,9 @@ import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationSearchBe
 
 import java.lang.reflect.Field;
 
+/**
+ * Primitive condition validator.
+ */
 public class PrimitiveConditionValidator {
 
     private SearchBean searchBean;

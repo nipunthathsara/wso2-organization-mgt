@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 
 import java.sql.Timestamp;
@@ -120,18 +121,22 @@ public class OrganizationRowDataCollector {
         this.status = status;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Timestamp getCreated() {
         return created;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public void setCreated(Timestamp created) {
         this.created = created;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Timestamp getLastModified() {
         return lastModified;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public void setLastModified(Timestamp lastModified) {
         this.lastModified = lastModified;
     }

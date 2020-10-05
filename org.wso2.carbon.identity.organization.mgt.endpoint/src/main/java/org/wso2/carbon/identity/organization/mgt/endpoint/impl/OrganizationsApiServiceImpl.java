@@ -9,25 +9,15 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationSearchBean;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
-import org.wso2.carbon.identity.organization.mgt.endpoint.*;
-
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_PATH;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getBasicOrganizationDTOFromOrganization;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationDTOsFromOrganizations;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationDTOFromOrganization;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationManager;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationAddFromDTO;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationUserRoleManager;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getSearchCondition;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getUserStoreConfigDTOsFromUserStoreConfigs;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleBadRequestResponse;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleServerErrorResponse;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleUnexpectedServerError;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil.getUserDTOsFromUsers;
-
+import org.wso2.carbon.identity.organization.mgt.endpoint.OrganizationsApiService;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -37,16 +27,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
-
 import javax.ws.rs.core.Response;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_PATH;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getBasicOrganizationDTOFromOrganization;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationAddFromDTO;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationDTOFromOrganization;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationDTOsFromOrganizations;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationManager;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationUserRoleManager;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getSearchCondition;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getUserStoreConfigDTOsFromUserStoreConfigs;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleBadRequestResponse;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleServerErrorResponse;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleUnexpectedServerError;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil.getUserDTOsFromUsers;
+
+/**
+ * Organizations Api Service Impl.
+ */
 public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     private static final Log log = LogFactory.getLog(OrganizationsApiServiceImpl.class);
@@ -96,8 +97,8 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
                                 + "greater than -1");
             }
             // If pagination parameters not defined in the request, set them to -1
-            limit = (limit == null) ? -1 : limit;
-            offset = (offset == null) ? -1 : offset;
+            limit = (limit == null) ? Integer.valueOf(-1) : limit;
+            offset = (offset == null) ? Integer.valueOf(-1) : offset;
             List<String> requestedAttributes = attributes == null ?
                     new ArrayList<>() :
                     Arrays.stream(attributes.split(",")).map(String::trim).collect(Collectors.toList());

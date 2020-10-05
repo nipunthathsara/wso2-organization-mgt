@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.identity.organization.mgt.endpoint.constants;
 
+/**
+ * Organization Mgt Endpoint Constants
+ */
 public class OrganizationMgtEndpointConstants {
 
     public static final String ORGANIZATION_PATH = "organizations";

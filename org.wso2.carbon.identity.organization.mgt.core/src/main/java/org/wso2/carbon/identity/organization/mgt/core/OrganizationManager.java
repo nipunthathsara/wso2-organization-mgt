@@ -37,7 +37,7 @@ public interface OrganizationManager {
      * Add a new organization
      *
      * @param organizationAdd
-     * @param isImport 'true' if you don't want to create an OU in the underlying user store.
+     * @param isImport        'true' if you don't want to create an OU in the underlying user store.
      * @return
      * @throws OrganizationManagementException
      */
@@ -65,16 +65,17 @@ public interface OrganizationManager {
     /**
      * List or search organizations with pagination and sorting.
      *
-     * @param searchCondition Search condition
-     * @param offset Number of items to be skipped
-     * @param limit Number of items to be retrieved
-     * @param sortBy Attribute to be sorted by
-     * @param sortOrder Order to be sorted by
+     * @param searchCondition     Search condition
+     * @param offset              Number of items to be skipped
+     * @param limit               Number of items to be retrieved
+     * @param sortBy              Attribute to be sorted by
+     * @param sortOrder           Order to be sorted by
      * @param requestedAttributes Attributes to be returned in the response organizations
      * @return
      * @throws OrganizationManagementException
      */
-    List<Organization> getOrganizations(Condition searchCondition, int offset, int limit, String sortBy, String sortOrder, List<String> requestedAttributes)
+    List<Organization> getOrganizations(Condition searchCondition, int offset, int limit, String sortBy,
+                                        String sortOrder, List<String> requestedAttributes)
             throws OrganizationManagementException;
 
     /**
@@ -129,7 +130,8 @@ public interface OrganizationManager {
      * @param operations
      * @throws OrganizationManagementException
      */
-    void patchUserStoreConfigs(String organizationId, List<Operation> operations) throws OrganizationManagementException;
+    void patchUserStoreConfigs(String organizationId, List<Operation> operations)
+            throws OrganizationManagementException;
 
     /**
      * Retrieve children organization IDs of the organization identified by the given ID.

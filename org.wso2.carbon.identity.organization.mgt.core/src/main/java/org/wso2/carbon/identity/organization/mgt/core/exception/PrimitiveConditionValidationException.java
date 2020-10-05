@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.exception;
 
+/**
+ * Primitive Condition Validation Exception.
+ */
 public class PrimitiveConditionValidationException extends Exception {
 
     public PrimitiveConditionValidationException(String message) {

@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.model;
 
+/**
+ * Organization-User-Role mapping.
+ */
 public class OrganizationUserRoleMapping {
 
     private String organizationId;
