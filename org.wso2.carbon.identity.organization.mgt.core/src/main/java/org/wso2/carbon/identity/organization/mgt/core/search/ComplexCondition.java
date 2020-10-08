@@ -50,6 +50,7 @@ public class ComplexCondition implements Condition {
 
         PlaceholderSQL placeholderSQL = new PlaceholderSQL();
         ArrayList<Object> data = new ArrayList<>();
+        ArrayList<ConditionType.PrimitiveOperator> operators = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
 
         boolean first = true;
@@ -63,11 +64,13 @@ public class ComplexCondition implements Condition {
             PlaceholderSQL eachPlaceholderSQL = condition.buildQuery(primitiveConditionValidator);
             sb.append(eachPlaceholderSQL.getQuery());
             data.addAll(eachPlaceholderSQL.getData());
+            operators.addAll(eachPlaceholderSQL.getOperators());
             sb.append(")");
         }
 
         placeholderSQL.setQuery(sb.toString());
         placeholderSQL.setData(data);
+        placeholderSQL.setOperator(operators);
         return placeholderSQL;
     }
 }

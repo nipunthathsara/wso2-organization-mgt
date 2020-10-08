@@ -18,15 +18,18 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.search;
 
+import org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType;
+
 import java.util.ArrayList;
 
 /**
- * This class holds both sql query and the data to be injected for a prepared statement.
+ * This class holds both sql query, data (and the operator) to be injected for a prepared statement.
  */
 public class PlaceholderSQL {
 
     private String query;
     private ArrayList<Object> data;
+    private ArrayList<ConditionType.PrimitiveOperator> operators;
 
     public String getQuery() {
 
@@ -46,5 +49,15 @@ public class PlaceholderSQL {
     public void setData(ArrayList<Object> data) {
 
         this.data = data;
+    }
+
+    public ArrayList<ConditionType.PrimitiveOperator> getOperators() {
+
+        return operators;
+    }
+
+    public void setOperator(ArrayList<ConditionType.PrimitiveOperator> operators) {
+
+        this.operators = operators;
     }
 }

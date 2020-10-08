@@ -37,8 +37,9 @@
         <cxf:properties>
             <entry key="search.query.parameter.name" value="$filter"/>
             <entry key="search.parser">
-                <bean class="org.apache.cxf.jaxrs.ext.search.odata.ODataParser">
-                    <constructor-arg value="#{ T(org.apache.cxf.jaxrs.ext.search.SearchBean) }"/>
+<!--                <bean class="org.apache.cxf.jaxrs.ext.search.odata.ODataParser">-->
+                <bean class="org.wso2.carbon.identity.organization.mgt.endpoint.odata.CustomODataParser">
+                <constructor-arg value="#{ T(org.apache.cxf.jaxrs.ext.search.SearchBean) }"/>
                 </bean>
             </entry>
         </cxf:properties>

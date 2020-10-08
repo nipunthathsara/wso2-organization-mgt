@@ -47,7 +47,7 @@ public class ConditionType {
      * Primitive operators.
      */
     public enum PrimitiveOperator {
-        EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, LESS_OR_EQUALS, GREATER_OR_EQUALS, STARTS_WITH, ENDS_WITH;
+        EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, LESS_OR_EQUALS, GREATER_OR_EQUALS, STARTS_WITH, ENDS_WITH, CONTAINS;
 
         public String toSQL() {
 
@@ -75,6 +75,9 @@ public class ConditionType {
                 op = "LIKE";
                 break;
             case ENDS_WITH:
+                op = "LIKE";
+                break;
+            case CONTAINS:
                 op = "LIKE";
                 break;
             }

@@ -51,8 +51,10 @@
         <!-- If working with OData -->
         <dependency>
             <groupId>org.apache.olingo</groupId>
-            <artifactId>olingo-odata2-core-incubating</artifactId>
-            <version>${org.apache.olingo.version}</version>
+<!--            <artifactId>olingo-odata2-core-incubating</artifactId>-->
+            <artifactId>olingo-odata2-core</artifactId>
+<!--            <version>${org.apache.olingo.version}</version>-->
+            <version>2.0.11</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.ws.rs</groupId>

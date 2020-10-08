@@ -121,19 +121,19 @@ public class SQLConstants {
     public static final String INSERT_ATTRIBUTES_CONCLUDE =
             "SELECT 1 FROM dual";
     public static final String INSERT_OR_UPDATE_USER_STORE_CONFIG =
-        "MERGE INTO\n" +
-        "    UM_ORG_USERSTORE_CONFIGS C\n" +
-        "USING\n" +
-        "    (SELECT ? ID, ? ORG_ID, ? ATTR_KEY, ? ATTR_VALUE FROM dual) N\n" +
-        "ON \n" +
-        "    (N.ORG_ID = C.ORG_ID AND N.ATTR_KEY = C.ATTR_KEY)\n" +
-        "WHEN MATCHED THEN\n" +
-        "UPDATE\n" +
-        "    SET C.ATTR_VALUE = N.ATTR_VALUE\n" +
-        "WHEN NOT MATCHED THEN\n" +
-        "INSERT\n" +
-        "    (C.ID, C.ORG_ID, C.ATTR_KEY, C.ATTR_VALUE)\n" +
-        "    VALUES (N.ID, N.ORG_ID, N.ATTR_KEY, N.ATTR_VALUE)";
+            "MERGE INTO\n" +
+            "    UM_ORG_USERSTORE_CONFIGS C\n" +
+            "USING\n" +
+            "    (SELECT ? ID, ? ORG_ID, ? ATTR_KEY, ? ATTR_VALUE FROM dual) N\n" +
+            "ON \n" +
+            "    (N.ORG_ID = C.ORG_ID AND N.ATTR_KEY = C.ATTR_KEY)\n" +
+            "WHEN MATCHED THEN\n" +
+            "UPDATE\n" +
+            "    SET C.ATTR_VALUE = N.ATTR_VALUE\n" +
+            "WHEN NOT MATCHED THEN\n" +
+            "INSERT\n" +
+            "    (C.ID, C.ORG_ID, C.ATTR_KEY, C.ATTR_VALUE)\n" +
+            "    VALUES (N.ID, N.ORG_ID, N.ATTR_KEY, N.ATTR_VALUE)";
     public static final String INSERT_OR_UPDATE_ATTRIBUTE =
             "MERGE INTO\n" +
             "    UM_ORG_ATTRIBUTES A\n" +

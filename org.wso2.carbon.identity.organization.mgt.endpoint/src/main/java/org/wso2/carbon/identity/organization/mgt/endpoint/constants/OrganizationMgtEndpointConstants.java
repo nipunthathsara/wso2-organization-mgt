@@ -27,4 +27,8 @@ public class OrganizationMgtEndpointConstants {
     public static final String CREATED = "created";
     public static final String LAST_MODIFIED = "lastModified";
     public static final String DATE_SEARCH_FORMAT = "yyyy-mm-dd HH:mm:ss";
+
+    public static final String STARTS_WITH = "startswith";
+    public static final String ENDS_WITH = "endswith";
+    public static final String CONTAINS = "contains";
 }

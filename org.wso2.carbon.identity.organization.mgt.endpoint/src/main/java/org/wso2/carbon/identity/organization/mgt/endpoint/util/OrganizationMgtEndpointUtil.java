@@ -50,6 +50,7 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ConflictReq
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ForbiddenException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.InternalServerErrorException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.NotFoundException;
+import org.wso2.carbon.identity.organization.mgt.endpoint.odata.MethodSearchCondition;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.OrganizationUserRoleManager;
 
 import java.sql.Timestamp;
@@ -63,13 +64,14 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_DATE_FORMAT;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CONTAINS;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CREATED;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.DATE_SEARCH_FORMAT;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ENDS_WITH;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.LAST_MODIFIED;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.STARTS_WITH;
 
 /**
  * This class provides util functions to the Organization Management endpoint.
@@ -344,6 +346,11 @@ public class OrganizationMgtEndpointUtil {
         }
         if (searchCondition.getStatement() != null) {
             PrimitiveStatement primitiveStatement = searchCondition.getStatement();
+            // If 'startswith', 'endswith' or 'contains' search operation
+            String method = null;
+            if (org.apache.cxf.jaxrs.ext.search.ConditionType.CUSTOM.equals(primitiveStatement.getCondition())) {
+                method = ((MethodSearchCondition) searchCondition).getMethod();
+            }
             if (primitiveStatement.getProperty() != null) {
                 if (CREATED.equals(primitiveStatement.getProperty()) || LAST_MODIFIED
                         .equals(primitiveStatement.getProperty())) {
@@ -362,12 +369,11 @@ public class OrganizationMgtEndpointUtil {
                     PrimitiveStatement statement = new PrimitiveStatement(primitiveStatement.getProperty(),
                             new Timestamp(date.getTime()), Timestamp.class, primitiveStatement.getCondition());
                     return new PrimitiveCondition(statement.getProperty(),
-                            getPrimitiveOperatorFromOdata(statement.getCondition()), statement.getValue());
+                            getPrimitiveOperatorFromOdata(statement.getCondition(), method), statement.getValue());
                 }
                 return new PrimitiveCondition(primitiveStatement.getProperty(),
-                        getPrimitiveOperatorFromOdata(primitiveStatement.getCondition()),
+                        getPrimitiveOperatorFromOdata(primitiveStatement.getCondition(), method),
                         primitiveStatement.getValue());
-
             }
             return null;
         } else {
@@ -383,7 +389,7 @@ public class OrganizationMgtEndpointUtil {
     }
 
     private static ConditionType.PrimitiveOperator getPrimitiveOperatorFromOdata(
-            org.apache.cxf.jaxrs.ext.search.ConditionType odataConditionType) {
+            org.apache.cxf.jaxrs.ext.search.ConditionType odataConditionType, String method) {
 
         ConditionType.PrimitiveOperator primitiveConditionType = null;
         switch (odataConditionType) {
@@ -404,6 +410,19 @@ public class OrganizationMgtEndpointUtil {
                 break;
             case LESS_THAN:
                 primitiveConditionType = ConditionType.PrimitiveOperator.LESS_THAN;
+                break;
+            case CUSTOM:
+                if (STARTS_WITH.equals(method)) {
+                    primitiveConditionType = ConditionType.PrimitiveOperator.STARTS_WITH;
+                } else if (ENDS_WITH.equals(method)) {
+                    primitiveConditionType = ConditionType.PrimitiveOperator.ENDS_WITH;
+                } else if (CONTAINS.equals(method)) {
+                    primitiveConditionType = ConditionType.PrimitiveOperator.CONTAINS;
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Unsupported function found : " + method);
+                    }
+                }
                 break;
             default:
                 if (log.isDebugEnabled()) {

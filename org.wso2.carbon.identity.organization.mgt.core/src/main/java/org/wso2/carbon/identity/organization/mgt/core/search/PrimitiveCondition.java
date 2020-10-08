@@ -80,6 +80,9 @@ public class PrimitiveCondition implements Condition {
         ArrayList<Object> data = new ArrayList<>();
         data.add(dbQualifiedPrimitiveCondition.getValue());
         placeholderSQL.setData(data);
+        ArrayList<ConditionType.PrimitiveOperator> operators = new ArrayList<>();
+        operators.add(dbQualifiedPrimitiveCondition.getOperator());
+        placeholderSQL.setOperator(operators);
         return placeholderSQL;
     }
 }

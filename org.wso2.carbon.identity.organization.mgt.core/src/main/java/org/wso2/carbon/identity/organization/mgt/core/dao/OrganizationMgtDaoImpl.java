@@ -52,6 +52,9 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static java.time.ZoneOffset.UTC;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.CONTAINS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.ENDS_WITH;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.STARTS_WITH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN_PLACE_HOLDER;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR;
@@ -104,6 +107,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_ATTRIBUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_USER_STORE_CONFIG;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.LIKE_SYMBOL;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORDER_BY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PAGINATION;
@@ -227,8 +231,16 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                                         .setTimestamp(++parameterIndex,
                                                 (Timestamp) placeholderSQL.getData().get(count), calendar);
                             } else {
-                                preparedStatement
-                                        .setString(++parameterIndex, (String) placeholderSQL.getData().get(count));
+                                // Append '%' if 'contains', 'startswith' and 'endswith' operators are being used
+                                String data = (String) placeholderSQL.getData().get(count);
+                                if (STARTS_WITH.equals(placeholderSQL.getOperators().get(count))) {
+                                    data = data.concat(LIKE_SYMBOL);
+                                } else if (ENDS_WITH.equals(placeholderSQL.getOperators().get(count))) {
+                                    data = LIKE_SYMBOL.concat(data);
+                                } else if (CONTAINS.equals(placeholderSQL.getOperators().get(count))) {
+                                    data = LIKE_SYMBOL.concat(data).concat(LIKE_SYMBOL);
+                                }
+                                preparedStatement.setString(++parameterIndex, data);
                             }
                         }
                         });
@@ -524,42 +536,6 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     @Override
-    public void patchUserStoreConfigs(String organizationId, Operation operation)
-            throws OrganizationManagementException {
-
-        JdbcTemplate jdbcTemplate = getNewTemplate();
-        if (RDN.equals(operation.getPath())) {
-            // Set both RDN and DN appropriately
-            Map<String, UserStoreConfig> userStoreConfigs = getUserStoreConfigsByOrgId(
-                    PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(), organizationId);
-            String dn = userStoreConfigs.get(DN).getValue();
-            dn = dn.replace(String.format(DN_PLACE_HOLDER, userStoreConfigs.get(RDN).getValue()),
-                    String.format(DN_PLACE_HOLDER, operation.getValue()));
-            if (log.isDebugEnabled()) {
-                log.debug("New DN of the organization ID : " + organizationId + " is : " + dn);
-            }
-            try {
-                updateUserStoreConfig(jdbcTemplate, organizationId, RDN, operation.getValue());
-                updateUserStoreConfig(jdbcTemplate, organizationId, DN, dn);
-            } catch (DataAccessException e) {
-                throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
-                        "Error while updating user store configs for the organization ID : " + organizationId, e);
-            }
-        }
-    }
-
-    private void updateUserStoreConfig(JdbcTemplate template, String organizationId, String key, String value)
-            throws DataAccessException {
-
-        template.executeUpdate(PATCH_USER_STORE_CONFIG, preparedStatement -> {
-            int parameterIndex = 0;
-            preparedStatement.setString(++parameterIndex, value);
-            preparedStatement.setString(++parameterIndex, organizationId);
-            preparedStatement.setString(++parameterIndex, key);
-        });
-    }
-
-    @Override
     public boolean isAttributeExistByKey(int tenantId, String organizationId, String attributeKey)
             throws OrganizationManagementException {
 
@@ -596,6 +572,42 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
                     "Error while updating organization metadata : " + organizationId, e);
         }
+    }
+
+    @Override
+    public void patchUserStoreConfigs(String organizationId, Operation operation)
+            throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        if (RDN.equals(operation.getPath())) {
+            // Set both RDN and DN appropriately
+            Map<String, UserStoreConfig> userStoreConfigs = getUserStoreConfigsByOrgId(
+                    PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId(), organizationId);
+            String dn = userStoreConfigs.get(DN).getValue();
+            dn = dn.replace(String.format(DN_PLACE_HOLDER, userStoreConfigs.get(RDN).getValue()),
+                    String.format(DN_PLACE_HOLDER, operation.getValue()));
+            if (log.isDebugEnabled()) {
+                log.debug("New DN of the organization ID : " + organizationId + " is : " + dn);
+            }
+            try {
+                updateUserStoreConfig(jdbcTemplate, organizationId, RDN, operation.getValue());
+                updateUserStoreConfig(jdbcTemplate, organizationId, DN, dn);
+            } catch (DataAccessException e) {
+                throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
+                        "Error while updating user store configs for the organization ID : " + organizationId, e);
+            }
+        }
+    }
+
+    private void updateUserStoreConfig(JdbcTemplate template, String organizationId, String key, String value)
+            throws DataAccessException {
+
+        template.executeUpdate(PATCH_USER_STORE_CONFIG, preparedStatement -> {
+            int parameterIndex = 0;
+            preparedStatement.setString(++parameterIndex, value);
+            preparedStatement.setString(++parameterIndex, organizationId);
+            preparedStatement.setString(++parameterIndex, key);
+        });
     }
 
     public boolean isRdnAvailable(String rdn, String parentId, int tenantId) throws OrganizationManagementException {
