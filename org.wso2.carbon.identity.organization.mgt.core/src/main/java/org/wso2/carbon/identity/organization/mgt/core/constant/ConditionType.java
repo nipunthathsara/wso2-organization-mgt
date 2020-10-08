@@ -33,11 +33,11 @@ public class ConditionType {
 
             String op = null;
             switch (this) {
-                case OR:
-                case AND:
-                case NOT:
-                    op = this.toString();
-                    break;
+            case OR:
+            case AND:
+            case NOT:
+                op = this.toString();
+                break;
             }
             return op;
         }
@@ -47,7 +47,8 @@ public class ConditionType {
      * Primitive operators.
      */
     public enum PrimitiveOperator {
-        EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, LESS_OR_EQUALS, GREATER_OR_EQUALS, STARTS_WITH, ENDS_WITH, CONTAINS;
+        EQUALS, NOT_EQUALS, LESS_THAN, GREATER_THAN, LESS_OR_EQUALS, GREATER_OR_EQUALS, STARTS_WITH, ENDS_WITH,
+        SUBSTRING;
 
         public String toSQL() {
 
@@ -77,7 +78,7 @@ public class ConditionType {
             case ENDS_WITH:
                 op = "LIKE";
                 break;
-            case CONTAINS:
+            case SUBSTRING:
                 op = "LIKE";
                 break;
             }

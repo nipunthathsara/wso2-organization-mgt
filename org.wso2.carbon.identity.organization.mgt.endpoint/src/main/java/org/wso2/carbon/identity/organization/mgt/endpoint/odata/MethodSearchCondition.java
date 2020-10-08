@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Custom search condition class to support 'contains', 'startswith' and 'endswith' search methods.
+ * Custom search condition class to support 'substring', 'startswith' and 'endswith' search methods.
  * @param <T>
  */
 public class MethodSearchCondition<T> implements SearchCondition<T> {

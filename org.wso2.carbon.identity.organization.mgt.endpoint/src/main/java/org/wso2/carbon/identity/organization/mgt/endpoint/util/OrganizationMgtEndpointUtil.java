@@ -66,7 +66,7 @@ import javax.ws.rs.core.Response;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CONTAINS;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.SUBSTRING;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CREATED;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.DATE_SEARCH_FORMAT;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ENDS_WITH;
@@ -416,8 +416,8 @@ public class OrganizationMgtEndpointUtil {
                     primitiveConditionType = ConditionType.PrimitiveOperator.STARTS_WITH;
                 } else if (ENDS_WITH.equals(method)) {
                     primitiveConditionType = ConditionType.PrimitiveOperator.ENDS_WITH;
-                } else if (CONTAINS.equals(method)) {
-                    primitiveConditionType = ConditionType.PrimitiveOperator.CONTAINS;
+                } else if (SUBSTRING.equals(method)) {
+                    primitiveConditionType = ConditionType.PrimitiveOperator.SUBSTRING;
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("Unsupported function found : " + method);

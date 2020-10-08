@@ -58,7 +58,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Custom OData parser class to support 'contains', 'startswith' and 'endswith' search methods.
+ * Custom OData parser class to support 'substring', 'startswith' and 'endswith' search methods.
  * @param <T>
  */
 public class CustomODataParser<T> extends org.apache.cxf.jaxrs.ext.search.odata.ODataParser<T> {

@@ -52,7 +52,7 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static java.time.ZoneOffset.UTC;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.CONTAINS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.SUBSTRING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.ENDS_WITH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.STARTS_WITH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
@@ -237,7 +237,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                                     data = data.concat(LIKE_SYMBOL);
                                 } else if (ENDS_WITH.equals(placeholderSQL.getOperators().get(count))) {
                                     data = LIKE_SYMBOL.concat(data);
-                                } else if (CONTAINS.equals(placeholderSQL.getOperators().get(count))) {
+                                } else if (SUBSTRING.equals(placeholderSQL.getOperators().get(count))) {
                                     data = LIKE_SYMBOL.concat(data).concat(LIKE_SYMBOL);
                                 }
                                 preparedStatement.setString(++parameterIndex, data);
