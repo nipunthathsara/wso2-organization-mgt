@@ -24,46 +24,46 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 @ApiModel(description = "")
-public class UserDTO {
+public class RoleDTO {
 
     @Valid 
-    @NotNull(message = "Property userId cannot be null.") 
-    private String userId = null;
+    @NotNull(message = "Property roleId cannot be null.") 
+    private String roleId = null;
 
     @Valid 
-    @NotNull(message = "Property username cannot be null.") 
-    private String username = null;
+    @NotNull(message = "Property roleName cannot be null.") 
+    private String roleName = null;
 
     /**
     **/
     @ApiModelProperty(required = true, value = "")
-    @JsonProperty("userId")
-    public String getUserId() {
-        return userId;
+    @JsonProperty("roleId")
+    public String getRoleId() {
+        return roleId;
     }
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setRoleId(String roleId) {
+        this.roleId = roleId;
     }
 
     /**
     **/
     @ApiModelProperty(required = true, value = "")
-    @JsonProperty("username")
-    public String getUsername() {
-        return username;
+    @JsonProperty("roleName")
+    public String getRoleName() {
+        return roleName;
     }
-    public void setUsername(String username) {
-        this.username = username;
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 
     @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("class UserDTO {\n");
+        sb.append("class RoleDTO {\n");
         
-        sb.append("    userId: ").append(userId).append("\n");
-        sb.append("    username: ").append(username).append("\n");
+        sb.append("    roleId: ").append(roleId).append("\n");
+        sb.append("    roleName: ").append(roleName).append("\n");
         
         sb.append("}\n");
         return sb.toString();

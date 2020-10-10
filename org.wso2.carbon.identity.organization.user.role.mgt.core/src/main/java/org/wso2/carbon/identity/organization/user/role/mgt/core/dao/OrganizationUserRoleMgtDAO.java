@@ -21,6 +21,7 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.dao;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 
 import java.util.List;
@@ -39,6 +40,9 @@ public interface OrganizationUserRoleMgtDAO {
 
     void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, String roleId, Integer tenantId)
             throws OrganizationUserRoleMgtException;
+
+    List<Role> getRolesByOrganizationAndUser(String organizationID, String userId, Integer tenantID)
+            throws OrganizationUserRoleMgtServerException;
 
     boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, String roleId,
                                                    Integer tenantId)

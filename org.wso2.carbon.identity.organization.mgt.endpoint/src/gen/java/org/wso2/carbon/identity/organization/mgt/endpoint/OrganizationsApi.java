@@ -30,6 +30,8 @@ import java.util.List;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.RoleDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserStoreConfigDTO;
 
 import javax.ws.rs.Consumes;
@@ -54,7 +56,6 @@ public class OrganizationsApi {
     private final OrganizationsApiService delegate = OrganizationsApiServiceFactory.getOrganizationsApi();
 
     @GET
-
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
     @io.swagger.annotations.ApiOperation(value = "Retrieve organizations created for this tenant which matches the "
@@ -373,6 +374,30 @@ public class OrganizationsApi {
                                                                                               "user-id") String userId) {
 
         return delegate.organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(organizationId, roleId, userId);
+    }
+
+    @GET
+    @Path("/{organization-id}/users/{user-id}/roles")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @io.swagger.annotations.ApiOperation(value = "Retrieve the list of role that particular user has against an organization.\n",
+            notes = "This API is used to get the list of roles for a user for an organization.\n",
+            response = RoleDTO.class, responseContainer = "List")
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 200, message = "Ok"),
+        
+        @io.swagger.annotations.ApiResponse(code = 400, message = "Bad Request"),
+        
+        @io.swagger.annotations.ApiResponse(code = 401, message = "Unauthorized"),
+        
+        @io.swagger.annotations.ApiResponse(code = 409, message = "Conflict"),
+        
+        @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
+
+    public Response organizationsOrganizationIdUsersUserIdRolesGet(@ApiParam(value = "ID of the organization of which, the users will be returned.",required=true ) @PathParam("organization-id")  String organizationId,
+    @ApiParam(value = "ID of the user.",required=true ) @PathParam("user-id")  String userId) {
+
+        return delegate.organizationsOrganizationIdUsersUserIdRolesGet(organizationId,userId);
     }
 
     @GET

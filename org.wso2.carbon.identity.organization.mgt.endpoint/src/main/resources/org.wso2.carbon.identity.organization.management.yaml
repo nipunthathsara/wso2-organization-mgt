@@ -783,6 +783,48 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Organization User Roles
+  '/organizations/{organization-id}/users/{user-id}/roles':
+    get:
+      summary: |
+        Retrieve the list of role that particular user has against an organization.
+      description: |
+        This API is used to get the list of roles for a user for an organization.
+      parameters:
+        - name: organization-id
+          in: path
+          description: 'ID of the organization of which, the users will be returned.'
+          required: true
+          type: string
+        - name: user-id
+          in: path
+          description: 'ID of the user.'
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Role'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization User Roles
   "/organizations/import":
     post:
       description: |
@@ -1063,11 +1105,25 @@ definitions:
   User:
     type: object
     required:
-      - roleId
+      - userId
+      - username
     properties:
       userId:
         type: string
       username:
+        type: string
+  #-----------------------------------------------------
+  # Role with roleId and RoleName
+  #-----------------------------------------------------
+  Role:
+    type: object
+    required:
+      - roleId
+      - roleName
+    properties:
+      roleId:
+        type: string
+      roleName:
         type: string
   #-----------------------------------------------------
   # Organization Patch Operation Object

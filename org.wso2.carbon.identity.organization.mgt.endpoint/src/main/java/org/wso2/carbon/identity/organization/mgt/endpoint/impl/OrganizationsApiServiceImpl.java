@@ -34,6 +34,7 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO
 import org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
 
@@ -250,6 +251,21 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
         try {
             getOrganizationUserRoleManager().deleteOrganizationAndUserRoleMapping(organizationId, userId, roleId);
             return Response.accepted().build();
+        } catch (OrganizationUserRoleMgtClientException e) {
+            return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
+        } catch (OrganizationUserRoleMgtException e) {
+            return OrganizationUserRoleMgtEndpointUtil.handleServerErrorResponse(e, log);
+        } catch (Throwable throwable) {
+            return OrganizationUserRoleMgtEndpointUtil.handleUnexpectedServerError(throwable, log);
+        }
+    }
+
+    @Override
+    public Response organizationsOrganizationIdUsersUserIdRolesGet(String organizationId, String userId) {
+
+        try {
+            List<Role> roles = getOrganizationUserRoleManager().getRolesByOrganizationAndUser(organizationId, userId);
+            return Response.ok().entity(roles).build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
         } catch (OrganizationUserRoleMgtException e) {

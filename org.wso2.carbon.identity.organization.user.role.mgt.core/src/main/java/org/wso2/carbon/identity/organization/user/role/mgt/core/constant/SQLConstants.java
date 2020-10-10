@@ -27,6 +27,9 @@ public class SQLConstants {
     public static final String INSERT_ALL = "INSERT ALL ";
     public static final String VIEW_ID_COLUMN = "UM_ID";
     public static final String VIEW_USER_ID_COLUMN = "UM_USER_ID";
+    public static final String VIEW_ROLE_ID_COLUMN = "UM_ROLE_ID";
+    public static final String VIEW_ROLE_NAME_COLUMN = "UM_ROLE_NAME";
+
     public static final String INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING =
             "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID) " +
                     "VALUES (?, ?, ?, ?, ?, ?) ";
@@ -71,4 +74,11 @@ public class SQLConstants {
                     "    UM_USER_ROLE_ORG\n" +
                     "WHERE\n" +
                     "    ORG_ID = ? AND UM_ROLE_ID = ? AND UM_TENANT_ID = ?";
+    public static final String GET_ROLES_BY_ORG_AND_USER =
+            "SELECT\n" +
+                    "    DISTINCT UM_ROLE_ID, UM_ROLE_NAME\n" +
+                    "FROM\n" +
+                    "    ORG_AUTHZ_VIEW\n" +
+                    "WHERE\n" +
+                    "    ORG_ID = ? AND UM_USER_ID = ? AND UM_TENANT_ID = ?";
 }

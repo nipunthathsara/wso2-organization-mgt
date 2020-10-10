@@ -48,8 +48,9 @@ public abstract class OrganizationsApiService {
 
     public abstract Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId);
 
-    public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId,
-            String roleId, String userId);
+    public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, String roleId, String userId);
+
+    public abstract Response organizationsOrganizationIdUsersUserIdRolesGet(String organizationId, String userId);
 
     public abstract Response organizationsOrganizationIdUserstoreConfigsGet(String organizationId);
 
