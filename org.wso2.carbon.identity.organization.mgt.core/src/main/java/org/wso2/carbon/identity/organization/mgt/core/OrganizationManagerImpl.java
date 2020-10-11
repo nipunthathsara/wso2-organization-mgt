@@ -29,6 +29,8 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
+import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtListenerServiceComponent;
+import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtListener;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.organization.mgt.core.model.MetaUser;
 import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
@@ -45,6 +47,7 @@ import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreManager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -119,6 +122,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public Organization addOrganization(OrganizationAdd organizationAdd, boolean isImport)
             throws OrganizationManagementException {
 
+        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
+                .getOrganizationMgtListeners();
         logOrganizationAddObject(organizationAdd);
         validateAddOrganizationRequest(organizationAdd);
         Organization organization = generateOrganizationFromRequest(organizationAdd);
@@ -153,6 +158,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         organizationMgtDao.addOrganization(getTenantId(), organization);
         grantCreatorWithFullPermission(organization.getId());
+        // Invoke listeners
+        for (OrganizationMgtListener listener : listeners) {
+            if (listener.isEnable() && !listener.doPostCreateOrganization(organization, getTenantDomain(),
+                    getAuthenticatedUsername())) {
+                return organization;
+            }
+        }
         return organization;
     }
 
@@ -163,6 +175,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST,
                     "Provided organization ID is empty");
         }
+        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
+                .getOrganizationMgtListeners();
         Organization organization = organizationMgtDao.getOrganization(getTenantId(), organizationId.trim());
         if (organization == null) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST,
@@ -170,19 +184,25 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         // Set derivable attributes
         if (!ROOT.equals(organization.getParent().getId())) {
-            organization.getParent().setRef(String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(),
-                    organization.getParent().getId()));
+            organization.getParent().setRef(String
+                    .format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), organization.getParent().getId()));
         }
-        organization.getMetadata().getCreatedBy().setRef(
-                String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
-                        organization.getMetadata().getCreatedBy().getId()));
+        organization.getMetadata().getCreatedBy().setRef(String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
+                organization.getMetadata().getCreatedBy().getId()));
         organization.getMetadata().getCreatedBy()
                 .setUsername(getUserNameFromUserID(organization.getMetadata().getCreatedBy().getId(), getTenantId()));
-        organization.getMetadata().getLastModifiedBy().setRef(
-                String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
+        organization.getMetadata().getLastModifiedBy().setRef(String
+                .format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
                         organization.getMetadata().getLastModifiedBy().getId()));
         organization.getMetadata().getLastModifiedBy().setUsername(
                 getUserNameFromUserID(organization.getMetadata().getLastModifiedBy().getId(), getTenantId()));
+        // Invoke listeners
+        for (OrganizationMgtListener listener : listeners) {
+            if (listener.isEnable() && !listener.doPostGetOrganization(organization, getTenantDomain(),
+                    getAuthenticatedUsername())) {
+                return organization;
+            }
+        }
         return organization;
     }
 
@@ -190,30 +210,32 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public List<Organization> getOrganizations(Condition condition, int offset, int limit, String sortBy,
             String sortOrder, List<String> requestedAttributes) throws OrganizationManagementException {
 
+        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
+                .getOrganizationMgtListeners();
         // Validate pagination and sorting parameters
         sortBy = getMatchingColumnNameForSortingParameter(sortBy);
-        List<Organization> organizations = organizationMgtDao.getOrganizations(
-                condition,
-                getTenantId(),
-                offset,
-                limit,
-                sortBy,
-                sortOrder,
-                requestedAttributes,
-                getAuthenticatedUserId()
-        );
+        List<Organization> organizations = organizationMgtDao
+                .getOrganizations(condition, getTenantId(), offset, limit, sortBy, sortOrder, requestedAttributes,
+                        getAuthenticatedUserId());
         // Populate derivable information of the organizations
         for (Organization organization : organizations) {
             if (!ROOT.equals(organization.getParent().getId())) {
-                organization.getParent().setRef(String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(),
-                        organization.getParent().getId()));
+                organization.getParent().setRef(String
+                        .format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), organization.getParent().getId()));
             }
-            organization.getMetadata().getCreatedBy().setRef(
-                    String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
+            organization.getMetadata().getCreatedBy().setRef(String
+                    .format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
                             organization.getMetadata().getCreatedBy().getId()));
-            organization.getMetadata().getLastModifiedBy().setRef(
-                    String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
+            organization.getMetadata().getLastModifiedBy().setRef(String
+                    .format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
                             organization.getMetadata().getLastModifiedBy().getId()));
+        }
+        // Invoke listeners
+        for (OrganizationMgtListener listener : listeners) {
+            if (listener.isEnable() && !listener.doPostGetOrganizations(organizations, getTenantDomain(),
+                    getAuthenticatedUsername())) {
+                return organizations;
+            }
         }
         return organizations;
     }
@@ -242,6 +264,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                     "Provided organization ID is empty");
         }
+        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
+                .getOrganizationMgtListeners();
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
@@ -251,6 +275,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
         validatePatchingAttributes(operations);
         for (Operation operation : operations) {
             organizationMgtDao.patchOrganization(organizationId, operation);
+            // Invoke listeners
+            for (OrganizationMgtListener listener : listeners) {
+                if (listener.isEnable() && !listener.doPostPatchOrganization(organizationId, operation,
+                        getTenantDomain(), getAuthenticatedUsername())) {
+                    return;
+                }
+            }
         }
         // Update metadata
         Metadata metadata = new Metadata();
@@ -266,11 +297,20 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
                     "Provided organization ID is empty");
         }
+        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
+                .getOrganizationMgtListeners();
         if (!isOrganizationExistById(organizationId.trim())) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
                     "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
         organizationMgtDao.deleteOrganization(getTenantId(), organizationId.trim());
+        // Invoke listeners
+        for (OrganizationMgtListener listener : listeners) {
+            if (listener.isEnable() && !listener.doPostDeleteOrganization(organizationId, getTenantDomain(),
+                    getAuthenticatedUsername())) {
+                return;
+            }
+        }
     }
 
     @Override
@@ -293,9 +333,20 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST,
                     "Provided organization Id is empty");
         }
+        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
+                .getOrganizationMgtListeners();
         organizationId = organizationId.trim();
         if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
-            return organizationMgtDao.getUserStoreConfigsByOrgId(getTenantId(), organizationId);
+            Map<String, UserStoreConfig> userStoreConfigs = organizationMgtDao
+                    .getUserStoreConfigsByOrgId(getTenantId(), organizationId);
+            // Invoke listeners
+            for (OrganizationMgtListener listener : listeners) {
+                if (listener.isEnable() && !listener.doPostGetUserStoreConfigs(organizationId, userStoreConfigs,
+                        getTenantDomain(), getAuthenticatedUsername())) {
+                    return userStoreConfigs;
+                }
+            }
+            return userStoreConfigs;
         } else {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST,
                     "Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
@@ -309,9 +360,20 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST,
                     "Provided organization Id is empty");
         }
+        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
+                .getOrganizationMgtListeners();
         organizationId = organizationId.trim();
         if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
-            return organizationMgtDao.getChildOrganizationIds(organizationId, getAuthenticatedUserId());
+            List<String> childOrganizationIds = organizationMgtDao
+                    .getChildOrganizationIds(organizationId, getAuthenticatedUserId());
+            // Invoke listeners
+            for (OrganizationMgtListener listener : listeners) {
+                if (listener.isEnable() && !listener.doPostGetChildOrganizationIds(organizationId, childOrganizationIds,
+                        getTenantDomain(), getAuthenticatedUsername())) {
+                    return childOrganizationIds;
+                }
+            }
+            return childOrganizationIds;
         } else {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST,
                     " Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
@@ -326,6 +388,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST,
                     "Provided organization Id is empty");
         }
+        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
+                .getOrganizationMgtListeners();
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST,
@@ -334,6 +398,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
         validateUserStoreConfigPatchOperations(operations, organizationId);
         for (Operation operation : operations) {
             organizationMgtDao.patchUserStoreConfigs(organizationId, operation);
+            // Invoke listeners
+            for (OrganizationMgtListener listener : listeners) {
+                if (listener.isEnable() && !listener.doPostPatchUserStoreConfigs(organizationId, operation,
+                        getTenantDomain(), getAuthenticatedUsername())) {
+                    return;
+                }
+            }
         }
         // Update metadata
         Metadata metadata = new Metadata();
@@ -519,26 +590,26 @@ public class OrganizationManagerImpl implements OrganizationManager {
             return null;
         }
         switch (sortBy.trim().toLowerCase(Locale.ENGLISH)) {
-            case "name":
-                return VIEW_NAME_COLUMN;
-            case "displayname":
-                return VIEW_DISPLAY_NAME_COLUMN;
-            case "description":
-                return VIEW_DESCRIPTION_COLUMN;
-            case "created":
-                return VIEW_CREATED_TIME_COLUMN;
-            case "lastmodified":
-                return VIEW_LAST_MODIFIED_COLUMN;
-            case "status":
-                return VIEW_STATUS_COLUMN;
-            case "parentname":
-                return VIEW_PARENT_NAME_COLUMN;
-            case "parentdisplayname":
-                return VIEW_PARENT_DISPLAY_NAME_COLUMN;
-            default:
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
-                        "Invalid sort parameter. 'sortOrder' [ASC | DESC] and 'sortBy' [name | description |"
-                                + " displayName | status | lastModified | created | parentName | parentDisplayName]");
+        case "name":
+            return VIEW_NAME_COLUMN;
+        case "displayname":
+            return VIEW_DISPLAY_NAME_COLUMN;
+        case "description":
+            return VIEW_DESCRIPTION_COLUMN;
+        case "created":
+            return VIEW_CREATED_TIME_COLUMN;
+        case "lastmodified":
+            return VIEW_LAST_MODIFIED_COLUMN;
+        case "status":
+            return VIEW_STATUS_COLUMN;
+        case "parentname":
+            return VIEW_PARENT_NAME_COLUMN;
+        case "parentdisplayname":
+            return VIEW_PARENT_DISPLAY_NAME_COLUMN;
+        default:
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
+                    "Invalid sort parameter. 'sortOrder' [ASC | DESC] and 'sortBy' [name | description |"
+                            + " displayName | status | lastModified | created | parentName | parentDisplayName]");
         }
     }
 
@@ -831,37 +902,24 @@ public class OrganizationManagerImpl implements OrganizationManager {
         OrganizationMgtRole organizationManager = organizationMgtRoles.get(ORGANIZATION_MGT_ROLE.toString());
         tempGroupIds.add(organizationManager.getGroupId());
         // Add an entry for 'organization management' purposes
-        authorizationDao.addOrganizationAndUserRoleMapping(
-                getAuthenticatedUserId(),
-                organizationManager.getGroupId(),
-                organizationManager.getHybridRoleId(),
-                getTenantId(),
-                organizationId
-        );
+        authorizationDao.addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationManager.getGroupId(),
+                organizationManager.getHybridRoleId(), getTenantId(), organizationId);
         OrganizationMgtRole organizationUserManager = organizationMgtRoles.get(ORGANIZATION_USER_MGT_ROLE.toString());
         // If the 'OrganizationMgtRole' and the 'OrganizationUserMgtRole' are the same, avoid adding duplicate entries
         if (!tempGroupIds.contains(organizationUserManager.getGroupId())) {
             tempGroupIds.add(organizationUserManager.getGroupId());
             // Add an entry for 'organization user management' purposes
-            authorizationDao.addOrganizationAndUserRoleMapping(
-                    getAuthenticatedUserId(),
-                    organizationUserManager.getGroupId(),
-                    organizationUserManager.getHybridRoleId(),
-                    getTenantId(),
-                    organizationId
-            );
+            authorizationDao
+                    .addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationUserManager.getGroupId(),
+                            organizationUserManager.getHybridRoleId(), getTenantId(), organizationId);
         }
         OrganizationMgtRole organizationRoleManager = organizationMgtRoles.get(ORGANIZATION_ROLE_MGT_ROLE.toString());
         // If the 'OrganizationRoleMgtRole' is the same as any of the above, avoid adding duplicate entries
         if (!tempGroupIds.contains(organizationRoleManager.getGroupId())) {
             // Add an entry for 'organization role management' purposes
-            authorizationDao.addOrganizationAndUserRoleMapping(
-                    getAuthenticatedUserId(),
-                    organizationRoleManager.getGroupId(),
-                    organizationRoleManager.getHybridRoleId(),
-                    getTenantId(),
-                    organizationId
-            );
+            authorizationDao
+                    .addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationRoleManager.getGroupId(),
+                            organizationRoleManager.getHybridRoleId(), getTenantId(), organizationId);
         }
     }
 
