@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -77,9 +77,9 @@ public class CustomODataParser<T> extends org.apache.cxf.jaxrs.ext.search.odata.
     private static class TypedValue {
         private final Object value;
         private final String literal;
-        private final Class< ? > typeClass;
+        private final Class<?> typeClass;
 
-        TypedValue(final Class< ? > typeClass, final String literal, final Object value) {
+        TypedValue(final Class<?> typeClass, final String literal, final Object value) {
             this.literal = literal;
             this.value = value;
             this.typeClass = typeClass;
@@ -101,25 +101,25 @@ public class CustomODataParser<T> extends org.apache.cxf.jaxrs.ext.search.odata.
 
         @Override
         @SuppressWarnings("unchecked")
-        public Object visitBinary(BinaryExpression binaryExpression, BinaryOperator operator,
-                Object leftSide, Object rightSide) {
+        public Object visitBinary(BinaryExpression binaryExpression, BinaryOperator operator, Object leftSide,
+                Object rightSide) {
 
             // AND / OR operate on search conditions
             if (operator == BinaryOperator.AND || operator == BinaryOperator.OR) {
                 if (leftSide instanceof SearchCondition && rightSide instanceof SearchCondition) {
-                    final List<SearchCondition< T >> conditions = new ArrayList<SearchCondition< T >>(2);
-                    conditions.add((SearchCondition< T >)leftSide);
-                    conditions.add((SearchCondition< T >)rightSide);
+                    final List<SearchCondition<T>> conditions = new ArrayList<SearchCondition<T>>(2);
+                    conditions.add((SearchCondition<T>) leftSide);
+                    conditions.add((SearchCondition<T>) rightSide);
 
                     if (operator == BinaryOperator.AND) {
-                        return new AndSearchCondition< T >(conditions);
+                        return new AndSearchCondition<T>(conditions);
                     } else if (operator == BinaryOperator.OR) {
-                        return new OrSearchCondition< T >(conditions);
+                        return new OrSearchCondition<T>(conditions);
                     }
                 } else {
                     throw new SearchParseException(
-                        "Unsupported binary operation arguments (SearchCondition expected): "
-                            + leftSide + ", " + rightSide);
+                            "Unsupported binary operation arguments (SearchCondition expected): " + leftSide + ", "
+                                    + rightSide);
                 }
             }
 
@@ -129,15 +129,15 @@ public class CustomODataParser<T> extends org.apache.cxf.jaxrs.ext.search.odata.
             TypedProperty property = null;
 
             if (leftSide instanceof TypedProperty && rightSide instanceof TypedValue) {
-                property = (TypedProperty)leftSide;
-                value = (TypedValue)rightSide;
+                property = (TypedProperty) leftSide;
+                value = (TypedValue) rightSide;
             } else if (rightSide instanceof TypedProperty && leftSide instanceof TypedValue) {
-                property = (TypedProperty)rightSide;
-                value = (TypedValue)leftSide;
+                property = (TypedProperty) rightSide;
+                value = (TypedValue) leftSide;
             } else {
                 throw new SearchParseException(
-                    "Unsupported binary operation arguments (TypedValue or TypedProperty expected): "
-                        + leftSide + ", " + rightSide);
+                        "Unsupported binary operation arguments (TypedValue or TypedProperty expected): " + leftSide
+                                + ", " + rightSide);
             }
 
             ConditionType conditionType = null;
@@ -173,18 +173,18 @@ public class CustomODataParser<T> extends org.apache.cxf.jaxrs.ext.search.odata.
                 if (isDecodeQueryValues()) {
                     valueStr = UrlUtils.urlDecode(valueStr);
                 }
-                typedValue = parseType(property.propertyName, null, null, property.propertyName,
-                    property.typeInfo, valueStr);
+                typedValue = parseType(property.propertyName, null, null, property.propertyName, property.typeInfo,
+                        valueStr);
             }
 
             final CollectionCheckInfo checkInfo = property.typeInfo.getCollectionCheckInfo();
             if (checkInfo != null) {
-                return new CollectionCheckCondition< T >(property.propertyName, typedValue,
-                    property.typeInfo.getGenericType(), conditionType, condition, checkInfo);
+                return new CollectionCheckCondition<T>(property.propertyName, typedValue,
+                        property.typeInfo.getGenericType(), conditionType, condition, checkInfo);
             }
 
-            return new PrimitiveSearchCondition< T >(property.propertyName, typedValue,
-                property.typeInfo.getGenericType(), conditionType, condition);
+            return new PrimitiveSearchCondition<T>(property.propertyName, typedValue,
+                    property.typeInfo.getGenericType(), conditionType, condition);
         }
 
         @Override
@@ -192,8 +192,8 @@ public class CustomODataParser<T> extends org.apache.cxf.jaxrs.ext.search.odata.
             try {
                 final EdmSimpleType type = edmLiteral.getType();
 
-                final Object value = type.valueOfString(edmLiteral.getLiteral(),
-                    EdmLiteralKind.DEFAULT, null, type.getDefaultType());
+                final Object value = type
+                        .valueOfString(edmLiteral.getLiteral(), EdmLiteralKind.DEFAULT, null, type.getDefaultType());
 
                 return new TypedValue(type.getDefaultType(), edmLiteral.getLiteral(), value);
             } catch (EdmSimpleTypeException ex) {
@@ -220,33 +220,34 @@ public class CustomODataParser<T> extends org.apache.cxf.jaxrs.ext.search.odata.
                     property = (TypedProperty) parameters.get(i);
                 }
             }
-            return new MethodSearchCondition<T>(property.propertyName, value,
-                    property.typeInfo.getGenericType(), ConditionType.CUSTOM, condition, method.toUriLiteral());
+            return new MethodSearchCondition<T>(property.propertyName, value, property.typeInfo.getGenericType(),
+                    ConditionType.CUSTOM, condition, method.toUriLiteral());
         }
 
         @Override
         public Object visitMember(MemberExpression memberExpression, Object path, Object property) {
-            throw new SearchParseException("Unsupported operation visitMember: "
-                + memberExpression + "," + path + "," + property);
+            throw new SearchParseException(
+                    "Unsupported operation visitMember: " + memberExpression + "," + path + "," + property);
         }
 
         @Override
         public Object visitUnary(UnaryExpression unaryExpression, UnaryOperator operator, Object operand) {
-            throw new SearchParseException("Unsupported operation visitUnary: " + unaryExpression
-                + "," + operator + "," + operand);
+            throw new SearchParseException(
+                    "Unsupported operation visitUnary: " + unaryExpression + "," + operator + "," + operand);
         }
 
         @Override
         public Object visitOrderByExpression(OrderByExpression orderByExpression, String expressionString,
                 List<Object> orders) {
-            throw new SearchParseException("Unsupported operation visitOrderByExpression: "
-                + orderByExpression + "," + expressionString + "," + orders);
+            throw new SearchParseException(
+                    "Unsupported operation visitOrderByExpression: " + orderByExpression + "," + expressionString + ","
+                            + orders);
         }
 
         @Override
         public Object visitOrder(OrderExpression orderExpression, Object filterResult, SortOrder sortOrder) {
-            throw new SearchParseException("Unsupported operation visitOrder: " + orderExpression
-                + "," + filterResult + "," + sortOrder);
+            throw new SearchParseException(
+                    "Unsupported operation visitOrder: " + orderExpression + "," + filterResult + "," + sortOrder);
         }
     }
 
@@ -257,7 +258,7 @@ public class CustomODataParser<T> extends org.apache.cxf.jaxrs.ext.search.odata.
      *            accessible no-arguments constructor and complementary setters to these used in
      *            OData $filter expressions.
      */
-    public CustomODataParser(final Class< T > conditionClass) {
+    public CustomODataParser(final Class<T> conditionClass) {
         this(conditionClass, Collections.<String, String>emptyMap());
     }
 
@@ -281,9 +282,8 @@ public class CustomODataParser<T> extends org.apache.cxf.jaxrs.ext.search.odata.
      *            OData $filter expressions.
      * @param contextProperties
      */
-    public CustomODataParser(Class<T> tclass,
-                      Map<String, String> contextProperties,
-                      Map<String, String> beanProperties) {
+    public CustomODataParser(Class<T> tclass, Map<String, String> contextProperties,
+            Map<String, String> beanProperties) {
         super(tclass, contextProperties, beanProperties);
 
         this.parser = new FilterParserImpl(null);
@@ -296,7 +296,7 @@ public class CustomODataParser<T> extends org.apache.cxf.jaxrs.ext.search.odata.
             final T condition = conditionClass.newInstance();
             final FilterExpression expression = parser.parseFilterString(searchExpression);
             final FilterExpressionVisitor visitor = new FilterExpressionVisitor(condition);
-            return (SearchCondition< T >)expression.accept(visitor);
+            return (SearchCondition<T>) expression.accept(visitor);
         } catch (ODataMessageException ex) {
             throw new SearchParseException(ex);
         } catch (ODataApplicationException ex) {

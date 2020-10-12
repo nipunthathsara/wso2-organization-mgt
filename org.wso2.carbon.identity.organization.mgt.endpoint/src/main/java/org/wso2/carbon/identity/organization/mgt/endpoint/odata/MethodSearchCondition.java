@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.endpoint.odata;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.cxf.jaxrs.ext.search.Beanspector;
 import org.apache.cxf.jaxrs.ext.search.ConditionType;
 import org.apache.cxf.jaxrs.ext.search.PrimitiveStatement;
@@ -38,8 +39,10 @@ public class MethodSearchCondition<T> implements SearchCondition<T> {
     private String propertyName;
     private Object propertyValue;
     private Type propertyType;
+    @SuppressFBWarnings
     private T condition;
     private ConditionType cType;
+    @SuppressFBWarnings
     private Beanspector<T> beanspector;
     private String method;
 
@@ -60,8 +63,7 @@ public class MethodSearchCondition<T> implements SearchCondition<T> {
         this.method = method;
         if (propertyName != null) {
             this.beanspector = SearchBean.class.isAssignableFrom(condition.getClass()) ?
-                    null :
-                    new Beanspector(condition);
+                    null : new Beanspector(condition);
         }
     }
 

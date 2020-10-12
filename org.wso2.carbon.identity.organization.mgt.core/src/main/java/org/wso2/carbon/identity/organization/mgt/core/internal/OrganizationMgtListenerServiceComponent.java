@@ -30,6 +30,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * OSGI service component for {@link OrganizationMgtListener} interface.
+ */
 @Component(name = "org.wso2.carbon.identity.organization.mgt.listener",
            immediate = true)
 public class OrganizationMgtListenerServiceComponent {

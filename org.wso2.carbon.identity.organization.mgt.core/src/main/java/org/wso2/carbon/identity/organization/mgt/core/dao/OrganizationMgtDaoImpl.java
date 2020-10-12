@@ -52,9 +52,9 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static java.time.ZoneOffset.UTC;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.SUBSTRING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.ENDS_WITH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.STARTS_WITH;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType.PrimitiveOperator.SUBSTRING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN_PLACE_HOLDER;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR;

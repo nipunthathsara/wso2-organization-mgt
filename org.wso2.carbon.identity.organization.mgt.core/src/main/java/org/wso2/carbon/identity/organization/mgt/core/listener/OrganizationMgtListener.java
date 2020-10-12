@@ -98,11 +98,10 @@ public interface OrganizationMgtListener {
             throws OrganizationManagementException;
 
     boolean doPostGetUserStoreConfigs(String organizationId, Map<String, UserStoreConfig> userStoreConfigs,
-            String tenantDomain,
-            String username) throws OrganizationManagementException;
+            String tenantDomain, String username) throws OrganizationManagementException;
 
-    boolean doPostPatchUserStoreConfigs(String organizationId, Operation operation, String tenantDomain, String username)
-            throws OrganizationManagementException;
+    boolean doPostPatchUserStoreConfigs(String organizationId, Operation operation, String tenantDomain,
+            String username) throws OrganizationManagementException;
 
     boolean doPostGetChildOrganizationIds(String organizationId, List<String> childIds, String tenantDomain,
             String username) throws OrganizationManagementException;

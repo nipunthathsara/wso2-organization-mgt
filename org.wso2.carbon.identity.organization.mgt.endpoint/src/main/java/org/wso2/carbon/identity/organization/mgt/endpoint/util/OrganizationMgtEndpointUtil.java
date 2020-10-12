@@ -66,12 +66,12 @@ import javax.ws.rs.core.Response;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.SUBSTRING;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CREATED;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.DATE_SEARCH_FORMAT;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ENDS_WITH;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.LAST_MODIFIED;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.STARTS_WITH;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.SUBSTRING;
 
 /**
  * This class provides util functions to the Organization Management endpoint.
@@ -267,7 +267,8 @@ public class OrganizationMgtEndpointUtil {
     private static boolean isNotFoundError(OrganizationManagementClientException e) {
 
         for (OrganizationMgtConstants.NotFoundErrorMessages notFoundError :
-                OrganizationMgtConstants.NotFoundErrorMessages.values()) {
+                OrganizationMgtConstants.NotFoundErrorMessages
+                .values()) {
             if (notFoundError.toString().equals(e.getErrorCode())) {
                 return true;
             }
@@ -284,7 +285,8 @@ public class OrganizationMgtEndpointUtil {
     private static boolean isForbiddenError(OrganizationManagementClientException e) {
 
         for (OrganizationMgtConstants.ForbiddenErrorMessages forbiddenError :
-                OrganizationMgtConstants.ForbiddenErrorMessages.values()) {
+                OrganizationMgtConstants.ForbiddenErrorMessages
+                .values()) {
             if (forbiddenError.toString().equals(e.getErrorCode())) {
                 return true;
             }
@@ -346,7 +348,7 @@ public class OrganizationMgtEndpointUtil {
         }
         if (searchCondition.getStatement() != null) {
             PrimitiveStatement primitiveStatement = searchCondition.getStatement();
-            // If 'startswith', 'endswith' or 'contains' search operation
+            // If 'startswith', 'endswith' or 'substring'(contains) search operation...
             String method = null;
             if (org.apache.cxf.jaxrs.ext.search.ConditionType.CUSTOM.equals(primitiveStatement.getCondition())) {
                 method = ((MethodSearchCondition) searchCondition).getMethod();
@@ -362,9 +364,7 @@ public class OrganizationMgtEndpointUtil {
                         throw new OrganizationManagementClientException(
                                 ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST.getMessage() + "'created' and "
                                         + "'lastModified' search criteria should be of " + DATE_SEARCH_FORMAT
-                                        + " format.",
-                                ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST.getCode(),
-                                e);
+                                        + " format.", ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST.getCode(), e);
                     }
                     PrimitiveStatement statement = new PrimitiveStatement(primitiveStatement.getProperty(),
                             new Timestamp(date.getTime()), Timestamp.class, primitiveStatement.getCondition());
@@ -393,41 +393,41 @@ public class OrganizationMgtEndpointUtil {
 
         ConditionType.PrimitiveOperator primitiveConditionType = null;
         switch (odataConditionType) {
-            case EQUALS:
-                primitiveConditionType = ConditionType.PrimitiveOperator.EQUALS;
-                break;
-            case GREATER_OR_EQUALS:
-                primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_OR_EQUALS;
-                break;
-            case LESS_OR_EQUALS:
-                primitiveConditionType = ConditionType.PrimitiveOperator.LESS_OR_EQUALS;
-                break;
-            case GREATER_THAN:
-                primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_THAN;
-                break;
-            case NOT_EQUALS:
-                primitiveConditionType = ConditionType.PrimitiveOperator.NOT_EQUALS;
-                break;
-            case LESS_THAN:
-                primitiveConditionType = ConditionType.PrimitiveOperator.LESS_THAN;
-                break;
-            case CUSTOM:
-                if (STARTS_WITH.equals(method)) {
-                    primitiveConditionType = ConditionType.PrimitiveOperator.STARTS_WITH;
-                } else if (ENDS_WITH.equals(method)) {
-                    primitiveConditionType = ConditionType.PrimitiveOperator.ENDS_WITH;
-                } else if (SUBSTRING.equals(method)) {
-                    primitiveConditionType = ConditionType.PrimitiveOperator.SUBSTRING;
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Unsupported function found : " + method);
-                    }
-                }
-                break;
-            default:
+        case EQUALS:
+            primitiveConditionType = ConditionType.PrimitiveOperator.EQUALS;
+            break;
+        case GREATER_OR_EQUALS:
+            primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_OR_EQUALS;
+            break;
+        case LESS_OR_EQUALS:
+            primitiveConditionType = ConditionType.PrimitiveOperator.LESS_OR_EQUALS;
+            break;
+        case GREATER_THAN:
+            primitiveConditionType = ConditionType.PrimitiveOperator.GREATER_THAN;
+            break;
+        case NOT_EQUALS:
+            primitiveConditionType = ConditionType.PrimitiveOperator.NOT_EQUALS;
+            break;
+        case LESS_THAN:
+            primitiveConditionType = ConditionType.PrimitiveOperator.LESS_THAN;
+            break;
+        case CUSTOM:
+            if (STARTS_WITH.equals(method)) {
+                primitiveConditionType = ConditionType.PrimitiveOperator.STARTS_WITH;
+            } else if (ENDS_WITH.equals(method)) {
+                primitiveConditionType = ConditionType.PrimitiveOperator.ENDS_WITH;
+            } else if (SUBSTRING.equals(method)) {
+                primitiveConditionType = ConditionType.PrimitiveOperator.SUBSTRING;
+            } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Invalid primitive operator found: " + odataConditionType);
+                    log.debug("Unsupported function found : " + method);
                 }
+            }
+            break;
+        default:
+            if (log.isDebugEnabled()) {
+                log.debug("Invalid primitive operator found: " + odataConditionType);
+            }
         }
         return primitiveConditionType;
     }
@@ -437,16 +437,16 @@ public class OrganizationMgtEndpointUtil {
 
         ConditionType.ComplexOperator complexConditionType = null;
         switch (odataConditionType) {
-            case OR:
-                complexConditionType = ConditionType.ComplexOperator.OR;
-                break;
-            case AND:
-                complexConditionType = ConditionType.ComplexOperator.AND;
-                break;
-            default:
-                if (log.isDebugEnabled()) {
-                    log.debug("Invalid complex operator found: " + odataConditionType);
-                }
+        case OR:
+            complexConditionType = ConditionType.ComplexOperator.OR;
+            break;
+        case AND:
+            complexConditionType = ConditionType.ComplexOperator.AND;
+            break;
+        default:
+            if (log.isDebugEnabled()) {
+                log.debug("Invalid complex operator found: " + odataConditionType);
+            }
         }
         return complexConditionType;
     }
