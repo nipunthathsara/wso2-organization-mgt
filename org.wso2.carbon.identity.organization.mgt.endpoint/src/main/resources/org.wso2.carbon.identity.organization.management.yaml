@@ -220,9 +220,10 @@ paths:
       summary: |
         Retrieve organizations created for this tenant which matches the defined search criteria, if any.
         Allowed search criteria (name, displayName, description, status, parentId, parentName, parentName, parentDisplayName, created, lastModified, createdBy, lastModifiedBy, attributeKey, attributeValue, userStoreConfigKey, userStoreConfigValue).
-        Allowed operators (eq, ne, lt, le, gt, ge).
+        Allowed operators (eq, ne, lt, le, gt, ge, startswith, endswith, substring).
         Allowed complex condition operators (and, or).
         Use 'yyyy-mm-dd HH:mm:ss' format for 'created' and 'lastModified' criteria values.
+        Example for startswith, endswith and substring(contains) operators - substring(name, 'Hesei')
         $filter query param value should be URL encoded.
       parameters:
         - in: query
