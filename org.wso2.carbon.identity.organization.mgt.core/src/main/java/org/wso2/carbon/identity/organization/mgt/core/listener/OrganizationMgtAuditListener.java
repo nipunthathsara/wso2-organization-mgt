@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.listener;
 
+import javafx.beans.binding.StringBinding;
 import org.apache.commons.logging.Log;
 import org.wso2.carbon.CarbonConstants;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
@@ -26,6 +27,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -150,14 +152,13 @@ public class OrganizationMgtAuditListener implements OrganizationMgtListener {
     public boolean doPostGetOrganizations(List<Organization> organizations, String tenantDomain, String username)
             throws OrganizationManagementException {
 
-        StringJoiner organizationIds = new StringJoiner(",");
-        StringJoiner organizationNames = new StringJoiner(",");
+        StringJoiner orgIds = new StringJoiner(",");
+        StringJoiner orgNames = new StringJoiner(",");
         for (Organization organization : organizations) {
-            organizationNames.add(organization.getId());
-            organizationNames.add(organization.getName());
+            orgNames.add(organization.getId());
+            orgNames.add(organization.getName());
         }
-        audit.info(String.format(AUDIT_MESSAGE, username, "retrieve", organizationIds.toString(),
-                organizationNames.toString(), SUCCESS));
+        audit.info(String.format(AUDIT_MESSAGE, username, "retrieve", "Organizations", orgIds.toString(), SUCCESS));
         return true;
     }
 
@@ -165,7 +166,11 @@ public class OrganizationMgtAuditListener implements OrganizationMgtListener {
     public boolean doPostPatchOrganization(String organizationId, Operation operation, String tenantDomain,
             String username) throws OrganizationManagementException {
 
-        audit.info(String.format(AUDIT_MESSAGE, username, "patch", organizationId, null, SUCCESS));
+        StringBuilder data = new StringBuilder();
+        data.append("Operation : " + operation.getOp());
+        data.append(", Path : " + operation.getPath());
+        data.append(", Value : " + operation.getValue());
+        audit.info(String.format(AUDIT_MESSAGE, username, "patch", organizationId, data.toString(), SUCCESS));
         return true;
     }
 
@@ -173,7 +178,7 @@ public class OrganizationMgtAuditListener implements OrganizationMgtListener {
     public boolean doPostDeleteOrganization(String organizationId, String tenantDomain, String username)
             throws OrganizationManagementException {
 
-        audit.info(String.format(AUDIT_MESSAGE, username, "delete", organizationId, null, SUCCESS));
+        audit.info(String.format(AUDIT_MESSAGE, username, "delete", organizationId, organizationId, SUCCESS));
         return true;
     }
 
@@ -181,7 +186,8 @@ public class OrganizationMgtAuditListener implements OrganizationMgtListener {
     public boolean doPostGetUserStoreConfigs(String organizationId, Map<String, UserStoreConfig> userStoreConfigs,
             String tenantDomain, String username) throws OrganizationManagementException {
 
-        audit.info(String.format(AUDIT_MESSAGE, username, "retrieve", organizationId, null, SUCCESS));
+        audit.info(String.format(AUDIT_MESSAGE, username, "retrieve user store configs", organizationId, organizationId,
+                SUCCESS));
         return true;
     }
 
@@ -189,13 +195,21 @@ public class OrganizationMgtAuditListener implements OrganizationMgtListener {
     public boolean doPostPatchUserStoreConfigs(String organizationId, Operation operation, String tenantDomain,
             String username) throws OrganizationManagementException {
 
-        return false;
+        StringBuilder data = new StringBuilder();
+        data.append("Operation : " + operation.getOp());
+        data.append(", Path : " + operation.getPath());
+        data.append(", Value : " + operation.getValue());
+        audit.info(String.format(AUDIT_MESSAGE, username, "patch user store configs", organizationId, data.toString(),
+                SUCCESS));
+        return true;
     }
 
     @Override
     public boolean doPostGetChildOrganizationIds(String organizationId, List<String> childIds, String tenantDomain,
             String username) throws OrganizationManagementException {
 
-        return false;
+        audit.info(String.format(AUDIT_MESSAGE, username, "retrieve child organizations", organizationId,
+                Arrays.toString(childIds.toArray()), SUCCESS));
+        return true;
     }
 }

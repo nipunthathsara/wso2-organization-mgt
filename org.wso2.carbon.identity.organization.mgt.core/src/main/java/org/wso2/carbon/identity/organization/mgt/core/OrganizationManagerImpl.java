@@ -122,8 +122,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public Organization addOrganization(OrganizationAdd organizationAdd, boolean isImport)
             throws OrganizationManagementException {
 
-        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
-                .getOrganizationMgtListeners();
         logOrganizationAddObject(organizationAdd);
         validateAddOrganizationRequest(organizationAdd);
         Organization organization = generateOrganizationFromRequest(organizationAdd);
@@ -159,6 +157,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organizationMgtDao.addOrganization(getTenantId(), organization);
         grantCreatorWithFullPermission(organization.getId());
         // Invoke listeners
+        Collection<OrganizationMgtListener> listeners = getListeners();
         for (OrganizationMgtListener listener : listeners) {
             if (listener.isEnable() && !listener.doPostCreateOrganization(organization, getTenantDomain(),
                     getAuthenticatedUsername())) {
@@ -175,8 +174,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST,
                     "Provided organization ID is empty");
         }
-        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
-                .getOrganizationMgtListeners();
         Organization organization = organizationMgtDao.getOrganization(getTenantId(), organizationId.trim());
         if (organization == null) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST,
@@ -197,6 +194,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organization.getMetadata().getLastModifiedBy().setUsername(
                 getUserNameFromUserID(organization.getMetadata().getLastModifiedBy().getId(), getTenantId()));
         // Invoke listeners
+        Collection<OrganizationMgtListener> listeners = getListeners();
         for (OrganizationMgtListener listener : listeners) {
             if (listener.isEnable() && !listener.doPostGetOrganization(organization, getTenantDomain(),
                     getAuthenticatedUsername())) {
@@ -210,8 +208,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public List<Organization> getOrganizations(Condition condition, int offset, int limit, String sortBy,
             String sortOrder, List<String> requestedAttributes) throws OrganizationManagementException {
 
-        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
-                .getOrganizationMgtListeners();
         // Validate pagination and sorting parameters
         sortBy = getMatchingColumnNameForSortingParameter(sortBy);
         List<Organization> organizations = organizationMgtDao
@@ -231,6 +227,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                             organization.getMetadata().getLastModifiedBy().getId()));
         }
         // Invoke listeners
+        Collection<OrganizationMgtListener> listeners = getListeners();
         for (OrganizationMgtListener listener : listeners) {
             if (listener.isEnable() && !listener.doPostGetOrganizations(organizations, getTenantDomain(),
                     getAuthenticatedUsername())) {
@@ -264,8 +261,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                     "Provided organization ID is empty");
         }
-        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
-                .getOrganizationMgtListeners();
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
@@ -273,6 +268,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         validateOrganizationPatchOperations(operations, organizationId);
         validatePatchingAttributes(operations);
+        Collection<OrganizationMgtListener> listeners = getListeners();
         for (Operation operation : operations) {
             organizationMgtDao.patchOrganization(organizationId, operation);
             // Invoke listeners
@@ -297,14 +293,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
                     "Provided organization ID is empty");
         }
-        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
-                .getOrganizationMgtListeners();
         if (!isOrganizationExistById(organizationId.trim())) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
                     "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
         organizationMgtDao.deleteOrganization(getTenantId(), organizationId.trim());
         // Invoke listeners
+        Collection<OrganizationMgtListener> listeners = getListeners();
         for (OrganizationMgtListener listener : listeners) {
             if (listener.isEnable() && !listener.doPostDeleteOrganization(organizationId, getTenantDomain(),
                     getAuthenticatedUsername())) {
@@ -333,13 +328,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST,
                     "Provided organization Id is empty");
         }
-        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
-                .getOrganizationMgtListeners();
         organizationId = organizationId.trim();
         if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
             Map<String, UserStoreConfig> userStoreConfigs = organizationMgtDao
                     .getUserStoreConfigsByOrgId(getTenantId(), organizationId);
             // Invoke listeners
+            Collection<OrganizationMgtListener> listeners = getListeners();
             for (OrganizationMgtListener listener : listeners) {
                 if (listener.isEnable() && !listener.doPostGetUserStoreConfigs(organizationId, userStoreConfigs,
                         getTenantDomain(), getAuthenticatedUsername())) {
@@ -360,13 +354,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST,
                     "Provided organization Id is empty");
         }
-        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
-                .getOrganizationMgtListeners();
         organizationId = organizationId.trim();
         if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
             List<String> childOrganizationIds = organizationMgtDao
                     .getChildOrganizationIds(organizationId, getAuthenticatedUserId());
             // Invoke listeners
+            Collection<OrganizationMgtListener> listeners = getListeners();
             for (OrganizationMgtListener listener : listeners) {
                 if (listener.isEnable() && !listener.doPostGetChildOrganizationIds(organizationId, childOrganizationIds,
                         getTenantDomain(), getAuthenticatedUsername())) {
@@ -388,14 +381,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST,
                     "Provided organization Id is empty");
         }
-        Collection<OrganizationMgtListener> listeners = OrganizationMgtListenerServiceComponent
-                .getOrganizationMgtListeners();
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST,
                     "Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
         validateUserStoreConfigPatchOperations(operations, organizationId);
+        Collection<OrganizationMgtListener> listeners = getListeners();
         for (Operation operation : operations) {
             organizationMgtDao.patchUserStoreConfigs(organizationId, operation);
             // Invoke listeners
@@ -941,5 +933,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
     private String getAuthenticatedUsername() {
 
         return PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
+    }
+
+    private Collection<OrganizationMgtListener> getListeners() {
+
+        return OrganizationMgtListenerServiceComponent.getOrganizationMgtListeners();
     }
 }
