@@ -156,12 +156,10 @@ public class OrganizationMgtAuditListener implements OrganizationMgtListener {
             throws OrganizationManagementException {
 
         StringJoiner orgIds = new StringJoiner(",");
-        StringJoiner orgNames = new StringJoiner(",");
         for (Organization organization : organizations) {
-            orgNames.add(organization.getId());
-            orgNames.add(organization.getName());
+            orgIds.add(organization.getId());
         }
-        AUDIT.info(String.format(AUDIT_MESSAGE, username, "retrieve", "Organizations", orgIds.toString(), SUCCESS));
+        AUDIT.info(String.format(AUDIT_MESSAGE, username, "retrieve", "organizations", orgIds.toString(), SUCCESS));
         return true;
     }
 

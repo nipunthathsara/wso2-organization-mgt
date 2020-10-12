@@ -160,7 +160,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Invoke listeners
         Collection<OrganizationMgtListener> listeners = getListeners();
         for (OrganizationMgtListener listener : listeners) {
-            if (listener.isEnable() && !listener.doPostCreateOrganization(organization, getTenantDomain(),
+            if (listener.isEnable() && isImport && !listener.doPostImportOrganization(organization, getTenantDomain(),
+                    getAuthenticatedUsername())) {
+                return organization;
+            } else if (listener.isEnable() && !listener.doPostCreateOrganization(organization, getTenantDomain(),
                     getAuthenticatedUsername())) {
                 return organization;
             }
