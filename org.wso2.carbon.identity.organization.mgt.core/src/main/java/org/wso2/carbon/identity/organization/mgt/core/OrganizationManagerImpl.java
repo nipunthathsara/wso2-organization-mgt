@@ -66,6 +66,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_IMPORT_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNAUTHORIZED_ACTION;
@@ -145,7 +146,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organization.getMetadata().getLastModifiedBy().setId(getAuthenticatedUserId());
         organization.getMetadata().getLastModifiedBy()
                 .setRef(String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(), getAuthenticatedUserId()));
-        setUserStoreConfigs(organization);
+        setUserStoreConfigs(organization, isImport);
         logOrganizationObject(organization);
         if (!isImport) {
             createLdapDirectory(getTenantId(), organization.getUserStoreConfigs().get(USER_STORE_DOMAIN).getValue(),
@@ -538,7 +539,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         return organization;
     }
 
-    private void setUserStoreConfigs(Organization organization) throws OrganizationManagementException {
+    private void setUserStoreConfigs(Organization organization, boolean isImport) throws OrganizationManagementException {
 
         Map<String, UserStoreConfig> parentConfigs = new HashMap<>();
         if (!ROOT.equals(organization.getParent().getId())) {
@@ -554,6 +555,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 organization.getUserStoreConfigs()
                         .put(USER_STORE_DOMAIN, new UserStoreConfig(USER_STORE_DOMAIN, PRIMARY));
             }
+        }
+        // Import organization requests must mention the RDN explicitly
+        if (organization.getUserStoreConfigs().get(RDN) == null && isImport) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_IMPORT_REQUEST, "RDN is mandatory to import "
+                    + "an organization");
         }
         // If RDN is not provided, defaults to organization ID
         if (organization.getUserStoreConfigs().get(RDN) == null) {
