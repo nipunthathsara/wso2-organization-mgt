@@ -51,6 +51,7 @@ import javax.ws.rs.core.Response;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_PATH;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_ROLES_PATH;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getBasicOrganizationDTOFromOrganization;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationAddFromDTO;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.getOrganizationDTOFromOrganization;
@@ -77,7 +78,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
         try {
             Organization organization = getOrganizationManager()
                     .addOrganization(getOrganizationAddFromDTO(organizationAddDTO), false);
-            return Response.created(getResourceURI(organization))
+            return Response.created(getOrganizationResourceURI(organization))
                     .entity(getBasicOrganizationDTOFromOrganization(organization)).build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);
@@ -94,7 +95,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
         try {
             Organization organization = getOrganizationManager()
                     .addOrganization(getOrganizationAddFromDTO(organizationAddDTO), true);
-            return Response.created(getResourceURI(organization))
+            return Response.created(getOrganizationResourceURI(organization))
                     .entity(getBasicOrganizationDTOFromOrganization(organization)).build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);
@@ -168,7 +169,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
         try {
             getOrganizationManager().deleteOrganization(organizationId);
-            return Response.ok().build();
+            return Response.noContent().build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
@@ -185,7 +186,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             getOrganizationManager().patchOrganization(organizationId,
                     operations.stream().map(op -> new Operation(op.getOp(), op.getPath(), op.getValue()))
                             .collect(Collectors.toList()));
-            return Response.ok().build();
+            return Response.noContent().build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
@@ -202,7 +203,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             getOrganizationUserRoleManager().patchOrganizationAndUserRoleMapping(organizationId, operations.stream()
                     .map(op -> new org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation(op.getOp(),
                             op.getPath(), op.getValue())).collect(Collectors.toList()));
-            return Response.ok().build();
+            return Response.noContent().build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
         } catch (OrganizationUserRoleMgtException e) {
@@ -219,7 +220,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             getOrganizationUserRoleManager().addOrganizationAndUserRoleMappings(organizationId,
                     userRoles.stream().map(mapping -> new UserRoleMapping(mapping.getRoleId(), mapping.getUsers()))
                             .collect(Collectors.toList()));
-            return Response.ok().build();
+            return Response.created(getOrganizationRoleResourceURI(organizationId)).build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
         } catch (OrganizationUserRoleMgtException e) {
@@ -250,7 +251,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
         try {
             getOrganizationUserRoleManager().deleteOrganizationAndUserRoleMapping(organizationId, userId, roleId);
-            return Response.accepted().build();
+            return Response.noContent().build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
         } catch (OrganizationUserRoleMgtException e) {
@@ -299,7 +300,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             getOrganizationManager().patchUserStoreConfigs(organizationId,
                     operations.stream().map(op -> new Operation(op.getOp(), op.getPath(), op.getValue()))
                             .collect(Collectors.toList()));
-            return Response.ok().build();
+            return Response.noContent().build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);
         } catch (OrganizationManagementException e) {
@@ -309,8 +310,13 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
         }
     }
 
-    private URI getResourceURI(Organization organization) throws URISyntaxException {
+    private URI getOrganizationResourceURI(Organization organization) throws URISyntaxException {
 
         return new URI(ORGANIZATION_PATH + '/' + organization.getId());
+    }
+
+    private URI getOrganizationRoleResourceURI(String organizationId) throws URISyntaxException {
+
+        return new URI(String.format(ORGANIZATION_ROLES_PATH, organizationId));
     }
 }

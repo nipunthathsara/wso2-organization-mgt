@@ -647,7 +647,7 @@ paths:
             items:
               $ref: '#/definitions/UserRoleMapping'
       responses:
-        '204':
+        '201':
           description: Ok
         '400':
           description: Bad Request

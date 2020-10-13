@@ -24,6 +24,7 @@ package org.wso2.carbon.identity.organization.mgt.endpoint.constants;
 public class OrganizationMgtEndpointConstants {
 
     public static final String ORGANIZATION_PATH = "organizations";
+    public static final String ORGANIZATION_ROLES_PATH = "organizations/%s/roles";
     public static final String CREATED = "created";
     public static final String LAST_MODIFIED = "lastModified";
     public static final String DATE_SEARCH_FORMAT = "yyyy-mm-dd HH:mm:ss";
