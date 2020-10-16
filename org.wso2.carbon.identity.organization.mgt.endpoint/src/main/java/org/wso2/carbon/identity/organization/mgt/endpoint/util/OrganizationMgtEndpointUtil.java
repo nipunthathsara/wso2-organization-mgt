@@ -335,7 +335,14 @@ public class OrganizationMgtEndpointUtil {
     public static <T> Condition getSearchCondition(SearchContext searchContext, Class<T> reference)
             throws OrganizationManagementClientException {
 
-        SearchCondition<T> searchCondition = searchContext.getCondition(reference);
+        SearchCondition<T> searchCondition;
+        try {
+            searchCondition = searchContext.getCondition(reference);
+        } catch (RuntimeException e) {
+            throw new OrganizationManagementClientException(
+                    String.format(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST.getMessage(), "Bad filter"),
+                    ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST.getCode(), e);
+        }
         return buildSearchCondition(searchCondition);
     }
 
