@@ -303,6 +303,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
                     "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
+        Organization organization = organizationMgtDao.getOrganization(getTenantId(), organizationId);
+        // Organization should be disabled first
+        if (!Organization.OrgStatus.DISABLED.equals(organization.getStatus())) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
+                    "Organization " + organizationId + " is not disabled");
+        }
         organizationMgtDao.deleteOrganization(getTenantId(), organizationId.trim());
         // Invoke listeners
         Collection<OrganizationMgtListener> listeners = getListeners();
