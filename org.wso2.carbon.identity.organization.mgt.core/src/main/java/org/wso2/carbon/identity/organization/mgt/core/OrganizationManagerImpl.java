@@ -228,7 +228,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
     @Override
     public List<Organization> getOrganizations(Condition condition, int offset, int limit, String sortBy,
-            String sortOrder, List<String> requestedAttributes) throws OrganizationManagementException {
+            String sortOrder, List<String> requestedAttributes, boolean includePermissions)
+            throws OrganizationManagementException {
 
         Collection<OrganizationMgtEventListener> listeners = getListeners();
         // Invoke pre listeners
@@ -242,7 +243,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         sortBy = getMatchingColumnNameForSortingParameter(sortBy);
         List<Organization> organizations = organizationMgtDao
                 .getOrganizations(condition, getTenantId(), offset, limit, sortBy, sortOrder, requestedAttributes,
-                        getAuthenticatedUserId());
+                        getAuthenticatedUserId(), includePermissions);
         // Populate derivable information of the organizations
         for (Organization organization : organizations) {
             if (!ROOT.equals(organization.getParent().getId())) {
@@ -605,7 +606,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
         return organization;
     }
 
-    private void setUserStoreConfigs(Organization organization, boolean isImport) throws OrganizationManagementException {
+    private void setUserStoreConfigs(Organization organization, boolean isImport)
+            throws OrganizationManagementException {
 
         Map<String, UserStoreConfig> parentConfigs = new HashMap<>();
         if (!ROOT.equals(organization.getParent().getId())) {

@@ -225,6 +225,10 @@ public class OrganizationMgtEndpointUtil {
                 organizationDTO.setAttributes(org.getAttributes().values().stream()
                         .map(OrganizationMgtEndpointUtil::getAttributeDTOFromAttribute).collect(Collectors.toList()));
             }
+            // Set permissions if required
+            if (org.getPermissions() != null && !org.getPermissions().isEmpty()) {
+                organizationDTO.setPermissions(org.getPermissions());
+            }
             organizationDTOs.add(organizationDTO);
         }
         return organizationDTOs;

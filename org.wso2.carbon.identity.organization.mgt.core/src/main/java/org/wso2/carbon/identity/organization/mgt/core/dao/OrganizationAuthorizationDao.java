@@ -18,7 +18,11 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
+import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * This interface is used to query 'UM_USER_ROLE_ORG' table and 'ORG_AUTHZ_VIEW' view which are also being accessed
@@ -71,4 +75,17 @@ public interface OrganizationAuthorizationDao {
      * @throws OrganizationManagementException
      */
     String findGroupIdFromRoleName(String role, int tenantId) throws OrganizationManagementException;
+
+    /**
+     * Find permissions for the authenticated user over the provided list of organizations.
+     *
+     * @param template
+     * @param userId
+     * @param organizationIds
+     * @return
+     * @throws OrganizationManagementException
+     */
+    Map<String, List<String>> findUserPermissionsForOrganizations(JdbcTemplate template, String userId,
+            List<String> organizationIds)
+            throws OrganizationManagementException;
 }

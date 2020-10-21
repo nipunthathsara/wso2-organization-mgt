@@ -28,6 +28,7 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditionValidationException;
+import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
@@ -187,7 +188,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
-            String sortOrder, List<String> requestedAttributes, String userId) throws OrganizationManagementException {
+            String sortOrder, List<String> requestedAttributes, String userId, boolean includePermissions)
+            throws OrganizationManagementException {
 
         PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -290,6 +292,12 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     || organizationRowDataCollectors.size() == 0) ?
                     new HashMap<>() :
                     buildOrganizationsFromRawData(organizationRowDataCollectors, requestedAttributes);
+            // Populate each organization with permissions if required
+            if (includePermissions) {
+                Map<String, List<String>> userOrgPermissions = OrganizationMgtDataHolder.getInstance()
+                        .getOrganizationAuthDao().findUserPermissionsForOrganizations(jdbcTemplate, userId, orgIds);
+                organizationMap.forEach((id, org) -> org.setPermissions(userOrgPermissions.get(id)));
+            }
             // When sorting is required, organization IDs were fetched sorted from the DB. But the collected
             // organizations may not.
             // Therefore, sort the organization as per the order of their IDs.

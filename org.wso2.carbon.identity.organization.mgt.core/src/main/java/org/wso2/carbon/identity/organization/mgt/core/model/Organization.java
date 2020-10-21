@@ -18,7 +18,9 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,13 +39,13 @@ public class Organization {
     private boolean hasAttributes;
     private Map<String, Attribute> attributes = new HashMap<>();
     private Map<String, UserStoreConfig> userStoreConfigs = new HashMap<>();
+    private List<String> permissions = new ArrayList<>();
 
     /**
      * Allowed organization status.
      */
     public enum OrgStatus {
-        ACTIVE,
-        DISABLED
+        ACTIVE, DISABLED
     }
 
     public String getId() {
@@ -132,5 +134,13 @@ public class Organization {
 
     public void setUserStoreConfigs(Map<String, UserStoreConfig> userStoreConfigs) {
         this.userStoreConfigs = userStoreConfigs;
+    }
+
+    public List<String> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<String> permissions) {
+        this.permissions = permissions;
     }
 }

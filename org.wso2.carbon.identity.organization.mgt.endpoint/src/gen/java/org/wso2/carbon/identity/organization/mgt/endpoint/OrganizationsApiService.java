@@ -28,7 +28,7 @@ import javax.ws.rs.core.Response;
 
 public abstract class OrganizationsApiService {
     public abstract Response organizationsGet(SearchContext searchContext, Integer offset, Integer limit, String sortBy,
-            String sortOrder, String attributes);
+            String sortOrder, String attributes, Boolean includePermissions);
 
     public abstract Response organizationsImportPost(OrganizationAddDTO organization);
 
@@ -48,7 +48,8 @@ public abstract class OrganizationsApiService {
 
     public abstract Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId);
 
-    public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, String roleId, String userId);
+    public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId,
+            String roleId, String userId);
 
     public abstract Response organizationsOrganizationIdUsersUserIdRolesGet(String organizationId, String userId);
 

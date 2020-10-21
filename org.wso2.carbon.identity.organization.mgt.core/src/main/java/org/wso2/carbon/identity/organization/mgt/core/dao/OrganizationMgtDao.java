@@ -100,11 +100,13 @@ public interface OrganizationMgtDao {
      * @param sortOrder
      * @param requestedAttributes
      * @param userId
+     * @param includePermissions
      * @return
      * @throws OrganizationManagementException
      */
     List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
-            String sortOrder, List<String> requestedAttributes, String userId) throws OrganizationManagementException;
+            String sortOrder, List<String> requestedAttributes, String userId, boolean includePermissions)
+            throws OrganizationManagementException;
 
     /**
      * Returns user store configs of the {@link Organization} identified by the given ID.

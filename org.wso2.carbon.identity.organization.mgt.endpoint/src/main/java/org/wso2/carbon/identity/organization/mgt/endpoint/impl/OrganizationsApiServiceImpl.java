@@ -108,7 +108,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsGet(SearchContext searchContext, Integer offset, Integer limit, String sortBy,
-            String sortOrder, String attributes) {
+            String sortOrder, String attributes, Boolean includePermissions) {
 
         try {
             if ((limit != null && limit < 1) || (offset != null && offset < 0)) {
@@ -119,12 +119,13 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             // If pagination parameters not defined in the request, set them to -1
             limit = (limit == null) ? Integer.valueOf(-1) : limit;
             offset = (offset == null) ? Integer.valueOf(-1) : offset;
+            boolean permissionsReq = includePermissions != null ? includePermissions.booleanValue() : false;
             List<String> requestedAttributes = attributes == null ?
                     new ArrayList<>() :
                     Arrays.stream(attributes.split(",")).map(String::trim).collect(Collectors.toList());
             List<Organization> organizations = getOrganizationManager()
                     .getOrganizations(getSearchCondition(searchContext, OrganizationSearchBean.class), offset, limit,
-                            sortBy, sortOrder, requestedAttributes);
+                            sortBy, sortOrder, requestedAttributes, permissionsReq);
             return Response.ok().entity(getOrganizationDTOsFromOrganizations(organizations)).build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);

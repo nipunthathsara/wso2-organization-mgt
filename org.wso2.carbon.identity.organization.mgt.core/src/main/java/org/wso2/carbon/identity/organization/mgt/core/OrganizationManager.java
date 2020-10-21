@@ -70,12 +70,13 @@ public interface OrganizationManager {
      * @param limit               Number of items to be retrieved
      * @param sortBy              Attribute to be sorted by
      * @param sortOrder           Order to be sorted by
+     * @param includePermissions  Include user permissions in the response
      * @param requestedAttributes Attributes to be returned in the response organizations
      * @return
      * @throws OrganizationManagementException
      */
     List<Organization> getOrganizations(Condition searchCondition, int offset, int limit, String sortBy,
-                                        String sortOrder, List<String> requestedAttributes)
+            String sortOrder, List<String> requestedAttributes, boolean includePermissions)
             throws OrganizationManagementException;
 
     /**
@@ -103,8 +104,7 @@ public interface OrganizationManager {
      * @param operations
      * @throws OrganizationManagementException
      */
-    void patchOrganization(String organizationId, List<Operation> operations)
-            throws OrganizationManagementException;
+    void patchOrganization(String organizationId, List<Operation> operations) throws OrganizationManagementException;
 
     /**
      * Delete the organization identified by the provided ID.

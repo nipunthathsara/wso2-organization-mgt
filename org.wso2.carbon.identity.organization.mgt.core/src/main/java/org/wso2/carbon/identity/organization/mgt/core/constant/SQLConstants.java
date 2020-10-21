@@ -71,6 +71,7 @@ public class SQLConstants {
             "    TENANT_ID = ? AND NAME = ?";
     public static final String COUNT_COLUMN = "COUNT(1)";
     public static final String VIEW_ID_COLUMN = "ID";
+    public static final String VIEW_ORG_ID_COLUMN = "ORG_ID";
     public static final String VIEW_TENANT_ID_COLUMN = "TENANT_ID";
     public static final String VIEW_NAME_COLUMN = "NAME";
     public static final String VIEW_DISPLAY_NAME_COLUMN = "DISPLAY_NAME";
@@ -92,6 +93,7 @@ public class SQLConstants {
     public static final String VIEW_CONFIG_VALUE_COLUMN = "CONFIG_VALUE";
     public static final String UM_ROLE_ID_COLUMN = "UM_ROLE_ID";
     public static final String UM_HYBRID_ROLE_ID_COLUMN = "UM_HYBRID_ROLE_ID";
+    public static final String UM_RESOURCE_ID_COLUMN = "UM_RESOURCE_ID";
 
     public static final String UM_ID_COLUMN = "UM_ID";
     public static final String ATTR_VALUE_COLUMN = "ATTR_VALUE";
@@ -252,7 +254,7 @@ public class SQLConstants {
             "    TENANT_ID = ? AND PARENT_ID = ? AND CONFIG_KEY = 'RDN' AND CONFIG_VALUE = ?";
     public static final String GET_ROLE_IDS_FOR_PERMISSION =
             "SELECT\n" +
-            "    UM_ROLE_ID\n" +
+            "    DISTINCT UM_ROLE_ID\n" +
             "FROM\n" +
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
@@ -284,4 +286,11 @@ public class SQLConstants {
             "    IDN_SCIM_GROUP\n" +
             "WHERE\n" +
             "    ROLE_NAME = ? AND TENANT_ID = ? AND ATTR_NAME = 'urn:ietf:params:scim:schemas:core:2.0:id'";
+    public static final String GET_USER_ORGANIZATIONS_PERMISSIONS =
+            "SELECT\n" +
+            "    DISTINCT UM_RESOURCE_ID, ORG_ID\n" +
+            "FROM\n" +
+            "    ORG_AUTHZ_VIEW\n" +
+            "WHERE\n" +
+            "    UM_USER_ID = ? AND ORG_ID IN (#)";
 }

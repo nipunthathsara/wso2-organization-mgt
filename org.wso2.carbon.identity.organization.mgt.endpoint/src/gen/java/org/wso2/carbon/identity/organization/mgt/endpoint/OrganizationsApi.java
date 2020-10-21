@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.RoleDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserStoreConfigDTO;
 
@@ -82,13 +81,17 @@ public class OrganizationsApi {
             @ApiParam(value = "Number of items to be skipped before starting to collect the result set. (Should be 0 "
                     + "or positive)") @QueryParam("offset") Integer offset,
             @ApiParam(value = "Max number of items to be returned. (Should be greater than 0)") @QueryParam("limit") Integer limit,
-            @ApiParam(value = "Criteria to sort by. (name, lastModified, created)",
+            @ApiParam(value = "Criteria to sort by. (name, description, displayName, status, lastModified, created, "
+                    + "parentName, parentDisplayName)",
                       allowableValues = "{values=[name, description, displayName, status, lastModified, created, "
                               + "parentName, parentDisplayName]}") @QueryParam("sortBy") String sortBy,
             @ApiParam(value = "Ascending or Descending order. (ASC, DESC)",
                       allowableValues = "{values=[ASC, DESC]}") @QueryParam("sortOrder") String sortOrder,
-            @ApiParam(value = "Comma separated list of attributes to be returned in the response. ('*' for all)") @QueryParam("attributes") String attributes) {
-        return delegate.organizationsGet(searchContext, offset, limit, sortBy, sortOrder, attributes);
+            @ApiParam(value = "Comma separated list of attributes to be returned in the response. ('*' for all)") @QueryParam("attributes") String attributes,
+            @ApiParam(value = "Whether to include the user's permissions for each organization in the response or "
+                    + "not") @QueryParam("includePermissions") Boolean includePermissions) {
+        return delegate
+                .organizationsGet(searchContext, offset, limit, sortBy, sortOrder, attributes, includePermissions);
     }
 
     @POST
@@ -380,24 +383,36 @@ public class OrganizationsApi {
     @Path("/{organization-id}/users/{user-id}/roles")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "Retrieve the list of role that particular user has against an organization.\n",
-            notes = "This API is used to get the list of roles for a user for an organization.\n",
-            response = RoleDTO.class, responseContainer = "List")
-    @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "Ok"),
-        
-        @io.swagger.annotations.ApiResponse(code = 400, message = "Bad Request"),
-        
-        @io.swagger.annotations.ApiResponse(code = 401, message = "Unauthorized"),
-        
-        @io.swagger.annotations.ApiResponse(code = 409, message = "Conflict"),
-        
-        @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
+    @io.swagger.annotations.ApiOperation(value = "Retrieve the list of role that particular user has against an "
+            + "organization.\n",
+                                         notes = "This API is used to get the list of roles for a user for an "
+                                                 + "organization.\n",
+                                         response = RoleDTO.class,
+                                         responseContainer = "List")
+    @io.swagger.annotations.ApiResponses(value = {
+            @io.swagger.annotations.ApiResponse(code = 200,
+                                                message = "Ok"),
 
-    public Response organizationsOrganizationIdUsersUserIdRolesGet(@ApiParam(value = "ID of the organization of which, the users will be returned.",required=true ) @PathParam("organization-id")  String organizationId,
-    @ApiParam(value = "ID of the user.",required=true ) @PathParam("user-id")  String userId) {
+            @io.swagger.annotations.ApiResponse(code = 400,
+                                                message = "Bad Request"),
 
-        return delegate.organizationsOrganizationIdUsersUserIdRolesGet(organizationId,userId);
+            @io.swagger.annotations.ApiResponse(code = 401,
+                                                message = "Unauthorized"),
+
+            @io.swagger.annotations.ApiResponse(code = 409,
+                                                message = "Conflict"),
+
+            @io.swagger.annotations.ApiResponse(code = 500,
+                                                message = "Server Error")
+    })
+
+    public Response organizationsOrganizationIdUsersUserIdRolesGet(
+            @ApiParam(value = "ID of the organization of which, the users will be returned.",
+                      required = true) @PathParam("organization-id") String organizationId,
+            @ApiParam(value = "ID of the user.",
+                      required = true) @PathParam("user-id") String userId) {
+
+        return delegate.organizationsOrganizationIdUsersUserIdRolesGet(organizationId, userId);
     }
 
     @GET
