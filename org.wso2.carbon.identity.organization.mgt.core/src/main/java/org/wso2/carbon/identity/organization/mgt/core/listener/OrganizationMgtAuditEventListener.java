@@ -25,6 +25,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
+import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +35,7 @@ import java.util.StringJoiner;
 /**
  * This class implements the OrganizationMgtListener interface to provide auditing capability.
  */
-public class OrganizationMgtAuditListener implements OrganizationMgtListener {
+public class OrganizationMgtAuditEventListener implements OrganizationMgtEventListener {
 
     private static final Log AUDIT = CarbonConstants.AUDIT_LOG;
     private static final String AUDIT_MESSAGE =
@@ -81,13 +82,15 @@ public class OrganizationMgtAuditListener implements OrganizationMgtListener {
     }
 
     @Override
-    public boolean doPreGetOrganizations(String tenantDomain, String username) throws OrganizationManagementException {
+    public boolean doPreGetOrganizations(Condition condition, int offset, int limit, String sortBy,
+            String sortOrder, List<String> requiredAttribute, String tenantDomain, String username)
+            throws OrganizationManagementException {
 
         return false;
     }
 
     @Override
-    public boolean doPrePatchOrganization(String organizationId, Operation operation, String tenantDomain,
+    public boolean doPrePatchOrganization(String organizationId, List<Operation> operations, String tenantDomain,
             String username) throws OrganizationManagementException {
 
         return false;
@@ -108,7 +111,7 @@ public class OrganizationMgtAuditListener implements OrganizationMgtListener {
     }
 
     @Override
-    public boolean doPrePatchUserStoreConfigs(String organizationId, Operation operation, String tenantDomain,
+    public boolean doPrePatchUserStoreConfigs(String organizationId, List<Operation> operations, String tenantDomain,
             String username) throws OrganizationManagementException {
 
         return false;

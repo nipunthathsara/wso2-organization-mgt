@@ -33,8 +33,8 @@ import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
-import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtAuditListener;
-import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtListener;
+import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtAuditEventListener;
+import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtEventListener;
 import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
@@ -66,8 +66,11 @@ public class OrganizationMgtServiceComponent {
             OrganizationMgtDataHolder.getInstance().setOrganizationMgtRoles(populateManagementRoles(-1234));
             BundleContext bundleContext = componentContext.getBundleContext();
             bundleContext.registerService(OrganizationManager.class.getName(), new OrganizationManagerImpl(), null);
-            bundleContext
-                    .registerService(OrganizationMgtListener.class.getName(), new OrganizationMgtAuditListener(), null);
+            bundleContext.registerService(
+                    OrganizationMgtEventListener.class.getName(),
+                    new OrganizationMgtAuditEventListener(),
+                    null
+            );
             String attributeValidatorClass = !StringUtils
                     .isBlank(IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR)) ?
                     IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR).trim() :

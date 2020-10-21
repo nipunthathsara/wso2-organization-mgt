@@ -22,7 +22,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
-import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtListener;
+import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtEventListener;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,35 +31,37 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * OSGI service component for {@link OrganizationMgtListener} interface.
+ * OSGI service component for {@link OrganizationMgtEventListener} interface.
  */
 @Component(name = "org.wso2.carbon.identity.organization.mgt.listener",
            immediate = true)
 public class OrganizationMgtListenerServiceComponent {
 
-    private static List<OrganizationMgtListener> organizationMgtListeners = new ArrayList<>();
+    private static List<OrganizationMgtEventListener> organizationMgtEventListeners = new ArrayList<>();
 
-    @Reference(name = "organization.mgt.event.listener.service",
-               service = OrganizationMgtListener.class,
+    @Reference(name = "org.wso2.carbon.organization.mgt.event.listener.service",
+               service = OrganizationMgtEventListener.class,
                cardinality = ReferenceCardinality.MULTIPLE,
                policy = ReferencePolicy.DYNAMIC,
                unbind = "unsetOrganizationMgtListener")
-    protected synchronized void setOrganizationMgtListener(OrganizationMgtListener organizationMgtListener) {
+    protected synchronized void setOrganizationMgtListener(OrganizationMgtEventListener organizationMgtEventListener) {
 
-        organizationMgtListeners.add(organizationMgtListener);
-        Collections.sort(organizationMgtListeners, orgMgtListenerComparator);
+        organizationMgtEventListeners.add(organizationMgtEventListener);
+        Collections.sort(organizationMgtEventListeners, orgMgtListenerComparator);
     }
 
-    protected synchronized void unsetOrganizationMgtListener(OrganizationMgtListener organizationMgtListener) {
+    protected synchronized void unsetOrganizationMgtListener(
+            OrganizationMgtEventListener organizationMgtEventListener) {
 
-        organizationMgtListeners.remove(organizationMgtListener);
+        organizationMgtEventListeners.remove(organizationMgtEventListener);
     }
 
-    public static synchronized Collection getOrganizationMgtListeners() {
-        return organizationMgtListeners;
+    public static synchronized Collection getOrganizationMgtEventListeners() {
+
+        return organizationMgtEventListeners;
     }
 
-    private static Comparator<OrganizationMgtListener> orgMgtListenerComparator = (organizationMgtListener1,
+    private static Comparator<OrganizationMgtEventListener> orgMgtListenerComparator = (organizationMgtListener1,
             organizationMgtListener2) -> {
         if (organizationMgtListener1.getExecutionOrderId() > organizationMgtListener2.getExecutionOrderId()) {
             return 1;

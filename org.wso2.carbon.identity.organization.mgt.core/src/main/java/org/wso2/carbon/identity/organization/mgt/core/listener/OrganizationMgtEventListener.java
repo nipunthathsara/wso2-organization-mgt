@@ -23,6 +23,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
+import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ import java.util.Map;
 /**
  * This interface defines pre and post listeners for the organization management API.
  */
-public interface OrganizationMgtListener {
+public interface OrganizationMgtEventListener {
 
     /**
      * Get the execution order identifier for this listener.
@@ -62,9 +63,12 @@ public interface OrganizationMgtListener {
     boolean doPreGetOrganization(String organizationId, String tenantDomain, String username)
             throws OrganizationManagementException;
 
-    boolean doPreGetOrganizations(String tenantDomain, String username) throws OrganizationManagementException;
+    boolean doPreGetOrganizations(Condition condition, int offset, int limit, String sortBy,
+            String sortOrder, List<String> requiredAttribute, String tenantDomain, String username)
+            throws OrganizationManagementException;
 
-    boolean doPrePatchOrganization(String organizationId, Operation operation, String tenantDomain, String username)
+    boolean doPrePatchOrganization(String organizationId, List<Operation> operations, String tenantDomain,
+            String username)
             throws OrganizationManagementException;
 
     boolean doPreDeleteOrganization(String organizationId, String tenantDomain, String username)
@@ -73,7 +77,8 @@ public interface OrganizationMgtListener {
     boolean doPreGetUserStoreConfigs(String organizationId, String tenantDomain, String username)
             throws OrganizationManagementException;
 
-    boolean doPrePatchUserStoreConfigs(String organizationId, Operation operation, String tenantDomain, String username)
+    boolean doPrePatchUserStoreConfigs(String organizationId, List<Operation> operations, String tenantDomain,
+            String username)
             throws OrganizationManagementException;
 
     boolean doPreGetChildOrganizationIds(String organizationId, String tenantDomain, String username)
