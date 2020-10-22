@@ -42,6 +42,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_STATUS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COLUMN_LOWER_WRAPPER;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_KEY_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_KEY_COLUMN;
@@ -95,25 +96,25 @@ public class OrganizationSearchBean implements SearchBean {
         String dbQualifiedFieldName = null;
         switch (fieldName) {
             case ORGANIZATION_SEARCH_BEAN_FIELD_NAME:
-                dbQualifiedFieldName = VIEW_NAME_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_NAME_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_DISPLAY_NAME:
-                dbQualifiedFieldName = VIEW_DISPLAY_NAME_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_DISPLAY_NAME_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_DESCRIPTION:
-                dbQualifiedFieldName = VIEW_DESCRIPTION_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_DESCRIPTION_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_STATUS:
-                dbQualifiedFieldName = VIEW_STATUS_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_STATUS_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_ID:
-                dbQualifiedFieldName = VIEW_PARENT_ID_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_PARENT_ID_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_NAME:
-                dbQualifiedFieldName = VIEW_PARENT_NAME_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_PARENT_NAME_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_PARENT_DISPLAY_NAME:
-                dbQualifiedFieldName = VIEW_PARENT_DISPLAY_NAME_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_PARENT_DISPLAY_NAME_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_CREATED:
                 dbQualifiedFieldName = VIEW_CREATED_TIME_COLUMN;
@@ -122,22 +123,22 @@ public class OrganizationSearchBean implements SearchBean {
                 dbQualifiedFieldName = VIEW_LAST_MODIFIED_COLUMN;
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_CREATED_BY_ID:
-                dbQualifiedFieldName = VIEW_CREATED_BY_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_CREATED_BY_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_LAST_MODIFIED_BY_ID:
-                dbQualifiedFieldName = VIEW_LAST_MODIFIED_BY_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_LAST_MODIFIED_BY_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY:
-                dbQualifiedFieldName = VIEW_ATTR_KEY_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_ATTR_KEY_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE:
-                dbQualifiedFieldName = VIEW_ATTR_VALUE_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_ATTR_VALUE_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY:
-                dbQualifiedFieldName = VIEW_CONFIG_KEY_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_CONFIG_KEY_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE:
-                dbQualifiedFieldName = VIEW_CONFIG_VALUE_COLUMN;
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_CONFIG_VALUE_COLUMN);
                 break;
             default:
                 if (log.isDebugEnabled()) {

@@ -23,6 +23,10 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditi
 
 import java.util.ArrayList;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VALUE_LOWER_WRAPPER;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_COLUMN;
+
 /**
  * Represents a primitive search expression. Ex: 'a > 5' where property is 'a', operator is '>' and value is '5'.
  */
@@ -74,9 +78,14 @@ public class PrimitiveCondition implements Condition {
 
         PlaceholderSQL placeholderSQL = new PlaceholderSQL();
         PrimitiveCondition dbQualifiedPrimitiveCondition = primitiveConditionValidator.validate(this);
+        // No need to perform a case insensitive search for 'CREATED' or 'LAST_MODIFIED' columns.
+        String valuePlaceHolder = (VIEW_CREATED_TIME_COLUMN.equals(dbQualifiedPrimitiveCondition.getProperty())
+                || VIEW_LAST_MODIFIED_COLUMN.equals(dbQualifiedPrimitiveCondition.getProperty())) ?
+                " ?" :
+                VALUE_LOWER_WRAPPER;
         placeholderSQL.setQuery(
                 dbQualifiedPrimitiveCondition.getProperty() + " " + dbQualifiedPrimitiveCondition.getOperator().toSQL()
-                        + " ?");
+                        + valuePlaceHolder);
         ArrayList<Object> data = new ArrayList<>();
         data.add(dbQualifiedPrimitiveCondition.getValue());
         placeholderSQL.setData(data);

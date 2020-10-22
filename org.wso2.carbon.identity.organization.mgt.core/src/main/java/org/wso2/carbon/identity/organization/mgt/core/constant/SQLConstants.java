@@ -99,6 +99,8 @@ public class SQLConstants {
     public static final String ATTR_VALUE_COLUMN = "ATTR_VALUE";
 
     public static final String LIKE_SYMBOL = "%";
+    public static final String COLUMN_LOWER_WRAPPER = "lower(%s)";
+    public static final String VALUE_LOWER_WRAPPER = " lower(?)";
     // View returns null for non matching entries upon join. Hence, the NULL check.
     // View returns duplicate CONFIG_IDs if the  #attributes > #configs. Hence, DISTINCT
     public static final String GET_USER_STORE_CONFIGS_BY_ORG_ID =
