@@ -52,6 +52,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_RESOURCE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ORG_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.dissemblePermissionString;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getMaximumQueryLengthInBytes;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewIdentityTemplate;
@@ -150,8 +151,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public Map<String, List<String>> findUserPermissionsForOrganizations(JdbcTemplate template, String userId,
-            List<String> organizationIds)
-            throws OrganizationManagementException {
+            List<String> organizationIds) throws OrganizationManagementException {
 
         String query = GET_USER_ORGANIZATIONS_PERMISSIONS;
         StringJoiner sj = new StringJoiner(",");
@@ -177,10 +177,21 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
                     "error collecting permissions for user : " + userId, e);
         }
+        // Initiate an empty map to hold list of permissions against organization id.
         Map<String, List<String>> userOrgPermissions = organizationIds.stream()
                 .collect(Collectors.toMap(String::toString, permission -> new ArrayList<>()));
-        permissions.forEach(
-                permission -> userOrgPermissions.get(permission.getOrganizationId()).add(permission.getPermission()));
+        // Populate the map with the results fetched from the db
+        for (OrganizationPermission permission : permissions) {
+            // Dissemble the base permissions to leaf permissions
+            List<String> leafPermissions = dissemblePermissionString(permission.getPermission());
+            // Add the leaf permissions to the map only if it's not already added
+            leafPermissions.forEach(leafPermission -> {
+                List<String> list = userOrgPermissions.get(permission.getOrganizationId());
+                if (!list.contains(leafPermission)) {
+                    list.add(leafPermission);
+                }
+            });
+        }
         return userOrgPermissions;
     }
 

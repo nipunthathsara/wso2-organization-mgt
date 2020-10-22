@@ -71,16 +71,32 @@ public class OrganizationMgtConstants {
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY = "userStoreConfigKey";
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE = "userStoreConfigValue";
 
+    // Permission strings
+    public static final String ADMIN_PERMISSION = "/permission/admin";
+    public static final String ADMIN_MANAGE_PERMISSION = "/permission/admin/manage";
+    public static final String ADMIN_MANAGE_IDENTITY_PERMISSION = "/permission/admin/manage/identity";
+    // organization permissions
     public static final String ORGANIZATION_BASE_PERMISSION = "/permission/admin/manage/identity/organizationmgt";
+    public static final String ORGANIZATION_CREATE_PERMISSION =
+            "/permission/admin/manage/identity/organizationmgt/create";
     public static final String ORGANIZATION_VIEW_PERMISSION = "/permission/admin/manage/identity/organizationmgt/view";
     public static final String ORGANIZATION_EDIT_PERMISSION =
             "/permission/admin/manage/identity/organizationmgt/update";
-    public static final String ORGANIZATION_CREATE_PERMISSION =
-            "/permission/admin/manage/identity/organizationmgt/create";
     public static final String ORGANIZATION_DELETE_PERMISSION =
             "/permission/admin/manage/identity/organizationmgt/delete";
+    // User permissions
     public static final String USER_MGT_BASE_PERMISSION = "/permission/admin/manage/identity/usermgt";
+    public static final String USER_MGT_CREATE_PERMISSION = "/permission/admin/manage/identity/usermgt/create";
+    public static final String USER_MGT_VIEW_PERMISSION = "/permission/admin/manage/identity/usermgt/view";
+    public static final String USER_MGT_LIST_PERMISSION = "/permission/admin/manage/identity/usermgt/list";
+    public static final String USER_MGT_EDIT_PERMISSION = "/permission/admin/manage/identity/usermgt/update";
+    public static final String USER_MGT_DELETE_PERMISSION = "/permission/admin/manage/identity/usermgt/delete";
+    // Role permissions
     public static final String ROLE_MGT_BASE_PERMISSION = "/permission/admin/manage/identity/rolemgt";
+    public static final String ROLE_MGT_CREATE_PERMISSION = "/permission/admin/manage/identity/rolemgt/create";
+    public static final String ROLE_MGT_VIEW_PERMISSION = "/permission/admin/manage/identity/rolemgt/view";
+    public static final String ROLE_MGT_EDIT_PERMISSION = "/permission/admin/manage/identity/rolemgt/update";
+    public static final String ROLE_MGT_DELETE_PERMISSION = "/permission/admin/manage/identity/rolemgt/delete";
     public static final String UI_EXECUTE = "ui.execute";
 
     public static final String ORGANIZATION_ID_CLAIM_URI = "OrganizationMgt.OrgIdClaimUri";
@@ -135,6 +151,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_INVALID_ATTRIBUTES("ORGMGT_00013", "Attribute validation failed : %s"),
         ERROR_CODE_UNAUTHORIZED_ACTION("ORGMGT_00014", "Unauthorized action : %s"),
         ERROR_CODE_INVALID_DATE_FORMAT("ORGMGT_00015", "Invalid search criteria : %s"),
+        ERROR_CODE_UNCLASSIFIED_ERROR("ORGMGT_00020", "Error while processing : %s"),
 
         // Server errors (ORGMGT_00020-ORGMGT_00040)
         ERROR_CODE_ORGANIZATION_ADD_ERROR("ORGMGT_00020", "Error while creating the organization : %s"),
