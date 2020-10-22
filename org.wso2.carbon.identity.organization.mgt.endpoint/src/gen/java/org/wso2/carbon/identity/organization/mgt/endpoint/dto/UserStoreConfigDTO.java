@@ -31,7 +31,6 @@ public class UserStoreConfigDTO {
         USER_STORE_DOMAIN, RDN, DN,
     }
 
-    ;
     @NotNull
     private KeyEnum key = null;
 
