@@ -16,6 +16,10 @@
 
 package org.wso2.carbon.identity.organization.mgt.endpoint.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserEmailsDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserNameDTO;
 import io.swagger.annotations.*;
 import com.fasterxml.jackson.annotation.*;
 
@@ -27,23 +31,18 @@ import javax.validation.constraints.Pattern;
 public class UserDTO {
 
     @Valid 
-    @NotNull(message = "Property userId cannot be null.") 
-    private String userId = null;
-
-    @Valid 
     @NotNull(message = "Property username cannot be null.") 
     private String username = null;
 
-    /**
-    **/
-    @ApiModelProperty(required = true, value = "")
-    @JsonProperty("userId")
-    public String getUserId() {
-        return userId;
-    }
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+    @Valid 
+    @NotNull(message = "Property id cannot be null.") 
+    private String id = null;
+
+    @Valid 
+    private UserNameDTO name = null;
+
+    @Valid 
+    private List<UserEmailsDTO> emails = new ArrayList<UserEmailsDTO>();
 
     /**
     **/
@@ -56,14 +55,49 @@ public class UserDTO {
         this.username = username;
     }
 
+    /**
+    **/
+    @ApiModelProperty(required = true, value = "")
+    @JsonProperty("id")
+    public String getId() {
+        return id;
+    }
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    /**
+    **/
+    @ApiModelProperty(value = "")
+    @JsonProperty("name")
+    public UserNameDTO getName() {
+        return name;
+    }
+    public void setName(UserNameDTO name) {
+        this.name = name;
+    }
+
+    /**
+    **/
+    @ApiModelProperty(value = "")
+    @JsonProperty("emails")
+    public List<UserEmailsDTO> getEmails() {
+        return emails;
+    }
+    public void setEmails(List<UserEmailsDTO> emails) {
+        this.emails = emails;
+    }
+
     @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder();
         sb.append("class UserDTO {\n");
         
-        sb.append("    userId: ").append(userId).append("\n");
         sb.append("    username: ").append(username).append("\n");
+        sb.append("    id: ").append(id).append("\n");
+        sb.append("    name: ").append(name).append("\n");
+        sb.append("    emails: ").append(emails).append("\n");
         
         sb.append("}\n");
         return sb.toString();

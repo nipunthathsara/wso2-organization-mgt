@@ -37,6 +37,8 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.Organi
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMappingUser;
+import org.wso2.charon3.core.protocol.SCIMResponse;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -63,7 +65,8 @@ import static org.wso2.carbon.identity.organization.mgt.endpoint.util.Organizati
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleBadRequestResponse;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleServerErrorResponse;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleUnexpectedServerError;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil.getUserDTOsFromUsers;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil.buildResponse;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_INVALID_USER_GET_REQUEST_FOR_ORG_ROLE;
 
 /**
  * Organizations Api Service Impl.
@@ -198,29 +201,13 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     }
 
     @Override
-    public Response organizationsOrganizationIdRolesPatch(String organizationId, List<OperationDTO> operations) {
+    public Response organizationsOrganizationIdRolesPost(String organizationId, UserRoleMappingDTO userRoleMapping) {
 
         try {
-            getOrganizationUserRoleManager().patchOrganizationAndUserRoleMapping(organizationId, operations.stream()
-                    .map(op -> new org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation(op.getOp(),
-                            op.getPath(), op.getValue())).collect(Collectors.toList()));
-            return Response.noContent().build();
-        } catch (OrganizationUserRoleMgtClientException e) {
-            return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
-        } catch (OrganizationUserRoleMgtException e) {
-            return OrganizationUserRoleMgtEndpointUtil.handleServerErrorResponse(e, log);
-        } catch (Throwable throwable) {
-            return OrganizationUserRoleMgtEndpointUtil.handleUnexpectedServerError(throwable, log);
-        }
-    }
-
-    @Override
-    public Response organizationsOrganizationIdRolesPost(String organizationId, List<UserRoleMappingDTO> userRoles) {
-
-        try {
-            getOrganizationUserRoleManager().addOrganizationAndUserRoleMappings(organizationId,
-                    userRoles.stream().map(mapping -> new UserRoleMapping(mapping.getRoleId(), mapping.getUsers()))
-                            .collect(Collectors.toList()));
+            UserRoleMapping userRoleMapping1 = new UserRoleMapping(userRoleMapping.getRoleId(),
+                    userRoleMapping.getUsers().stream().map(mapping ->
+                    new UserRoleMappingUser(mapping.getUserId(), mapping.getIncludeSubOrgs())).collect(Collectors.toList()));
+            getOrganizationUserRoleManager().addOrganizationAndUserRoleMappings(organizationId, userRoleMapping1);
             return Response.created(getOrganizationRoleResourceURI(organizationId)).build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
@@ -232,11 +219,29 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     }
 
     @Override
-    public Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId) {
+    public Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId, Integer offset,
+                                                                   Integer limit, String attributes, Boolean includeSubOrgs) {
 
         try {
-            List<User> users = getOrganizationUserRoleManager().getUsersByOrganizationAndRole(organizationId, roleId);
-            return Response.ok().entity(getUserDTOsFromUsers(users)).build();
+            if ((limit != null && limit < 1) || (offset != null && offset < 0)) {
+                throw org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils
+                        .handleClientException(ERROR_CODE_INVALID_USER_GET_REQUEST_FOR_ORG_ROLE,
+                                "Invalid pagination arguments. 'limit' should be greater than 0 and 'offset' should be "
+                                        + "greater than -1");
+            }
+            // If pagination parameters not defined in the request, set them to -1
+            limit = (limit == null) ? Integer.valueOf(-1) : limit;
+            offset = (offset == null) ? Integer.valueOf(-1) : offset;
+            includeSubOrgs = includeSubOrgs != null;
+            List<String> requestedAttributes = attributes == null ? new ArrayList<>() :
+                    Arrays.stream(attributes.split(",")).map(String::trim).collect(Collectors.toList());
+            List<SCIMResponse> users = getOrganizationUserRoleManager()
+                    .getUsersByOrganizationAndRole(organizationId, roleId, offset, limit, requestedAttributes, includeSubOrgs);
+//            List<Response> usersResponse = new ArrayList<>();
+//            for(SCIMResponse user: users) {
+//                usersResponse.add(buildResponse(user));
+//            }
+            return Response.ok().entity(users).build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
         } catch (OrganizationUserRoleMgtException e) {

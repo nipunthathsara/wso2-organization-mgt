@@ -40,13 +40,9 @@ public abstract class OrganizationsApiService {
 
     public abstract Response organizationsOrganizationIdPatch(String organizationId, List<OperationDTO> operations);
 
-    public abstract Response organizationsOrganizationIdRolesPatch(String organizationId,
-            List<OperationDTO> operations);
+    public abstract Response organizationsOrganizationIdRolesPost(String organizationId, UserRoleMappingDTO userRoles);
 
-    public abstract Response organizationsOrganizationIdRolesPost(String organizationId,
-            List<UserRoleMappingDTO> userRoles);
-
-    public abstract Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId);
+    public abstract Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId, Integer offset, Integer limit, String attributes, Boolean includeSubOrgs);
 
     public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId,
             String roleId, String userId);

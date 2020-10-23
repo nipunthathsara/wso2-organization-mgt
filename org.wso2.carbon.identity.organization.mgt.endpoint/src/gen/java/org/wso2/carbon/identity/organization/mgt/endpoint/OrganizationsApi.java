@@ -248,64 +248,26 @@ public class OrganizationsApi {
         return delegate.organizationsOrganizationIdPatch(organizationId, operations);
     }
 
-    @PATCH
-    @Path("/{organization-id}/roles")
-    @Consumes({ "application/json" })
-    @Produces({ "application/json" })
-    @io.swagger.annotations.ApiOperation(value = "Modify user role mappings for an organization.\n",
-                                         notes = "This API is used to modify user role mappings for an organization.\n",
-                                         response = void.class)
-    @io.swagger.annotations.ApiResponses(value = {
-            @io.swagger.annotations.ApiResponse(code = 204,
-                                                message = "Ok"),
-
-            @io.swagger.annotations.ApiResponse(code = 400,
-                                                message = "Bad Request"),
-
-            @io.swagger.annotations.ApiResponse(code = 401,
-                                                message = "Unauthorized"),
-
-            @io.swagger.annotations.ApiResponse(code = 500,
-                                                message = "Server Error")
-    })
-
-    public Response organizationsOrganizationIdRolesPatch(
-            @ApiParam(value = "ID of the organization of which, the user role mappings are modified.",
-                      required = true) @PathParam("organization-id") String organizationId,
-            @ApiParam(value = "This represents the patch operation.",
-                      required = true) List<OperationDTO> operations) {
-
-        return delegate.organizationsOrganizationIdRolesPatch(organizationId, operations);
-    }
-
     @POST
     @Path("/{organization-id}/roles")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
     @io.swagger.annotations.ApiOperation(value = "Create a user role mappings for an organization.\n",
-                                         notes = "This API is used to create user role mappings for an organization.\n",
-                                         response = void.class)
-    @io.swagger.annotations.ApiResponses(value = {
-            @io.swagger.annotations.ApiResponse(code = 204,
-                                                message = "Ok"),
+            notes = "This API is used to create user role mappings for an organization.\n",
+            response = void.class)
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 201, message = "Ok"),
+        
+        @io.swagger.annotations.ApiResponse(code = 400, message = "Bad Request"),
+        
+        @io.swagger.annotations.ApiResponse(code = 401, message = "Unauthorized"),
+        
+        @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
 
-            @io.swagger.annotations.ApiResponse(code = 400,
-                                                message = "Bad Request"),
+    public Response organizationsOrganizationIdRolesPost(@ApiParam(value = "ID of the organization of which, the user role mappings are added.",required=true ) @PathParam("organization-id")  String organizationId,
+    @ApiParam(value = "This represents user role mappings." ,required=true ) UserRoleMappingDTO userRoles) {
 
-            @io.swagger.annotations.ApiResponse(code = 401,
-                                                message = "Unauthorized"),
-
-            @io.swagger.annotations.ApiResponse(code = 500,
-                                                message = "Server Error")
-    })
-
-    public Response organizationsOrganizationIdRolesPost(
-            @ApiParam(value = "ID of the organization of which, the user role mappings are added.",
-                      required = true) @PathParam("organization-id") String organizationId,
-            @ApiParam(value = "This represents user role mappings.",
-                      required = true) List<UserRoleMappingDTO> userRoles) {
-
-        return delegate.organizationsOrganizationIdRolesPost(organizationId, userRoles);
+        return delegate.organizationsOrganizationIdRolesPost(organizationId,userRoles);
     }
 
     @GET
@@ -335,13 +297,14 @@ public class OrganizationsApi {
                                                 message = "Server Error")
     })
 
-    public Response organizationsOrganizationIdRolesRoleIdUsersGet(
-            @ApiParam(value = "ID of the organization of which, the users will be returned.",
-                      required = true) @PathParam("organization-id") String organizationId,
-            @ApiParam(value = "ID of the role of which, the user will be returned.",
-                      required = true) @PathParam("role-id") String roleId) {
+    public Response organizationsOrganizationIdRolesRoleIdUsersGet(@ApiParam(value = "ID of the organization of which, the users will be returned.",required=true ) @PathParam("organization-id")  String organizationId,
+    @ApiParam(value = "ID of the role of which, the user will be returned.",required=true ) @PathParam("role-id")  String roleId,
+    @ApiParam(value = "Number of items to be skipped before starting to collect the result set. (Should be 0 or positive)") @QueryParam("offset")  Integer offset,
+    @ApiParam(value = "Max number of items to be returned. (Should be greater than 0)") @QueryParam("limit")  Integer limit,
+    @ApiParam(value = "Comma separated list of SCIM user attributes to be returned in the response.") @QueryParam("attributes")  String attributes,
+    @ApiParam(value = "Whether the role assigned users in sub organizations will be returned") @QueryParam("includeSubOrgs")  Boolean includeSubOrgs) {
 
-        return delegate.organizationsOrganizationIdRolesRoleIdUsersGet(organizationId, roleId);
+        return delegate.organizationsOrganizationIdRolesRoleIdUsersGet(organizationId,roleId,offset,limit,attributes,includeSubOrgs);
     }
 
     @DELETE
