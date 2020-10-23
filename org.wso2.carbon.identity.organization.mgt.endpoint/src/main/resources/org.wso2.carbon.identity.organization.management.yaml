@@ -223,9 +223,19 @@ paths:
                     }
                 ],
                 "permissions": [
-                    "/permission/admin/manage/identity/rolemgt",
-                    "/permission/admin/manage/identity/organizationmgt",
-                    "/permission/admin/manage/identity/usermgt"
+                  "/permission/admin/manage/identity/rolemgt/create",
+                  "/permission/admin/manage/identity/rolemgt/view",
+                  "/permission/admin/manage/identity/rolemgt/update",
+                  "/permission/admin/manage/identity/rolemgt/delete",
+                  "/permission/admin/manage/identity/organizationmgt/create",
+                  "/permission/admin/manage/identity/organizationmgt/view",
+                  "/permission/admin/manage/identity/organizationmgt/update",
+                  "/permission/admin/manage/identity/organizationmgt/delete",
+                  "/permission/admin/manage/identity/usermgt/create",
+                  "/permission/admin/manage/identity/usermgt/view",
+                  "/permission/admin/manage/identity/usermgt/list",
+                  "/permission/admin/manage/identity/usermgt/update",
+                  "/permission/admin/manage/identity/usermgt/delete"
                 ]
             }
         ]
@@ -290,10 +300,10 @@ paths:
       description: |
         This API is used to get an existing organization identified by the organization Id.
       x-wso2-request: |
-        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/<ORGANIZATION_ID>" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
+        curl -X GET "https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/<ORGANIZATION_ID>&includePermissions=[true|false]" -H "accept: application/json" -H 'Authorization: Basic YWRtaW46YWRtaW4=' -k
       x-wso2-curl: |
         curl -X GET \
-          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/9b7ae6c6-292d-4e10-a184-29fd828bdf6d \
+          https://localhost:9443/api/identity/organization-mgt/v1.0/organizations/9b7ae6c6-292d-4e10-a184-29fd828bdf6d?includePermissions=true \
           -H 'Authorization: Basic YWRtaW46YWRtaW4=' \
           -H 'Postman-Token: 0299c25d-08ac-444d-a0c7-a61bf47c5e5c' \
           -H 'accept: application/json' \
@@ -334,6 +344,21 @@ paths:
                     "key": "Exp",
                     "value": "2021"
                 }
+            ],
+            "permissions": [
+              "/permission/admin/manage/identity/rolemgt/create",
+              "/permission/admin/manage/identity/rolemgt/view",
+              "/permission/admin/manage/identity/rolemgt/update",
+              "/permission/admin/manage/identity/rolemgt/delete",
+              "/permission/admin/manage/identity/organizationmgt/create",
+              "/permission/admin/manage/identity/organizationmgt/view",
+              "/permission/admin/manage/identity/organizationmgt/update",
+              "/permission/admin/manage/identity/organizationmgt/delete",
+              "/permission/admin/manage/identity/usermgt/create",
+              "/permission/admin/manage/identity/usermgt/view",
+              "/permission/admin/manage/identity/usermgt/list",
+              "/permission/admin/manage/identity/usermgt/update",
+              "/permission/admin/manage/identity/usermgt/delete"
             ]
         }
       summary: |
@@ -344,6 +369,10 @@ paths:
           description: ID of the organization of which, the fields are to be patched.
           required: true
           type: string
+        - in: query
+          name: includePermissions
+          type: boolean
+          description: Whether to include the user's permissions for the organization in the response or not
       responses:
         200:
           description: Ok
