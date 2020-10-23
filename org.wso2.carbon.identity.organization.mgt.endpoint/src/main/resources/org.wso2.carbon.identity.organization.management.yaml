@@ -643,48 +643,10 @@ paths:
           description: This represents user role mappings.
           required: true
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/UserRoleMapping'
+            $ref: '#/definitions/UserRoleMapping'
       responses:
         '201':
-          description: Ok
-        '400':
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/Error'
-        '401':
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/Error'
-        '500':
-          description: Server Error
-          schema:
-            $ref: '#/definitions/Error'
-      tags:
-        - Organization User Roles
-    patch:
-      summary: |
-        Modify user role mappings for an organization.
-      description: |
-        This API is used to modify user role mappings for an organization.
-      parameters:
-        - name: organization-id
-          in: path
-          description: 'ID of the organization of which, the user role mappings are modified.'
-          required: true
-          type: string
-        - name: Operations
-          in: body
-          description: This represents the patch operation.
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Operation'
-      responses:
-        '204':
-          description: Ok
+          description: Created
         '400':
           description: Bad Request
           schema:
@@ -716,6 +678,18 @@ paths:
           description: 'ID of the role of which, the user will be returned.'
           required: true
           type: string
+        - in: query
+          name: offset
+          type: integer
+          description: Number of items to be skipped before starting to collect the result set. (Should be 0 or positive)
+        - in: query
+          name: limit
+          type: integer
+          description: Max number of items to be returned. (Should be greater than 0)
+        - in: query
+          name: attributes
+          type: string
+          description: Comma separated list of SCIM user attributes to be returned in the response.
       responses:
         '200':
           description: Ok
@@ -765,7 +739,7 @@ paths:
           type: string
       responses:
         '204':
-          description: Ok
+          description: No Content
         '400':
           description: Bad Request
           schema:
@@ -1096,23 +1070,58 @@ definitions:
     properties:
       roleId:
         type: string
+        example: '7d4e3ac9-da93-4b7a-a2d0-84bb6c01dc25'
       users:
         type: array
         items:
-          type: string
+          type: object
+          required:
+            - userId
+          properties:
+            userId:
+              type: string
+              example: 'c4c3a320-e381-463a-846f-1c2bd083d38c'
+            includeSubOrgs:
+              type: boolean
+              example: 'true'
   #-----------------------------------------------------
   # User with userId and username
   #-----------------------------------------------------
   User:
     type: object
     required:
-      - userId
+      - id
       - username
     properties:
-      userId:
-        type: string
       username:
         type: string
+        example: "PRIMARY/kim"
+      id:
+        type: string
+        example: "008bba85-451d-414b-87de-c03b5a1f4217"
+      name:
+        type: object
+        properties:
+          givenName:
+            type: string
+            example: "Kim"
+          familyName:
+            type: string
+            example: "Berry"
+      emails:
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              type: string
+              example: "home"
+            value:
+              type: string
+              example: "kim@gmail.com"
+            primary:
+              type: boolean
+              example: true
   #-----------------------------------------------------
   # Role with roleId and RoleName
   #-----------------------------------------------------
@@ -1124,8 +1133,10 @@ definitions:
     properties:
       roleId:
         type: string
+        example: '7d4e3ac9-da93-4b7a-a2d0-84bb6c01dc25'
       roleName:
         type: string
+        example: 'Internal/User_Administrator'
   #-----------------------------------------------------
   # Organization Patch Operation Object
   #-----------------------------------------------------
