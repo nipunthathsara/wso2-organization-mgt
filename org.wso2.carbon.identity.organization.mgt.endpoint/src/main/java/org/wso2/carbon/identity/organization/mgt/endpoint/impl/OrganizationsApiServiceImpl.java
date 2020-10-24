@@ -65,7 +65,6 @@ import static org.wso2.carbon.identity.organization.mgt.endpoint.util.Organizati
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleBadRequestResponse;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleServerErrorResponse;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleUnexpectedServerError;
-import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil.buildResponse;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_INVALID_USER_GET_REQUEST_FOR_ORG_ROLE;
 
 /**
@@ -220,7 +219,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId, Integer offset,
-                                                                   Integer limit, String attributes, Boolean includeSubOrgs) {
+                                                                   Integer limit, String attributes) {
 
         try {
             if ((limit != null && limit < 1) || (offset != null && offset < 0)) {
@@ -232,16 +231,12 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             // If pagination parameters not defined in the request, set them to -1
             limit = (limit == null) ? Integer.valueOf(-1) : limit;
             offset = (offset == null) ? Integer.valueOf(-1) : offset;
-            includeSubOrgs = includeSubOrgs != null;
             List<String> requestedAttributes = attributes == null ? new ArrayList<>() :
                     Arrays.stream(attributes.split(",")).map(String::trim).collect(Collectors.toList());
-            List<SCIMResponse> users = getOrganizationUserRoleManager()
-                    .getUsersByOrganizationAndRole(organizationId, roleId, offset, limit, requestedAttributes, includeSubOrgs);
-//            List<Response> usersResponse = new ArrayList<>();
-//            for(SCIMResponse user: users) {
-//                usersResponse.add(buildResponse(user));
-//            }
-            return Response.ok().entity(users).build();
+            List<User> users = getOrganizationUserRoleManager()
+                    .getUsersByOrganizationAndRole(organizationId, roleId, offset, limit, requestedAttributes);
+            return Response.ok().entity(users.stream().map(
+                    User::getUserAttributes).collect(Collectors.toList())).build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
         } catch (OrganizationUserRoleMgtException e) {

@@ -32,6 +32,7 @@ public class OrganizationUserRoleMgtConstants {
         ERROR_CODE_ADD_NONE_INTERNAL_ERROR("ORGPERMMGT_00001",
                 "Only internal roles are allowed. Role : %s is not an internal role."),
         ERROR_CODE_INVALID_ROLE_ID_ERROR("ORGPERMMGT_00002", "Invalid role id: %s"),
+        ERROR_CODE_INVALID_USER_GET_REQUEST_FOR_ORG_ROLE("ORGPERMMGT_00003", "Invalid users search/get request for an organization's role: %s"),
 
         // Server errors (ORGPERMMGT_00020-ORGPERMMGT_00040)
         ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR("ORGPERMMGT_00020",

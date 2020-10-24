@@ -144,16 +144,4 @@ public class OrganizationUserRoleMgtEndpointUtil {
 
         log.error(throwable.getMessage(), throwable);
     }
-
-    public static List<UserDTO> getUserDTOsFromUsers(List<User> users) {
-
-        List<UserDTO> userDTOs = new ArrayList<>();
-        for (User user : users) {
-            UserDTO userDTO = new UserDTO();
-            userDTO.setUserId(user.getUserId());
-            userDTO.setUsername(user.getUserName());
-            userDTOs.add(userDTO);
-        }
-        return userDTOs;
-    }
 }

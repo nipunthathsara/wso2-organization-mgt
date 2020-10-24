@@ -42,7 +42,7 @@ public abstract class OrganizationsApiService {
 
     public abstract Response organizationsOrganizationIdRolesPost(String organizationId, UserRoleMappingDTO userRoles);
 
-    public abstract Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId, Integer offset, Integer limit, String attributes, Boolean includeSubOrgs);
+    public abstract Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId, Integer offset, Integer limit, String attributes);
 
     public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId,
             String roleId, String userId);
@@ -51,8 +51,7 @@ public abstract class OrganizationsApiService {
 
     public abstract Response organizationsOrganizationIdUserstoreConfigsGet(String organizationId);
 
-    public abstract Response organizationsOrganizationIdUserstoreConfigsPatch(String organizationId,
-            List<OperationDTO> operations);
+    public abstract Response organizationsOrganizationIdUserstoreConfigsPatch(String organizationId, List<OperationDTO> operations);
 
     public abstract Response organizationsPost(OrganizationAddDTO organization);
 }

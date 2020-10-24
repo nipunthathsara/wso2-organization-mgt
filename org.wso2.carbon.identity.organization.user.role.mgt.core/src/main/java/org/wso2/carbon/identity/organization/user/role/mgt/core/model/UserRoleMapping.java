@@ -7,13 +7,13 @@ import java.util.List;
  */
 public class UserRoleMapping {
 
-    private List<String> userIds;
+    private List<UserRoleMappingUser> users;
     private String roleId;
     private Integer hybridRoleId;
 
-    public UserRoleMapping(String roleId, List<String> userIds) {
+    public UserRoleMapping(String roleId, List<UserRoleMappingUser> users) {
         this.roleId = roleId;
-        this.userIds = userIds;
+        this.users = users;
     }
 
     public void setRoleId(String roleId) {
@@ -21,9 +21,9 @@ public class UserRoleMapping {
         this.roleId = roleId;
     }
 
-    public void setUserIds(List<String> userIds) {
+    public void setUsers(List<UserRoleMappingUser> users) {
 
-        this.userIds = userIds;
+        this.users = users;
     }
 
     public void setHybridRoleId(Integer hybridRoleId) {
@@ -36,9 +36,9 @@ public class UserRoleMapping {
         return roleId;
     }
 
-    public List<String> getUserIds() {
+    public List<UserRoleMappingUser> getUsers() {
 
-        return userIds;
+        return users;
     }
 
     public Integer getHybridRoleId() {

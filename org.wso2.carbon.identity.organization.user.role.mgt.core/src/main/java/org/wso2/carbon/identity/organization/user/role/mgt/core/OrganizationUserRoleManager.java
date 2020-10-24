@@ -18,26 +18,31 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core;
 
+import org.json.JSONObject;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
+import org.wso2.charon3.core.protocol.SCIMResponse;
 
 import java.util.List;
+
+import javax.ws.rs.core.Response;
 
 /**
  * Organization and user role manager service interface.
  */
 public interface OrganizationUserRoleManager {
 
-    void addOrganizationAndUserRoleMappings(String organizationId, List<UserRoleMapping> userRoleMappings)
+    void addOrganizationAndUserRoleMappings(String organizationId, UserRoleMapping userRoleMappings)
             throws OrganizationUserRoleMgtException;
 
     void patchOrganizationAndUserRoleMapping(String organizationId, List<Operation> operations)
             throws OrganizationUserRoleMgtException;
 
-    List<User> getUsersByOrganizationAndRole(String organizationID, String roleId)
+    List<User> getUsersByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
+                                             List<String> requestedAttributes)
             throws OrganizationUserRoleMgtException;
 
     void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, String roleId)

@@ -31,8 +31,8 @@ public class SQLConstants {
     public static final String VIEW_ROLE_NAME_COLUMN = "UM_ROLE_NAME";
 
     public static final String INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING =
-            "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID) " +
-                    "VALUES (?, ?, ?, ?, ?, ?) ";
+            "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID, INHERITANCE) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?) ";
     public static final String SELECT_DUMMY_RECORD = "SELECT 1 FROM DUAL";
     public static final String INSERT_ORGANIZATION_USER_ROLE_MAPPING =
             "INSERT INTO\n" +
@@ -81,4 +81,9 @@ public class SQLConstants {
                     "    ORG_AUTHZ_VIEW\n" +
                     "WHERE\n" +
                     "    ORG_ID = ? AND UM_USER_ID = ? AND UM_TENANT_ID = ?";
+    public static final String PAGINATION =
+            "%n OFFSET" +
+                    "%n   %s ROWS" +
+                    "%n FETCH NEXT" +
+                    "%n   %s ROWS ONLY";
 }

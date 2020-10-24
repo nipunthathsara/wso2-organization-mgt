@@ -256,7 +256,7 @@ public class OrganizationsApi {
             notes = "This API is used to create user role mappings for an organization.\n",
             response = void.class)
     @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 201, message = "Ok"),
+        @io.swagger.annotations.ApiResponse(code = 201, message = "Created"),
         
         @io.swagger.annotations.ApiResponse(code = 400, message = "Bad Request"),
         
@@ -301,10 +301,9 @@ public class OrganizationsApi {
     @ApiParam(value = "ID of the role of which, the user will be returned.",required=true ) @PathParam("role-id")  String roleId,
     @ApiParam(value = "Number of items to be skipped before starting to collect the result set. (Should be 0 or positive)") @QueryParam("offset")  Integer offset,
     @ApiParam(value = "Max number of items to be returned. (Should be greater than 0)") @QueryParam("limit")  Integer limit,
-    @ApiParam(value = "Comma separated list of SCIM user attributes to be returned in the response.") @QueryParam("attributes")  String attributes,
-    @ApiParam(value = "Whether the role assigned users in sub organizations will be returned") @QueryParam("includeSubOrgs")  Boolean includeSubOrgs) {
+    @ApiParam(value = "Comma separated list of SCIM user attributes to be returned in the response.") @QueryParam("attributes")  String attributes) {
 
-        return delegate.organizationsOrganizationIdRolesRoleIdUsersGet(organizationId,roleId,offset,limit,attributes,includeSubOrgs);
+        return delegate.organizationsOrganizationIdRolesRoleIdUsersGet(organizationId,roleId,offset,limit,attributes);
     }
 
     @DELETE
@@ -316,7 +315,7 @@ public class OrganizationsApi {
                                          response = void.class)
     @io.swagger.annotations.ApiResponses(value = {
             @io.swagger.annotations.ApiResponse(code = 204,
-                                                message = "Ok"),
+                                                message = "No Content"),
 
             @io.swagger.annotations.ApiResponse(code = 400,
                                                 message = "Bad Request"),

@@ -18,6 +18,8 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core.dao;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
@@ -27,11 +29,19 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Organizati
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils;
+import org.wso2.carbon.identity.scim2.common.impl.IdentitySCIMManager;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
+import org.wso2.charon3.core.exceptions.CharonException;
+import org.wso2.charon3.core.extensions.UserManager;
+import org.wso2.charon3.core.protocol.SCIMResponse;
+import org.wso2.charon3.core.protocol.endpoints.UserResourceManager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_HYBRID_ROLE_ID_RETRIEVING_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR;
@@ -47,6 +57,7 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_USERS_BY_ORG_AND_ROLE;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.INSERT_ALL;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.PAGINATION;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.SELECT_DUMMY_RECORD;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ROLE_ID_COLUMN;
@@ -64,7 +75,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings,
-                                                   Integer tenantID)
+                                                   int tenantID)
             throws OrganizationUserRoleMgtServerException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -81,22 +92,35 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                             preparedStatement.setInt(++parameterIndex, tenantID);
                             preparedStatement
                                     .setString(++parameterIndex, organizationUserRoleMapping.getOrganizationId());
+                            preparedStatement.setInt(++parameterIndex, organizationUserRoleMapping.isCascadedRole() ? 1:0);
                         }
                     }, organizationUserRoleMappings, false);
+
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR, orgId, e);
         }
     }
 
     @Override
-    public List<User> getUserIdsByOrganizationAndRole(String organizationId, String roleId, Integer tenantID)
+    public List<User> getUserIdsByOrganizationAndRole(String organizationId, String roleId, int offset, int limit,
+                                                          List<String> requestedAttributes, int tenantID)
             throws OrganizationUserRoleMgtServerException {
 
+        boolean paginationReq = offset > -1 && limit > 0;
         JdbcTemplate jdbcTemplate = getNewTemplate();
         List<String> userIds = null;
         List<User> users = new ArrayList<>();
+
+        // Build query.
+        StringBuilder sb = new StringBuilder();
+        // Base query.
+        sb.append(GET_USERS_BY_ORG_AND_ROLE);
+        if (paginationReq) {
+            sb.append(String.format(PAGINATION, offset, limit));
+        }
+
         try {
-            userIds = jdbcTemplate.executeQuery(GET_USERS_BY_ORG_AND_ROLE,
+            userIds = jdbcTemplate.executeQuery(sb.toString(),
                     (resultSet, rowNumber) ->
                             resultSet.getString(VIEW_USER_ID_COLUMN),
                     preparedStatement -> {
@@ -109,9 +133,21 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                 AbstractUserStoreManager userStoreManager =
                         (AbstractUserStoreManager) Utils.getUserStoreManager(tenantID);
                 org.wso2.carbon.user.core.common.User user = userStoreManager.getUser(userId, null);
-                users.add(new User(user.getUserID(), user.getUsername()));
+
+                // Obtain the user store manager.
+                UserManager userManager = IdentitySCIMManager.getInstance().getUserManager();
+                // Create charon-SCIM user endpoint and hand-over the request.
+                UserResourceManager userResourceManager = new UserResourceManager();
+                SCIMResponse scimResponse =
+                        userResourceManager.get(userId, userManager, requestedAttributes.stream().collect(
+                                Collectors.joining(",")), null);
+                Map<String, Object> attributes;
+                ObjectMapper mapper = new ObjectMapper();
+                attributes = mapper.readValue(scimResponse.getResponseMessage(),
+                        new TypeReference<Map<String, Object>>(){});
+                users.add(new User(attributes));
             }
-        } catch (UserStoreException e) {
+        } catch (UserStoreException | CharonException | IOException e) {
             //TODO
             throw new OrganizationUserRoleMgtServerException(e);
         } catch (DataAccessException e) {
@@ -127,7 +163,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
 
     @Override
     public void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, String roleId,
-                                                     Integer tenantId) throws OrganizationUserRoleMgtException {
+                                                     int tenantId) throws OrganizationUserRoleMgtException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
@@ -149,7 +185,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
     }
 
     @Override
-    public List<Role> getRolesByOrganizationAndUser(String organizationId, String userId, Integer tenantID)
+    public List<Role> getRolesByOrganizationAndUser(String organizationId, String userId, int tenantID)
             throws OrganizationUserRoleMgtServerException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -177,7 +213,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
 
     @Override
     public boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, String roleId,
-                                                          Integer tenantId)
+                                                          int tenantId)
             throws OrganizationUserRoleMgtException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -204,7 +240,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
     }
 
     @Override
-    public Integer getRoleIdBySCIMGroupName(String roleName, Integer tenantId)
+    public Integer getRoleIdBySCIMGroupName(String roleName, int tenantId)
             throws OrganizationUserRoleMgtServerException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();

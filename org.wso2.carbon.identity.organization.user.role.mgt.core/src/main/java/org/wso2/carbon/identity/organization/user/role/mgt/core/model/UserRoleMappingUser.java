@@ -18,26 +18,37 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
 
-import java.util.Map;
+import org.apache.axis2.databinding.types.xsd._boolean;
 
-/**
- * User representation
- */
-public class User {
+public class UserRoleMappingUser {
 
-    private Map<String, Object> userAttributes;
+    private String userId;
+    private boolean cascadedRole;
 
-    public User(Map<String, Object> attributes) {
-        this.userAttributes = attributes;
+    public UserRoleMappingUser(String userId, boolean cascadedRole) {
+
+        this.userId = userId;
+        this.cascadedRole = cascadedRole;
     }
 
-    public Map<String, Object> getUserAttributes() {
+    public void setUserId(String userId) {
 
-        return userAttributes;
+        this.userId = userId;
     }
 
-    public void setUserAttributes(Map<String, Object> userAttributes) {
+    public String getUserId() {
 
-        this.userAttributes = userAttributes;
+        return userId;
+    }
+
+    public void setCascadedRole(boolean cascadedRole) {
+
+        this.cascadedRole = cascadedRole;
+    }
+
+    public boolean isCascadedRole() {
+
+        return cascadedRole;
     }
 }
+
