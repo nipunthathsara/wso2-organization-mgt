@@ -28,19 +28,46 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
+import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
+import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
+import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtAuditEventListener;
 import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtEventListener;
+import org.wso2.carbon.identity.organization.mgt.core.model.MetaUser;
+import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
+import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
+import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DEFAULT_ATTRIBUTE_VALIDATOR_CLASS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ATTRIBUTE_VALIDATOR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_MGT_ROLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_ROLE_MGT_ROLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_USER_MGT_ROLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PRIMARY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.SCIM2_USER_RESOURCE_BASE_PATH;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getLdapRootDn;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getUserIDFromUserName;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.populateManagementRoles;
 
 /**
@@ -66,17 +93,15 @@ public class OrganizationMgtServiceComponent {
             OrganizationMgtDataHolder.getInstance().setOrganizationMgtRoles(populateManagementRoles(-1234));
             BundleContext bundleContext = componentContext.getBundleContext();
             bundleContext.registerService(OrganizationManager.class.getName(), new OrganizationManagerImpl(), null);
-            bundleContext.registerService(
-                    OrganizationMgtEventListener.class.getName(),
-                    new OrganizationMgtAuditEventListener(),
-                    null
-            );
+            bundleContext.registerService(OrganizationMgtEventListener.class.getName(),
+                    new OrganizationMgtAuditEventListener(), null);
             String attributeValidatorClass = !StringUtils
                     .isBlank(IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR)) ?
                     IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR).trim() :
                     DEFAULT_ATTRIBUTE_VALIDATOR_CLASS;
             //TODO fix class loading error
             OrganizationMgtDataHolder.getInstance().setAttributeValidator(new AttributeValidatorImpl());
+            createRootIfNotExist();
             if (log.isDebugEnabled()) {
                 log.debug("Organization Management component activated successfully.");
             }
@@ -122,6 +147,77 @@ public class OrganizationMgtServiceComponent {
 
         if (log.isDebugEnabled()) {
             log.debug("ConfigurationContextService Instance was unset.");
+        }
+    }
+
+    // TODO add ROOT organization support for multiple tenants
+    // TODO add support for multiple user store domains
+    private void createRootIfNotExist() throws OrganizationManagementException {
+
+        OrganizationManager organizationManager = (OrganizationManager) PrivilegedCarbonContext
+                .getThreadLocalCarbonContext().getOSGiService(OrganizationManager.class);
+        boolean rootExist = organizationManager.isOrganizationExistByName(ROOT);
+        if (!rootExist) {
+            Organization root = new Organization();
+            String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+            int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
+            String userName = OrganizationMgtDataHolder.getInstance().getRealmService()
+                    .getBootstrapRealmConfiguration().getAdminUserName();
+            String userId = getUserIDFromUserName(userName, tenantId);
+            // Construct root organization
+            root.setId(generateUniqueID());
+            root.setName(ROOT);
+            root.setDisplayName(ROOT);
+            root.setDescription(ROOT);
+            root.setStatus(Organization.OrgStatus.ACTIVE);
+            root.setHasAttributes(false);
+            root.setTenantId(tenantId);
+            Metadata metadata = root.getMetadata();
+            MetaUser createdBy = new MetaUser(userId,
+                    String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, userId), userName);
+            MetaUser lastModifiedBy = new MetaUser(userId,
+                    String.format(SCIM2_USER_RESOURCE_BASE_PATH, tenantDomain, userId), userName);
+            metadata.setCreatedBy(createdBy);
+            metadata.setLastModifiedBy(lastModifiedBy);
+            root.setMetadata(metadata);
+            Map<String, UserStoreConfig> userStoreConfigs = root.getUserStoreConfigs();
+            String userSearchBase = getLdapRootDn(PRIMARY, tenantId);
+            userStoreConfigs.put(USER_STORE_DOMAIN, new UserStoreConfig(USER_STORE_DOMAIN, PRIMARY));
+            userStoreConfigs.put(RDN, new UserStoreConfig(RDN, userSearchBase));
+            userStoreConfigs.put(DN, new UserStoreConfig(DN, userSearchBase));
+            // Create root
+            OrganizationMgtDao organizationMgtDao = OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao();
+            organizationMgtDao.addOrganization(tenantId, root);
+            // Grant super user with full permission over ROOT
+            List<String> tempGroupIds = new ArrayList<>();
+            Map<String, OrganizationMgtRole> organizationMgtRoles = OrganizationMgtDataHolder.getInstance()
+                    .getOrganizationMgtRoles();
+            OrganizationMgtRole role = organizationMgtRoles.get(ORGANIZATION_MGT_ROLE.toString());
+            tempGroupIds.add(role.getGroupId());
+            // Add an entry for 'organization management' purposes
+            OrganizationAuthorizationDao authorizationDao = OrganizationMgtDataHolder.getInstance()
+                    .getOrganizationAuthDao();
+            authorizationDao
+                    .addOrganizationAndUserRoleMapping(userId, role.getGroupId(), role.getHybridRoleId(), tenantId,
+                            root.getId());
+            role = organizationMgtRoles.get(ORGANIZATION_USER_MGT_ROLE.toString());
+            // If the 'OrganizationMgtRole' and the 'OrganizationUserMgtRole' are the same, avoid adding duplicate
+            // entries
+            if (!tempGroupIds.contains(role.getGroupId())) {
+                tempGroupIds.add(role.getGroupId());
+                // Add an entry for 'organization user management' purposes
+                authorizationDao
+                        .addOrganizationAndUserRoleMapping(userId, role.getGroupId(), role.getHybridRoleId(), tenantId,
+                                root.getId());
+            }
+            role = organizationMgtRoles.get(ORGANIZATION_ROLE_MGT_ROLE.toString());
+            // If the 'OrganizationRoleMgtRole' is the same as any of the above, avoid adding duplicate entries
+            if (!tempGroupIds.contains(role.getGroupId())) {
+                // Add an entry for 'organization role management' purposes
+                authorizationDao
+                        .addOrganizationAndUserRoleMapping(userId, role.getGroupId(), role.getHybridRoleId(), tenantId,
+                                root.getId());
+            }
         }
     }
 }

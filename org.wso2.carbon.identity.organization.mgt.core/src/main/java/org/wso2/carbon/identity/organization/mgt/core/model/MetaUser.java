@@ -27,6 +27,14 @@ public class MetaUser {
     private String ref;
     private String username;
 
+    public MetaUser() {}
+
+    public MetaUser(String id, String ref, String username) {
+        this.id = id;
+        this.ref = ref;
+        this.username = username;
+    }
+
     public String getId() {
         return id;
     }

@@ -38,13 +38,13 @@ public class ParentDTO {
     @NotNull
     private String name = null;
 
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String displayName = null;
 
     /**
      *
      **/
-    @ApiModelProperty(required = true,
-                      value = "")
+    @ApiModelProperty(required = true, value = "")
     @JsonProperty("id")
     public String getId() {
         return id;
@@ -70,8 +70,7 @@ public class ParentDTO {
     /**
      *
      **/
-    @ApiModelProperty(required = true,
-                      value = "")
+    @ApiModelProperty(required = true, value = "")
     @JsonProperty("name")
     public String getName() {
         return name;

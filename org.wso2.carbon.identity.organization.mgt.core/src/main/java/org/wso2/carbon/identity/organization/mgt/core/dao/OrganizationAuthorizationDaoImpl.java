@@ -177,7 +177,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
                     "error collecting permissions for user : " + userId, e);
         }
-        // Initiate an empty map to hold list of permissions against organization id.
+        // Initiate an empty map to hold list of permissions against organization id
         Map<String, List<String>> userOrgPermissions = organizationIds.stream()
                 .collect(Collectors.toMap(String::toString, permission -> new ArrayList<>()));
         // Populate the map with the results fetched from the db

@@ -130,8 +130,10 @@ public class OrganizationMgtEndpointUtil {
         metaDTO.setLastModified(organization.getMetadata().getLastModified());
         metaDTO.getCreatedBy().setId(organization.getMetadata().getCreatedBy().getId());
         metaDTO.getCreatedBy().setRef(organization.getMetadata().getCreatedBy().getRef());
+        metaDTO.getCreatedBy().setUsername(organization.getMetadata().getCreatedBy().getUsername());
         metaDTO.getLastModifiedBy().setId(organization.getMetadata().getLastModifiedBy().getId());
         metaDTO.getLastModifiedBy().setRef(organization.getMetadata().getLastModifiedBy().getRef());
+        metaDTO.getLastModifiedBy().setUsername(organization.getMetadata().getLastModifiedBy().getUsername());
         basicOrganizationDTO.setMeta(metaDTO);
         return basicOrganizationDTO;
     }

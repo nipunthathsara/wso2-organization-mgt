@@ -187,7 +187,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
-    public List<Organization>   getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
+    public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
             String sortOrder, List<String> requestedAttributes, String userId, boolean includePermissions)
             throws OrganizationManagementException {
 
@@ -313,6 +313,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @Override
     public Organization getOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
 
+        // TODO include permissions
         JdbcTemplate jdbcTemplate = getNewTemplate();
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
