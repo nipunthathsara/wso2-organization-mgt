@@ -18,7 +18,12 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.organization.mgt.core.dao.CacheBackedOrganizationMgtDAO;
+import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
+import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
+import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAO;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAOImpl;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
@@ -33,7 +38,9 @@ import org.wso2.carbon.identity.scim2.common.DAO.GroupDAO;
 import org.wso2.carbon.identity.scim2.common.exceptions.IdentitySCIMException;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ADD_NONE_INTERNAL_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ROLE_ERROR;
@@ -47,14 +54,18 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
 
     @Override
     public void addOrganizationAndUserRoleMappings(String organizationId, UserRoleMapping userRoleMapping)
-            throws OrganizationUserRoleMgtException {
+            throws OrganizationUserRoleMgtException, OrganizationManagementException {
 
 //        validateAddRoleMappingRequest(organizationUserRoleMappings);
         GroupDAO groupDAO = new GroupDAO();
         OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
+        OrganizationMgtDao organizationMgtDao = new OrganizationMgtDaoImpl();
+        CacheBackedOrganizationMgtDAO cacheBackedOrganizationMgtDAO = new CacheBackedOrganizationMgtDAO(organizationMgtDao);
+        String roleId = userRoleMapping.getRoleId();
+        int hybridRoleId;
 
         try {
-            String groupName = groupDAO.getGroupNameById(getTenantId(), userRoleMapping.getRoleId());
+            String groupName = groupDAO.getGroupNameById(getTenantId(), roleId);
             if (groupName == null) {
                 throw handleClientException(ERROR_CODE_INVALID_ROLE_ERROR, userRoleMapping.getRoleId());
             }
@@ -67,23 +78,48 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                 throw handleClientException(ERROR_CODE_ADD_NONE_INTERNAL_ERROR, groupName);
             }
             String roleName = groupNameParts[1];
-            Integer hybridRoleId = organizationUserRoleMgtDAO.getRoleIdBySCIMGroupName(roleName, getTenantId());
+            hybridRoleId = organizationUserRoleMgtDAO.getRoleIdBySCIMGroupName(roleName, getTenantId());
             userRoleMapping.setHybridRoleId(hybridRoleId);
         } catch (IdentitySCIMException e) {
             throw new OrganizationUserRoleMgtServerException(e);
         }
+        List<UserRoleMappingUser> usersGetPermissionsForSubOrgs = new ArrayList<>();
+        List<UserRoleMappingUser> usersGetPermissionOnlyToOneOrg = new ArrayList<>();
+        for (UserRoleMappingUser user : userRoleMapping.getUsers()) {
+            if (user.isCascadedRole()) {
+                usersGetPermissionsForSubOrgs.add(user);
+            } else {
+                usersGetPermissionOnlyToOneOrg.add(user);
+            }
+        }
 
         //@TODO check for mapping existance
         List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
-        for (UserRoleMappingUser user : userRoleMapping.getUsers()) {
-            OrganizationUserRoleMapping organizationUserRoleMapping = new OrganizationUserRoleMapping();
-            organizationUserRoleMapping.setOrganizationId(organizationId);
-            organizationUserRoleMapping.setRoleId(userRoleMapping.getRoleId());
-            organizationUserRoleMapping.setHybridRoleId(userRoleMapping.getHybridRoleId());
-            organizationUserRoleMapping.setUserId(user.getUserId());
-            organizationUserRoleMapping.setCascadedRole(user.isCascadedRole());
-            organizationUserRoleMappings.add(organizationUserRoleMapping);
+
+        // Get child organizations and add role mappings.
+        if (CollectionUtils.isNotEmpty(usersGetPermissionsForSubOrgs)) {
+            Queue<String> organizationList = new LinkedList<>();
+            // Add starting organization populate role mapping for that.
+            organizationList.add(organizationId);
+            organizationUserRoleMappings
+                    .addAll(populateOrganizationUserRoleMappings(organizationId, roleId, hybridRoleId,
+                            usersGetPermissionsForSubOrgs));
+            while (!organizationList.isEmpty()) {
+                String currentOrgId = organizationList.remove();
+                List<String> children = cacheBackedOrganizationMgtDAO.getChildOrganizationIds(currentOrgId, null);
+                for (String childOrg : children) {
+                    organizationList.add(childOrg);
+                    organizationUserRoleMappings
+                            .addAll(populateOrganizationUserRoleMappings(childOrg, roleId, hybridRoleId,
+                                    usersGetPermissionsForSubOrgs));
+                }
+            }
         }
+
+        // Populate role mappings for non-cascading assignments.
+        organizationUserRoleMappings.addAll(populateOrganizationUserRoleMappings(organizationId, roleId, hybridRoleId,
+                usersGetPermissionOnlyToOneOrg));
+
         organizationUserRoleMgtDAO.addOrganizationAndUserRoleMappings(organizationUserRoleMappings, getTenantId());
     }
 
@@ -109,6 +145,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
             throws OrganizationUserRoleMgtException {
 
         OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
+        // Check the existence of particular role mapping and it's inheritance.
         organizationUserRoleMgtDAO.deleteOrganizationAndUserRoleMapping(organizationId, userId, roleId, getTenantId());
     }
 
@@ -129,19 +166,25 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                 .isOrganizationAndUserRoleMappingExists(organizationId, userId, roleId, getTenantId());
     }
 
-//    private void validateAddRoleMappingRequest(UserRoleMapping organizationUserRoleMapping) {
-//
-//        // Check required fields.
-//        if (StringUtils.isBlank(organizationUserRoleMapping.getUserId())) {
-//
-//        }
-//        if (StringUtils.isBlank(String.valueOf(organizationUserRoleMapping.getRoleId()))) {
-//
-//        }
-//    }
-
     private int getTenantId() {
 
         return PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
+    }
+
+    private List<OrganizationUserRoleMapping> populateOrganizationUserRoleMappings(String organizationId, String roleId,
+                                                                                   int hybridRoleId,
+                                                                                   List<UserRoleMappingUser> usersList) {
+
+        List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
+        for (UserRoleMappingUser user : usersList) {
+            OrganizationUserRoleMapping organizationUserRoleMapping = new OrganizationUserRoleMapping();
+            organizationUserRoleMapping.setOrganizationId(organizationId);
+            organizationUserRoleMapping.setRoleId(roleId);
+            organizationUserRoleMapping.setHybridRoleId(hybridRoleId);
+            organizationUserRoleMapping.setUserId(user.getUserId());
+            organizationUserRoleMapping.setCascadedRole(user.isCascadedRole());
+            organizationUserRoleMappings.add(organizationUserRoleMapping);
+        }
+        return organizationUserRoleMappings;
     }
 }

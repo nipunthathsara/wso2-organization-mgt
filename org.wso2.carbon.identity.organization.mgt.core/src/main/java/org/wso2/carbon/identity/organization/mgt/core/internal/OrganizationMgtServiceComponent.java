@@ -32,6 +32,7 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
+import org.wso2.carbon.identity.organization.mgt.core.dao.CacheBackedOrganizationMgtDAO;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
@@ -85,6 +86,8 @@ public class OrganizationMgtServiceComponent {
         try {
             OrganizationMgtDataHolder.getInstance().setOrganizationMgtDao(new OrganizationMgtDaoImpl());
             OrganizationMgtDataHolder.getInstance().setOrganizationAuthDao(new OrganizationAuthorizationDaoImpl());
+            OrganizationMgtDataHolder.getInstance().setCacheBackedOrganizationMgtDAO(
+                    new CacheBackedOrganizationMgtDAO(OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao()));
             OrganizationMgtDataHolder.getInstance().setOrganizationMgtRoles(populateManagementRoles(-1234));
             BundleContext bundleContext = componentContext.getBundleContext();
             bundleContext.registerService(OrganizationManager.class.getName(), new OrganizationManagerImpl(), null);

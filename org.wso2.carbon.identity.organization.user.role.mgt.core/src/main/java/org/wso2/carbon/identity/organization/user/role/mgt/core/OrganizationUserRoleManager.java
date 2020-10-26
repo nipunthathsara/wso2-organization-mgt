@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.organization.user.role.mgt.core;
 
 import org.json.JSONObject;
+import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
@@ -36,7 +37,7 @@ import javax.ws.rs.core.Response;
 public interface OrganizationUserRoleManager {
 
     void addOrganizationAndUserRoleMappings(String organizationId, UserRoleMapping userRoleMappings)
-            throws OrganizationUserRoleMgtException;
+            throws OrganizationUserRoleMgtException, OrganizationManagementException;
 
     void patchOrganizationAndUserRoleMapping(String organizationId, List<Operation> operations)
             throws OrganizationUserRoleMgtException;

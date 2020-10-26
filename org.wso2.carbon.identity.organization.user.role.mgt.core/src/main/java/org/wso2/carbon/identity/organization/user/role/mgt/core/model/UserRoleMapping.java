@@ -9,7 +9,7 @@ public class UserRoleMapping {
 
     private List<UserRoleMappingUser> users;
     private String roleId;
-    private Integer hybridRoleId;
+    private int hybridRoleId;
 
     public UserRoleMapping(String roleId, List<UserRoleMappingUser> users) {
         this.roleId = roleId;
@@ -26,7 +26,7 @@ public class UserRoleMapping {
         this.users = users;
     }
 
-    public void setHybridRoleId(Integer hybridRoleId) {
+    public void setHybridRoleId(int hybridRoleId) {
 
         this.hybridRoleId = hybridRoleId;
     }
@@ -41,7 +41,7 @@ public class UserRoleMapping {
         return users;
     }
 
-    public Integer getHybridRoleId() {
+    public int getHybridRoleId() {
 
         return hybridRoleId;
     }

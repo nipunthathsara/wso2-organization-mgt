@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.organization.mgt.core.dao.CacheBackedOrganizationMgtDAO;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
@@ -139,6 +140,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
     private OrganizationMgtDao organizationMgtDao = OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao();
     private OrganizationAuthorizationDao authorizationDao = OrganizationMgtDataHolder.getInstance()
             .getOrganizationAuthDao();
+    private CacheBackedOrganizationMgtDAO cacheBackedOrganizationMgtDAO =
+            OrganizationMgtDataHolder.getInstance().getCacheBackedOrganizationMgtDAO();
 
     @Override
     public Organization addOrganization(OrganizationAdd organizationAdd, boolean isImport)
@@ -173,7 +176,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 log.debug("Creating LDAP subdirectory for the organization id : " + organization.getId());
             }
         }
-        organizationMgtDao.addOrganization(getTenantId(), organization);
+        cacheBackedOrganizationMgtDAO.addOrganization(getTenantId(), organization);
         grantCreatorWithFullPermission(organization.getId());
         // Fire post-event
         event = isImport ? POST_IMPORT_ORGANIZATION : POST_CREATE_ORGANIZATION;
@@ -307,7 +310,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
                     "Organization " + organizationId + " is not in the disabled status");
         }
-        organizationMgtDao.deleteOrganization(getTenantId(), organizationId.trim());
+        cacheBackedOrganizationMgtDAO.deleteOrganization(getTenantId(), organizationId.trim());
         // Fire post-event
         fireEvent(POST_DELETE_ORGANIZATION, organizationId, null, Status.SUCCESS);
     }
