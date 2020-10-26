@@ -559,11 +559,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
     }
 
-    private String constructDn(String parentId, String parentDn, String rdn, String userStoreDomain) {
-
-        return "ou=".concat(rdn).concat(",").concat(parentDn);
-    }
-
     private Organization generateOrganizationFromRequest(OrganizationAdd organizationAdd) {
 
         Organization organization = new Organization();
