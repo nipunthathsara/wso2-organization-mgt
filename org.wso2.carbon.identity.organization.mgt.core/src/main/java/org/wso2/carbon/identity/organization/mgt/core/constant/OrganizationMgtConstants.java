@@ -180,6 +180,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR("ORGMGT_00037", "Error while authorizing : %s"),
         ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR("ORGMGT_00038",
                 "Organization Management Server configuration error : %s"),
+        ERROR_CODE_ORG_MGT_EVENTING_ERROR("ORGMGT_00039", "Error while handling organization management event : %s"),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

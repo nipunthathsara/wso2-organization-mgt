@@ -40,6 +40,9 @@ public class Operation {
         this.path = path;
     }
 
+    public Operation(){
+    }
+
     public String getOp() {
         return op;
     }

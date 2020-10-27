@@ -22,6 +22,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.event.event.Event;
+import org.wso2.carbon.identity.event.services.IdentityEventService;
+import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants;
+import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.Status;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
@@ -47,6 +52,7 @@ import org.wso2.carbon.user.core.UserStoreManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +73,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_IMPORT_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORG_MGT_EVENTING_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNAUTHORIZED_ACTION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_RESOURCE_BASE_PATH;
@@ -86,6 +93,30 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.SCIM2_USER_RESOURCE_BASE_PATH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.DATA;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.ORGANIZATION_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_GET_CHILD_ORGANIZATIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_GET_USER_STORE_CONFIGS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_CREATE_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_DELETE_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_GET_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_IMPORT_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_LIST_ORGANIZATIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_PATCH_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_PATCH_USER_STORE_CONFIGS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_GET_CHILD_ORGANIZATIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_GET_USER_STORE_CONFIGS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_CREATE_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_DELETE_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_GET_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_IMPORT_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_LIST_ORGANIZATIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_PATCH_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_PATCH_USER_STORE_CONFIGS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.STATUS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.TENANT_DOMAIN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DISPLAY_NAME_COLUMN;
@@ -118,6 +149,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throws OrganizationManagementException {
 
         logOrganizationAddObject(organizationAdd);
+        // Fire pre-event
+        String event = isImport ? PRE_IMPORT_ORGANIZATION : PRE_CREATE_ORGANIZATION;
+        fireEvent(event, null, organizationAdd, Status.FAILURE);
         Collection<OrganizationMgtEventListener> listeners = getListeners();
         // Invoke pre listeners
         for (OrganizationMgtEventListener listener : listeners) {
@@ -161,6 +195,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         organizationMgtDao.addOrganization(getTenantId(), organization);
         grantCreatorWithFullPermission(organization.getId());
+        // Fire post-event
+        event = isImport ? POST_IMPORT_ORGANIZATION : POST_CREATE_ORGANIZATION;
+        fireEvent(event, null, organization, Status.SUCCESS);
         // Invoke post listeners
         for (OrganizationMgtEventListener listener : listeners) {
             if (listener.isEnable()) {
@@ -179,6 +216,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
     @Override
     public Organization getOrganization(String organizationId) throws OrganizationManagementException {
 
+        // Fire pre-event
+        fireEvent(PRE_GET_ORGANIZATION, organizationId, null, Status.FAILURE);
         Collection<OrganizationMgtEventListener> listeners = getListeners();
         // Invoke pre listeners
         for (OrganizationMgtEventListener listener : listeners) {
@@ -209,6 +248,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
                         organization.getMetadata().getLastModifiedBy().getId()));
         organization.getMetadata().getLastModifiedBy().setUsername(
                 getUserNameFromUserID(organization.getMetadata().getLastModifiedBy().getId(), getTenantId()));
+        // Fire post-event
+        fireEvent(POST_GET_ORGANIZATION, organizationId, organization, Status.SUCCESS);
         // Invoke post listeners
         for (OrganizationMgtEventListener listener : listeners) {
             if (listener.isEnable() && !listener.doPostGetOrganization(organization, getTenantDomain(),
@@ -224,6 +265,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             String sortOrder, List<String> requestedAttributes, boolean includePermissions)
             throws OrganizationManagementException {
 
+        // Fire pre-event
+        fireEvent(PRE_LIST_ORGANIZATIONS, null, condition, Status.FAILURE);
         Collection<OrganizationMgtEventListener> listeners = getListeners();
         // Invoke pre listeners
         for (OrganizationMgtEventListener listener : listeners) {
@@ -250,6 +293,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     .format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
                             organization.getMetadata().getLastModifiedBy().getId()));
         }
+        // Fire post-events
+        fireEvent(POST_LIST_ORGANIZATIONS, null, organizations, Status.SUCCESS);
         // Invoke post listeners
         for (OrganizationMgtEventListener listener : listeners) {
             if (listener.isEnable() && !listener.doPostGetOrganizations(organizations, getTenantDomain(),
@@ -280,6 +325,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public void patchOrganization(String organizationId, List<Operation> operations)
             throws OrganizationManagementException {
 
+        // Fire pre-event
+        fireEvent(PRE_PATCH_ORGANIZATION, organizationId, operations, Status.FAILURE);
         Collection<OrganizationMgtEventListener> listeners = getListeners();
         // Invoke pre listeners
         for (OrganizationMgtEventListener listener : listeners) {
@@ -301,6 +348,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
         validatePatchingAttributes(operations);
         for (Operation operation : operations) {
             organizationMgtDao.patchOrganization(organizationId, operation);
+            // Fire post-event
+            fireEvent(POST_PATCH_ORGANIZATION, organizationId, operation, Status.SUCCESS);
             // Invoke post listeners
             for (OrganizationMgtEventListener listener : listeners) {
                 if (listener.isEnable() && !listener.doPostPatchOrganization(organizationId, operation,
@@ -319,6 +368,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
     @Override
     public void deleteOrganization(String organizationId) throws OrganizationManagementException {
 
+        // Fire pre-event
+        fireEvent(PRE_DELETE_ORGANIZATION, organizationId, null, Status.FAILURE);
         Collection<OrganizationMgtEventListener> listeners = getListeners();
         // Invoke pre listeners
         for (OrganizationMgtEventListener listener : listeners) {
@@ -348,6 +399,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 return;
             }
         }
+        // Fire post-event
+        fireEvent(POST_DELETE_ORGANIZATION, organizationId, null, Status.SUCCESS);
     }
 
     @Override
@@ -366,6 +419,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public Map<String, UserStoreConfig> getUserStoreConfigs(String organizationId)
             throws OrganizationManagementException {
 
+        // Fire pre-event
+        fireEvent(PRE_GET_USER_STORE_CONFIGS, organizationId, null, Status.FAILURE);
         Collection<OrganizationMgtEventListener> listeners = getListeners();
         // Invoke pre listeners
         for (OrganizationMgtEventListener listener : listeners) {
@@ -381,6 +436,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
         if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
             Map<String, UserStoreConfig> userStoreConfigs = organizationMgtDao
                     .getUserStoreConfigsByOrgId(getTenantId(), organizationId);
+            // Fire post-events
+            fireEvent(POST_GET_USER_STORE_CONFIGS, organizationId, userStoreConfigs, Status.SUCCESS);
             // Invoke listeners
             for (OrganizationMgtEventListener listener : listeners) {
                 if (listener.isEnable() && !listener.doPostGetUserStoreConfigs(organizationId, userStoreConfigs,
@@ -398,6 +455,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
     @Override
     public List<String> getChildOrganizationIds(String organizationId) throws OrganizationManagementException {
 
+        // Fire pre-event
+        fireEvent(PRE_GET_CHILD_ORGANIZATIONS, organizationId, null, Status.FAILURE);
         Collection<OrganizationMgtEventListener> listeners = getListeners();
         // Invoke pre listeners
         for (OrganizationMgtEventListener listener : listeners) {
@@ -413,6 +472,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
         if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
             List<String> childOrganizationIds = organizationMgtDao
                     .getChildOrganizationIds(organizationId, getAuthenticatedUserId());
+            // Fire post-event
+            fireEvent(POST_GET_CHILD_ORGANIZATIONS, organizationId, childOrganizationIds, Status.SUCCESS);
             // Invoke listeners
             for (OrganizationMgtEventListener listener : listeners) {
                 if (listener.isEnable() && !listener.doPostGetChildOrganizationIds(organizationId, childOrganizationIds,
@@ -431,6 +492,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public void patchUserStoreConfigs(String organizationId, List<Operation> operations)
             throws OrganizationManagementException {
 
+        // Fire pre-event
+        fireEvent(PRE_PATCH_USER_STORE_CONFIGS, organizationId, operations, Status.FAILURE);
         Collection<OrganizationMgtEventListener> listeners = getListeners();
         // Invoke pre listeners
         for (OrganizationMgtEventListener listener : listeners) {
@@ -451,6 +514,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
         validateUserStoreConfigPatchOperations(operations, organizationId);
         for (Operation operation : operations) {
             organizationMgtDao.patchUserStoreConfigs(organizationId, operation);
+            // Fire post-event
+            fireEvent(POST_PATCH_USER_STORE_CONFIGS, organizationId, operation, Status.SUCCESS);
             // Invoke post listeners
             for (OrganizationMgtEventListener listener : listeners) {
                 if (listener.isEnable() && !listener.doPostPatchUserStoreConfigs(organizationId, operation,
@@ -932,6 +997,29 @@ public class OrganizationManagerImpl implements OrganizationManager {
             authorizationDao
                     .addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationRoleManager.getGroupId(),
                             organizationRoleManager.getHybridRoleId(), getTenantId(), organizationId);
+        }
+    }
+
+    private void fireEvent(String eventName, String organizationId, Object data, Status status)
+            throws OrganizationManagementException {
+
+        IdentityEventService eventService = OrganizationMgtDataHolder.getInstance().getIdentityEventService();
+        Map<String, Object> eventProperties = new HashMap<>();
+        eventProperties.put(USER_NAME, getAuthenticatedUsername());
+        eventProperties.put(USER_ID, getAuthenticatedUserId());
+        eventProperties.put(TENANT_DOMAIN, getTenantDomain());
+        eventProperties.put(STATUS, status);
+        if (data != null) {
+            eventProperties.put(DATA, data);
+        }
+        if (organizationId != null) {
+            eventProperties.put(ORGANIZATION_ID, organizationId);
+        }
+        Event event = new Event(eventName, eventProperties);
+        try {
+            eventService.handleEvent(event);
+        } catch (IdentityEventException e) {
+            throw handleServerException(ERROR_CODE_ORG_MGT_EVENTING_ERROR, "Event : " + eventName, e);
         }
     }
 

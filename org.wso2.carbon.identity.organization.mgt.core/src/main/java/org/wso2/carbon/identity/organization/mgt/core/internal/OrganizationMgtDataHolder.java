@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.internal;
 
+import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
@@ -38,6 +39,7 @@ public class OrganizationMgtDataHolder {
     private RealmService realmService;
     private AttributeValidator attributeValidator;
     private Map<String, OrganizationMgtRole> organizationMgtRoles = new HashMap<>();
+    private IdentityEventService identityEventService;
 
     public Map<String, OrganizationMgtRole> getOrganizationMgtRoles() {
         return organizationMgtRoles;
@@ -90,5 +92,15 @@ public class OrganizationMgtDataHolder {
     public AttributeValidator getAttributeValidator() {
 
         return this.attributeValidator;
+    }
+
+    public IdentityEventService getIdentityEventService() {
+
+        return identityEventService;
+    }
+
+    public void setIdentityEventService(IdentityEventService identityEventService) {
+
+        this.identityEventService = identityEventService;
     }
 }

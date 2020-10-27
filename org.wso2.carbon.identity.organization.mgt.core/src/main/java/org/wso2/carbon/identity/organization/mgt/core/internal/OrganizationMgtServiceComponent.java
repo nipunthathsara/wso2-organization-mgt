@@ -30,6 +30,7 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
+import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
@@ -146,6 +147,23 @@ public class OrganizationMgtServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("ConfigurationContextService Instance was unset.");
         }
+    }
+
+    @Reference(
+            name = "identity.event.service",
+            service = IdentityEventService.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetIdentityEventService"
+    )
+    protected void setIdentityEventService(IdentityEventService identityEventService) {
+
+        OrganizationMgtDataHolder.getInstance().setIdentityEventService(identityEventService);
+    }
+
+    protected void unsetIdentityEventService(IdentityEventService identityEventService) {
+
+        OrganizationMgtDataHolder.getInstance().setIdentityEventService(null);
     }
 
     // TODO add ROOT organization support for multiple tenants

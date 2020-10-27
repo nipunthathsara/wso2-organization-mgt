@@ -111,6 +111,10 @@
             <artifactId>annotations</artifactId>
             <version>3.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.event</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
