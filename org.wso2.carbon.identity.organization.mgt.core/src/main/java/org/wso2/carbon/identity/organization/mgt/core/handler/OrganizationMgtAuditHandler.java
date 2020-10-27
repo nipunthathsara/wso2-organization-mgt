@@ -48,6 +48,10 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.STATUS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_NAME;
 
+/**
+ * This class provides auditing capability to the Organization Management
+ * using the Identity Eventing framework.
+ */
 public class OrganizationMgtAuditHandler extends AbstractEventHandler {
 
     private static final Log AUDIT = CarbonConstants.AUDIT_LOG;

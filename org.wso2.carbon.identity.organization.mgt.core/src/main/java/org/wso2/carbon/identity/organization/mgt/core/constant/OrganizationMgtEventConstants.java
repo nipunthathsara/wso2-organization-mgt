@@ -18,6 +18,9 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.constant;
 
+/**
+ * This class defines constants values for Organization Management eventing purposes.
+ */
 public class OrganizationMgtEventConstants {
 
     public static final String PRE_CREATE_ORGANIZATION = "PRE_CREATE_ORGANIZATION";
@@ -46,6 +49,9 @@ public class OrganizationMgtEventConstants {
     public static final String DATA = "data";
     public static final String STATUS = "status";
 
+    /**
+     * Status of the user's Organization Management action.
+     */
     public enum Status {
 
         SUCCESS("Success"),
