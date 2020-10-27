@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.internal;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.BundleContext;
@@ -29,7 +28,6 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
-import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
@@ -38,14 +36,11 @@ import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizat
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
-import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtAuditEventListener;
-import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtEventListener;
 import org.wso2.carbon.identity.organization.mgt.core.model.MetaUser;
 import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
-import org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
@@ -53,9 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DEFAULT_ATTRIBUTE_VALIDATOR_CLASS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ATTRIBUTE_VALIDATOR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_MGT_ROLE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_ROLE_MGT_ROLE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_USER_MGT_ROLE;
@@ -92,14 +85,6 @@ public class OrganizationMgtServiceComponent {
             OrganizationMgtDataHolder.getInstance().setOrganizationMgtRoles(populateManagementRoles(-1234));
             BundleContext bundleContext = componentContext.getBundleContext();
             bundleContext.registerService(OrganizationManager.class.getName(), new OrganizationManagerImpl(), null);
-            bundleContext.registerService(OrganizationMgtEventListener.class.getName(),
-                    new OrganizationMgtAuditEventListener(), null);
-            String attributeValidatorClass = !StringUtils
-                    .isBlank(IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR)) ?
-                    IdentityUtil.getProperty(ORGANIZATION_ATTRIBUTE_VALIDATOR).trim() :
-                    DEFAULT_ATTRIBUTE_VALIDATOR_CLASS;
-            //TODO fix class loading error
-            OrganizationMgtDataHolder.getInstance().setAttributeValidator(new AttributeValidatorImpl());
             createRootIfNotExist();
             if (log.isDebugEnabled()) {
                 log.debug("Organization Management component activated successfully.");

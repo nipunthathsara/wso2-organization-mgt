@@ -33,8 +33,6 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
-import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtListenerServiceComponent;
-import org.wso2.carbon.identity.organization.mgt.core.listener.OrganizationMgtEventListener;
 import org.wso2.carbon.identity.organization.mgt.core.model.Attribute;
 import org.wso2.carbon.identity.organization.mgt.core.model.MetaUser;
 import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
@@ -50,7 +48,6 @@ import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreManager;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -151,17 +148,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Fire pre-event
         String event = isImport ? PRE_IMPORT_ORGANIZATION : PRE_CREATE_ORGANIZATION;
         fireEvent(event, null, organizationAdd, Status.FAILURE);
-        Collection<OrganizationMgtEventListener> listeners = getListeners();
-        // Invoke pre listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable()) {
-                if (isImport) {
-                    listener.doPreImportOrganization(organizationAdd, getTenantDomain(), getAuthenticatedUsername());
-                } else {
-                    listener.doPreCreateOrganization(organizationAdd, getTenantDomain(), getAuthenticatedUsername());
-                }
-            }
-        }
         validateAddOrganizationRequest(organizationAdd);
         Organization organization = generateOrganizationFromRequest(organizationAdd);
         // We can't perform this from the authorization valve. Hence, authorize from here
@@ -169,11 +155,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
         if (!isAuthorized) {
             throw handleClientException(ERROR_CODE_UNAUTHORIZED_ACTION,
                     "User not authorized to create organizations under : " + organization.getParent().getId());
-        }
-        // Validate attributes
-        for (Map.Entry entry : organization.getAttributes().entrySet()) {
-            OrganizationMgtDataHolder.getInstance().getAttributeValidator()
-                    .validateAttribute((Attribute) entry.getValue());
         }
         organization.setId(generateUniqueID());
         organization.setTenantId(getTenantId());
@@ -197,18 +178,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Fire post-event
         event = isImport ? POST_IMPORT_ORGANIZATION : POST_CREATE_ORGANIZATION;
         fireEvent(event, null, organization, Status.SUCCESS);
-        // Invoke post listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable()) {
-                if (isImport && !listener.doPostImportOrganization(organization, getTenantDomain(),
-                        getAuthenticatedUsername())) {
-                    return organization;
-                } else if (!isImport && !listener.doPostCreateOrganization(organization, getTenantDomain(),
-                        getAuthenticatedUsername())) {
-                    return organization;
-                }
-            }
-        }
         return organization;
     }
 
@@ -217,13 +186,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         // Fire pre-event
         fireEvent(PRE_GET_ORGANIZATION, organizationId, null, Status.FAILURE);
-        Collection<OrganizationMgtEventListener> listeners = getListeners();
-        // Invoke pre listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable()) {
-                listener.doPreGetOrganization(organizationId, getTenantDomain(), getAuthenticatedUsername());
-            }
-        }
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST,
                     "Provided organization ID is empty");
@@ -249,13 +211,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 getUserNameFromUserID(organization.getMetadata().getLastModifiedBy().getId(), getTenantId()));
         // Fire post-event
         fireEvent(POST_GET_ORGANIZATION, organizationId, organization, Status.SUCCESS);
-        // Invoke post listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable() && !listener.doPostGetOrganization(organization, getTenantDomain(),
-                    getAuthenticatedUsername())) {
-                return organization;
-            }
-        }
         return organization;
     }
 
@@ -266,14 +221,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         // Fire pre-event
         fireEvent(PRE_LIST_ORGANIZATIONS, null, condition, Status.FAILURE);
-        Collection<OrganizationMgtEventListener> listeners = getListeners();
-        // Invoke pre listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable()) {
-                listener.doPreGetOrganizations(condition, offset, limit, sortBy, sortOrder, requestedAttributes,
-                        getTenantDomain(), getAuthenticatedUsername());
-            }
-        }
         // Validate pagination and sorting parameters
         sortBy = getMatchingColumnNameForSortingParameter(sortBy);
         List<Organization> organizations = organizationMgtDao
@@ -294,13 +241,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         // Fire post-events
         fireEvent(POST_LIST_ORGANIZATIONS, null, organizations, Status.SUCCESS);
-        // Invoke post listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable() && !listener.doPostGetOrganizations(organizations, getTenantDomain(),
-                    getAuthenticatedUsername())) {
-                return organizations;
-            }
-        }
         return organizations;
     }
 
@@ -326,14 +266,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         // Fire pre-event
         fireEvent(PRE_PATCH_ORGANIZATION, organizationId, operations, Status.FAILURE);
-        Collection<OrganizationMgtEventListener> listeners = getListeners();
-        // Invoke pre listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable()) {
-                listener.doPrePatchOrganization(organizationId, operations, getTenantDomain(),
-                        getAuthenticatedUsername());
-            }
-        }
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
                     "Provided organization ID is empty");
@@ -344,18 +276,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
         validateOrganizationPatchOperations(operations, organizationId);
-        validatePatchingAttributes(operations);
         for (Operation operation : operations) {
             organizationMgtDao.patchOrganization(organizationId, operation);
             // Fire post-event
             fireEvent(POST_PATCH_ORGANIZATION, organizationId, operation, Status.SUCCESS);
-            // Invoke post listeners
-            for (OrganizationMgtEventListener listener : listeners) {
-                if (listener.isEnable() && !listener.doPostPatchOrganization(organizationId, operation,
-                        getTenantDomain(), getAuthenticatedUsername())) {
-                    return;
-                }
-            }
         }
         // Update metadata
         Metadata metadata = new Metadata();
@@ -369,13 +293,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         // Fire pre-event
         fireEvent(PRE_DELETE_ORGANIZATION, organizationId, null, Status.FAILURE);
-        Collection<OrganizationMgtEventListener> listeners = getListeners();
-        // Invoke pre listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable()) {
-                listener.doPreDeleteOrganization(organizationId, getTenantDomain(), getAuthenticatedUsername());
-            }
-        }
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
                     "Provided organization ID is empty");
@@ -391,13 +308,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     "Organization " + organizationId + " is not in the disabled status");
         }
         organizationMgtDao.deleteOrganization(getTenantId(), organizationId.trim());
-        // Invoke post listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable() && !listener.doPostDeleteOrganization(organizationId, getTenantDomain(),
-                    getAuthenticatedUsername())) {
-                return;
-            }
-        }
         // Fire post-event
         fireEvent(POST_DELETE_ORGANIZATION, organizationId, null, Status.SUCCESS);
     }
@@ -420,13 +330,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         // Fire pre-event
         fireEvent(PRE_GET_USER_STORE_CONFIGS, organizationId, null, Status.FAILURE);
-        Collection<OrganizationMgtEventListener> listeners = getListeners();
-        // Invoke pre listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable()) {
-                listener.doPreGetUserStoreConfigs(organizationId, getTenantDomain(), getAuthenticatedUsername());
-            }
-        }
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST,
                     "Provided organization Id is empty");
@@ -437,13 +340,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     .getUserStoreConfigsByOrgId(getTenantId(), organizationId);
             // Fire post-events
             fireEvent(POST_GET_USER_STORE_CONFIGS, organizationId, userStoreConfigs, Status.SUCCESS);
-            // Invoke listeners
-            for (OrganizationMgtEventListener listener : listeners) {
-                if (listener.isEnable() && !listener.doPostGetUserStoreConfigs(organizationId, userStoreConfigs,
-                        getTenantDomain(), getAuthenticatedUsername())) {
-                    return userStoreConfigs;
-                }
-            }
             return userStoreConfigs;
         } else {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST,
@@ -456,13 +352,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         // Fire pre-event
         fireEvent(PRE_GET_CHILD_ORGANIZATIONS, organizationId, null, Status.FAILURE);
-        Collection<OrganizationMgtEventListener> listeners = getListeners();
-        // Invoke pre listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable()) {
-                listener.doPreGetChildOrganizationIds(organizationId, getTenantDomain(), getAuthenticatedUsername());
-            }
-        }
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST,
                     "Provided organization Id is empty");
@@ -473,13 +362,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     .getChildOrganizationIds(organizationId, getAuthenticatedUserId());
             // Fire post-event
             fireEvent(POST_GET_CHILD_ORGANIZATIONS, organizationId, childOrganizationIds, Status.SUCCESS);
-            // Invoke listeners
-            for (OrganizationMgtEventListener listener : listeners) {
-                if (listener.isEnable() && !listener.doPostGetChildOrganizationIds(organizationId, childOrganizationIds,
-                        getTenantDomain(), getAuthenticatedUsername())) {
-                    return childOrganizationIds;
-                }
-            }
             return childOrganizationIds;
         } else {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST,
@@ -493,14 +375,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         // Fire pre-event
         fireEvent(PRE_PATCH_USER_STORE_CONFIGS, organizationId, operations, Status.FAILURE);
-        Collection<OrganizationMgtEventListener> listeners = getListeners();
-        // Invoke pre listeners
-        for (OrganizationMgtEventListener listener : listeners) {
-            if (listener.isEnable()) {
-                listener.doPrePatchUserStoreConfigs(organizationId, operations, getTenantDomain(),
-                        getAuthenticatedUsername());
-            }
-        }
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST,
                     "Provided organization Id is empty");
@@ -515,13 +389,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
             organizationMgtDao.patchUserStoreConfigs(organizationId, operation);
             // Fire post-event
             fireEvent(POST_PATCH_USER_STORE_CONFIGS, organizationId, operation, Status.SUCCESS);
-            // Invoke post listeners
-            for (OrganizationMgtEventListener listener : listeners) {
-                if (listener.isEnable() && !listener.doPostPatchUserStoreConfigs(organizationId, operation,
-                        getTenantDomain(), getAuthenticatedUsername())) {
-                    return;
-                }
-            }
         }
         // Update metadata
         Metadata metadata = new Metadata();
@@ -948,20 +815,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
     }
 
-    private void validatePatchingAttributes(List<Operation> operations) throws OrganizationManagementException {
-
-        for (Operation operation : operations) {
-            // Validate all attribute additions and replacements
-            if (operation.getPath().startsWith(PATCH_PATH_ORG_ATTRIBUTES) && !PATCH_OP_REMOVE
-                    .equals(operation.getOp())) {
-                Attribute attribute = new Attribute();
-                attribute.setKey(operation.getPath().replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim());
-                attribute.setValue(operation.getValue());
-                OrganizationMgtDataHolder.getInstance().getAttributeValidator().validateAttribute(attribute);
-            }
-        }
-    }
-
     private boolean isUserAuthorizedToCreateOrganization(String parentId) throws OrganizationManagementException {
 
         // If you are going to create an organization,
@@ -1040,10 +893,5 @@ public class OrganizationManagerImpl implements OrganizationManager {
     private String getAuthenticatedUsername() {
 
         return PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
-    }
-
-    private Collection<OrganizationMgtEventListener> getListeners() {
-
-        return OrganizationMgtListenerServiceComponent.getOrganizationMgtEventListeners();
     }
 }
