@@ -782,6 +782,10 @@ paths:
           description: 'ID of the user.'
           required: true
           type: string
+        - name: includeSubOrgs
+          in: query
+          type: boolean
+          description: Filter the role mappings to delete. Check whether sub organization's role mappings will be deleted or not.
       responses:
         '204':
           description: No Content

@@ -36,22 +36,19 @@ import javax.ws.rs.core.Response;
  */
 public interface OrganizationUserRoleManager {
 
-    void addOrganizationAndUserRoleMappings(String organizationId, UserRoleMapping userRoleMappings)
+    void addOrganizationUserRoleMappings(String organizationId, UserRoleMapping userRoleMappings)
             throws OrganizationUserRoleMgtException, OrganizationManagementException;
-
-    void patchOrganizationAndUserRoleMapping(String organizationId, List<Operation> operations)
-            throws OrganizationUserRoleMgtException;
 
     List<User> getUsersByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
                                              List<String> requestedAttributes)
             throws OrganizationUserRoleMgtException;
 
-    void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, String roleId)
-            throws OrganizationUserRoleMgtException;
+    void deleteOrganizationsUserRoleMapping(String organizationId, String userId, String roleId, boolean includeSubOrgs)
+            throws OrganizationUserRoleMgtException, OrganizationManagementException;
 
     List<Role> getRolesByOrganizationAndUser(String organizationId, String userId)
             throws OrganizationUserRoleMgtException;
 
-    boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, String roleId)
+    boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId)
             throws OrganizationUserRoleMgtException;
 }

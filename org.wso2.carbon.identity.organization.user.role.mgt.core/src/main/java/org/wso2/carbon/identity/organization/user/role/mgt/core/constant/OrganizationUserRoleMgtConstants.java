@@ -38,7 +38,7 @@ public class OrganizationUserRoleMgtConstants {
         ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR("ORGPERMMGT_00020",
                 "Error while creating the role mappings"),
         ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_ERROR("ORGPERMMGT_00021",
-                "Error while deleting the role : %s, for user : %s for organization : %s"),
+                "Error while deleting the role : %s, for user : %s for organizations"),
         ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_RETRIEVING_ERROR("ORGPERMMGT_00022",
                 "Error while retrieving the role : %s, for user : %s for organization : %s"),
         ERROR_CODE_HYBRID_ROLE_ID_RETRIEVING_ERROR("ORGPERMMGT_00023",

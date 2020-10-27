@@ -38,7 +38,6 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMappingUser;
-import org.wso2.charon3.core.protocol.SCIMResponse;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -206,7 +205,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             UserRoleMapping userRoleMapping1 = new UserRoleMapping(userRoleMapping.getRoleId(),
                     userRoleMapping.getUsers().stream().map(mapping ->
                     new UserRoleMappingUser(mapping.getUserId(), mapping.getIncludeSubOrgs())).collect(Collectors.toList()));
-            getOrganizationUserRoleManager().addOrganizationAndUserRoleMappings(organizationId, userRoleMapping1);
+            getOrganizationUserRoleManager().addOrganizationUserRoleMappings(organizationId, userRoleMapping1);
             return Response.created(getOrganizationRoleResourceURI(organizationId)).build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
@@ -248,10 +247,10 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, String roleId,
-            String userId) {
+            String userId,  Boolean includeSubOrgs) {
 
         try {
-            getOrganizationUserRoleManager().deleteOrganizationAndUserRoleMapping(organizationId, userId, roleId);
+            getOrganizationUserRoleManager().deleteOrganizationsUserRoleMapping(organizationId, userId, roleId, includeSubOrgs);
             return Response.noContent().build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
