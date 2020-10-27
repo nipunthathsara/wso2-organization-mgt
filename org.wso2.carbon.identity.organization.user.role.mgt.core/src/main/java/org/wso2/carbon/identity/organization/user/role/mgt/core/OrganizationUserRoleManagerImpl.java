@@ -182,7 +182,6 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
             organizationUserRoleMapping.setRoleId(roleId);
             organizationUserRoleMapping.setHybridRoleId(hybridRoleId);
             organizationUserRoleMapping.setUserId(user.getUserId());
-            organizationUserRoleMapping.setCascadedRole(user.isCascadedRole());
             organizationUserRoleMappings.add(organizationUserRoleMapping);
         }
         return organizationUserRoleMappings;

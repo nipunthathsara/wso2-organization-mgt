@@ -59,6 +59,10 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.PAGINATION;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.SELECT_DUMMY_RECORD;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UM_USER_ROLE_ORG_DATA;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UNION_ALL;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UPSERT_UM_USER_ROLE_ORG_BASE;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UPSERT_UM_USER_ROLE_ORG_END;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ROLE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ROLE_NAME_COLUMN;
@@ -79,9 +83,9 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
             throws OrganizationUserRoleMgtServerException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
-        String orgId = organizationUserRoleMappings.get(0).getOrganizationId();
         try {
-            jdbcTemplate.executeInsert(buildQueryForMultipleInserts(organizationUserRoleMappings.size()),
+            // Will be added only if the particular mapping is not existing.
+            jdbcTemplate.executeInsert(buildQueryForMultipleUpsert(organizationUserRoleMappings.size()),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         for (OrganizationUserRoleMapping organizationUserRoleMapping : organizationUserRoleMappings) {
@@ -92,12 +96,10 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                             preparedStatement.setInt(++parameterIndex, tenantID);
                             preparedStatement
                                     .setString(++parameterIndex, organizationUserRoleMapping.getOrganizationId());
-                            preparedStatement.setInt(++parameterIndex, organizationUserRoleMapping.isCascadedRole() ? 1:0);
                         }
                     }, organizationUserRoleMappings, false);
-
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR, orgId, e);
+            throw handleServerException(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR, "", e);
         }
     }
 
@@ -258,15 +260,18 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         }
     }
 
-    private String buildQueryForMultipleInserts(Integer numberOfMapings) {
+    private String buildQueryForMultipleUpsert(Integer numberOfMapings) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append(INSERT_ALL);
+        sb.append(UPSERT_UM_USER_ROLE_ORG_BASE);
+        sb.append("(");
 
         for (int i = 0; i < numberOfMapings; i++) {
-            sb.append(INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING);
+            sb.append(UM_USER_ROLE_ORG_DATA);
+            sb.append(UNION_ALL);
         }
-        sb.append(SELECT_DUMMY_RECORD);
+        sb.append(")");
+        sb.append(UPSERT_UM_USER_ROLE_ORG_END);
         return sb.toString();
     }
 }

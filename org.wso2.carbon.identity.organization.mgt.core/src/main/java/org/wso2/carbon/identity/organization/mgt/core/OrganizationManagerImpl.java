@@ -41,6 +41,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import org.wso2.carbon.identity.organization.mgt.core.usermgt.AbstractOrganizationMgtUserStoreManager;
@@ -852,6 +853,28 @@ public class OrganizationManagerImpl implements OrganizationManager {
             authorizationDao
                     .addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationRoleManager.getGroupId(),
                             organizationRoleManager.getHybridRoleId(), getTenantId(), organizationId);
+        }
+    }
+
+    private void grantImmediateParentPermissions(String organizationId, String parentOrganizationId)
+            throws OrganizationManagementException {
+
+        // If parent's permissions will be inherited, propagate them to new organization.
+        if (StringUtils.isNotEmpty(parentOrganizationId)) {
+            List<OrganizationUserRoleMapping> organizationUserRoleMappingsOfParent = authorizationDao
+                    .getOrganizationUserRoleMappingsForOrganization(parentOrganizationId, getTenantId());
+            List<OrganizationUserRoleMapping> organizationUserRoleMappingsForNewOrganization = new ArrayList<>();
+            for (OrganizationUserRoleMapping mapping : organizationUserRoleMappingsOfParent) {
+                // Skip the role mappings for authenticated user. It should be assigned separately.
+                if (!mapping.getUserId().equals(getAuthenticatedUserId())) {
+                    OrganizationUserRoleMapping organizationUserRoleMapping =
+                            new OrganizationUserRoleMapping(organizationId, mapping.getUserId(), mapping.getRoleId(),
+                                    mapping.getHybridRoleId());
+                    organizationUserRoleMappingsForNewOrganization.add(organizationUserRoleMapping);
+                }
+            }
+            authorizationDao
+                    .addOrganizationAndUserRoleMappings(organizationUserRoleMappingsForNewOrganization, getTenantId());
         }
     }
 

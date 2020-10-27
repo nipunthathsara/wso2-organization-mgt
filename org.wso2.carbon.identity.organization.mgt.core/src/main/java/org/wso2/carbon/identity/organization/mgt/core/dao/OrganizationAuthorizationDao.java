@@ -20,6 +20,7 @@ package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,17 @@ public interface OrganizationAuthorizationDao {
      * @throws OrganizationManagementException
      */
     void addOrganizationAndUserRoleMapping(String userId, String roleId, int hybridRoleId, int tenantId,
-            String organizationId) throws OrganizationManagementException;
+                                           String organizationId) throws OrganizationManagementException;
+
+    /**
+     * Add multiple entries to the 'UM_USER_ROLE_ORG' table.
+     *
+     * @param organizationUserRoleMappings A list of organizationUserRole mappings.
+     * @param tenantID                     Tenant id.
+     * @throws OrganizationManagementException
+     */
+    void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings,
+                                            int tenantID) throws OrganizationManagementException;
 
     /**
      * Find the 'UM_ID' by 'UM_ROLE_NAME' from the 'UM_HYBRID_ROLE' table.
@@ -86,6 +97,18 @@ public interface OrganizationAuthorizationDao {
      * @throws OrganizationManagementException
      */
     Map<String, List<String>> findUserPermissionsForOrganizations(JdbcTemplate template, String userId,
-            List<String> organizationIds)
+                                                                  List<String> organizationIds)
+            throws OrganizationManagementException;
+
+    /**
+     * Get the organization user role mapping for a given organization.
+     *
+     * @param organizationId Organization id.
+     * @param tenantId       Tenant id.
+     * @return A list of organization for the given organization.
+     * @throws OrganizationManagementException
+     */
+    List<OrganizationUserRoleMapping> getOrganizationUserRoleMappingsForOrganization(String organizationId,
+                                                                                     int tenantId)
             throws OrganizationManagementException;
 }

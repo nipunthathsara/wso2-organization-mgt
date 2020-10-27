@@ -31,8 +31,8 @@ public class SQLConstants {
     public static final String VIEW_ROLE_NAME_COLUMN = "UM_ROLE_NAME";
 
     public static final String INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING =
-            "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID, INHERITANCE) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?) ";
+            "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID) " +
+                    "VALUES (?, ?, ?, ?, ?, ?) ";
     public static final String SELECT_DUMMY_RECORD = "SELECT 1 FROM DUAL";
     public static final String INSERT_ORGANIZATION_USER_ROLE_MAPPING =
             "INSERT INTO\n" +
@@ -86,4 +86,11 @@ public class SQLConstants {
                     "%n   %s ROWS" +
                     "%n FETCH NEXT" +
                     "%n   %s ROWS ONLY";
+    public static final String UPSERT_UM_USER_ROLE_ORG_BASE = "MERGE INTO UM_USER_ROLE_ORG T USING ";
+    public static final String UNION_ALL = " UNION ALL ";
+    public static final String UM_USER_ROLE_ORG_DATA = "SELECT  ? UM_ID, ? UM_USER_ID, ? UM_ROLE_ID, ? UM_HYBRID_ROLE_ID, ? UM_TENANT_ID, ? ORG_ID from dual";
+    public static final String UPSERT_UM_USER_ROLE_ORG_END = " S\n" +
+            "ON (T.UM_ID = S.UM_ID AND T.UM_HYBRID_ROLE_ID = S.UM_HYBRID_ROLE_ID AND T.UM_TENANT_ID = S.UM_TENANT_ID AND T.ORG_ID = S.ORG_ID)\n" +
+            "WHEN NOT MATCHED THEN INSERT (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID)\n" +
+            "VALUES (S.UM_ID, S.UM_USER_ID, S.UM_ROLE_ID, S.UM_HYBRID_ROLE_ID, S.UM_TENANT_ID, S.ORG_ID)";
 }

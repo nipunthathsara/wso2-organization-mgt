@@ -25,6 +25,7 @@ import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationPermission;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 
@@ -47,10 +48,17 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_GROUP_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_HYBRID_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ORGANIZATIONS_PERMISSIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ROLE_ORG_MAPPINGS_FOR_GIVEN_ORG;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ALL;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.IS_USER_AUTHORIZED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.SELECT_DUMMY_RECORD;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_HYBRID_ROLE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_RESOURCE_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ROLE_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_UM_USER_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ORG_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.dissemblePermissionString;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
@@ -112,6 +120,31 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
             throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
                     "Error while adding org-authorization mapping entry. Organization : " + organizationId
                             + ", userId : " + userId + ", roleId : " + roleId + ", hybridRoleId : " + hybridRoleId, e);
+        }
+    }
+
+    @Override
+    public void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings,
+                                                   int tenantID) throws OrganizationManagementServerException {
+
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        try {
+            jdbcTemplate.executeInsert(buildQueryForMultipleInserts(organizationUserRoleMappings.size()),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        for (OrganizationUserRoleMapping organizationUserRoleMapping : organizationUserRoleMappings) {
+                            preparedStatement.setString(++parameterIndex, generateUniqueID());
+                            preparedStatement.setString(++parameterIndex, organizationUserRoleMapping.getUserId());
+                            preparedStatement.setString(++parameterIndex, organizationUserRoleMapping.getRoleId());
+                            preparedStatement.setInt(++parameterIndex, organizationUserRoleMapping.getHybridRoleId());
+                            preparedStatement.setInt(++parameterIndex, tenantID);
+                            preparedStatement
+                                    .setString(++parameterIndex, organizationUserRoleMapping.getOrganizationId());
+                        }
+                    }, organizationUserRoleMappings, false);
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
+                    "Error while adding org-authorization mapping entries.", e);
         }
     }
 
@@ -195,6 +228,28 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         return userOrgPermissions;
     }
 
+    @Override
+    public List<OrganizationUserRoleMapping> getOrganizationUserRoleMappingsForOrganization(String organizationId,
+                                                                                            int tenantId)
+            throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = getNewIdentityTemplate();
+        try {
+            return jdbcTemplate.executeQuery(GET_USER_ROLE_ORG_MAPPINGS_FOR_GIVEN_ORG, (resultSet, rowNumber) ->
+                            new OrganizationUserRoleMapping(organizationId, resultSet.getString(UM_UM_USER_ID_COLUMN),
+                                    resultSet.getString(UM_ROLE_ID_COLUMN), resultSet.getInt(UM_HYBRID_ROLE_ID_COLUMN)),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                    });
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
+                    "Error obtaining organizationUserRole mappings for organization : " + organizationId +
+                            ", tenant id : " + tenantId, e);
+        }
+    }
+
     private void validateQueryLength(String query) throws OrganizationManagementClientException {
 
         if (query.getBytes(StandardCharsets.UTF_8).length > getMaximumQueryLengthInBytes()) {
@@ -205,5 +260,17 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
             throw handleClientException(ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED,
                     "Query length exceeded the maximum limit.");
         }
+    }
+
+    private String buildQueryForMultipleInserts(Integer numberOfMapings) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(INSERT_ALL);
+
+        for (int i = 0; i < numberOfMapings; i++) {
+            sb.append(INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING);
+        }
+        sb.append(SELECT_DUMMY_RECORD);
+        return sb.toString();
     }
 }

@@ -31,8 +31,7 @@ import java.util.List;
  */
 public interface OrganizationUserRoleMgtDAO {
 
-    void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMapping,
-                                            int tenantID)
+    void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMapping, int tenantID)
             throws OrganizationUserRoleMgtException;
 
     List<User> getUserIdsByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,

@@ -36,7 +36,7 @@ public class OrganizationUserRoleMgtConstants {
 
         // Server errors (ORGPERMMGT_00020-ORGPERMMGT_00040)
         ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR("ORGPERMMGT_00020",
-                "Error while creating the role mapping for organization : %s"),
+                "Error while creating the role mappings"),
         ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_ERROR("ORGPERMMGT_00021",
                 "Error while deleting the role : %s, for user : %s for organization : %s"),
         ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_RETRIEVING_ERROR("ORGPERMMGT_00022",
