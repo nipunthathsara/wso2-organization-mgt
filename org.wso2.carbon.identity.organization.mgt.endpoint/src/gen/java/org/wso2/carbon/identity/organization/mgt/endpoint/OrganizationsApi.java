@@ -214,8 +214,9 @@ public class OrganizationsApi {
 
     public Response organizationsOrganizationIdGet(
             @ApiParam(value = "ID of the organization of which, the fields are to be patched.",
-                      required = true) @PathParam("organization-id") String organizationId) {
-        return delegate.organizationsOrganizationIdGet(organizationId);
+                      required = true) @PathParam("organization-id") String organizationId,
+            @ApiParam(value = "Whether to include the user's permissions for the organization in the response or not") @QueryParam("includePermissions") Boolean includePermissions) {
+     return delegate.organizationsOrganizationIdGet(organizationId, includePermissions);
     }
 
     @PATCH

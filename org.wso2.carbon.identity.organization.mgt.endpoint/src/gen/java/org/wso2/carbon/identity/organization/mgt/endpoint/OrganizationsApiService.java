@@ -36,7 +36,7 @@ public abstract class OrganizationsApiService {
 
     public abstract Response organizationsOrganizationIdDelete(String organizationId);
 
-    public abstract Response organizationsOrganizationIdGet(String organizationId);
+    public abstract Response organizationsOrganizationIdGet(String organizationId, Boolean includePermissions);
 
     public abstract Response organizationsOrganizationIdPatch(String organizationId, List<OperationDTO> operations);
 

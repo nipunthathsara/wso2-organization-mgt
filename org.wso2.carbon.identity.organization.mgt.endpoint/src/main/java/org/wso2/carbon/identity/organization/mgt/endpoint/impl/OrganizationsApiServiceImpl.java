@@ -137,10 +137,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
     }
 
     @Override
-    public Response organizationsOrganizationIdGet(String organizationId) {
+    public Response organizationsOrganizationIdGet(String organizationId, Boolean includePermissions) {
 
         try {
-            Organization organization = getOrganizationManager().getOrganization(organizationId);
+            boolean permissionsReq = includePermissions != null ? includePermissions.booleanValue() : false;
+            Organization organization = getOrganizationManager().getOrganization(organizationId, permissionsReq);
             return Response.ok().entity(getOrganizationDTOFromOrganization(organization)).build();
         } catch (OrganizationManagementClientException e) {
             return handleBadRequestResponse(e, log);

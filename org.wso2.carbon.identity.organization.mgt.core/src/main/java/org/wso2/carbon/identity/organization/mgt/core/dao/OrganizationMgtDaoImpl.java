@@ -42,6 +42,7 @@ import org.wso2.carbon.identity.organization.mgt.core.search.PrimitiveConditionV
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -311,9 +312,9 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     @Override
-    public Organization getOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
+    public Organization getOrganization(int tenantId, String organizationId, String userId)
+            throws OrganizationManagementException {
 
-        // TODO include permissions
         JdbcTemplate jdbcTemplate = getNewTemplate();
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
@@ -342,9 +343,20 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         preparedStatement.setInt(++parameterIndex, tenantId);
                         preparedStatement.setString(++parameterIndex, organizationId);
                     });
+            // Populate each organization with permissions if required
+            boolean includePermissions = userId != null;
+            List<String> permissions = null;
+            if (includePermissions) {
+                permissions = OrganizationMgtDataHolder.getInstance().getOrganizationAuthDao()
+                        .findUserPermissionsForOrganizations(
+                                jdbcTemplate,
+                                userId,
+                                Arrays.asList(organizationId)
+                        ).get(organizationId);
+            }
             return (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?
                     null :
-                    buildOrganizationFromRawData(organizationRowDataCollectors);
+                    buildOrganizationFromRawData(organizationRowDataCollectors, includePermissions, permissions);
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_BY_ID_ERROR, organizationId, e);
         }
@@ -742,8 +754,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         return sb.toString();
     }
 
-    private Organization buildOrganizationFromRawData(
-            List<OrganizationRowDataCollector> organizationRowDataCollectors) {
+    private Organization buildOrganizationFromRawData(List<OrganizationRowDataCollector> organizationRowDataCollectors,
+            boolean includePermissions, List<String> permissions) {
 
         Organization organization = new Organization();
         organizationRowDataCollectors.forEach(collector -> {
@@ -766,6 +778,9 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     .containsKey(collector.getAttributeKey())) {
                 organization.getAttributes().put(collector.getAttributeKey(),
                         new Attribute(collector.getAttributeKey(), collector.getAttributeValue()));
+            }
+            if (includePermissions && permissions != null) {
+                organization.setPermissions(permissions);
             }
         });
         return organization;
