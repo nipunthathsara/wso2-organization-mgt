@@ -33,7 +33,8 @@ public class OrganizationUserRoleMapping {
 
     }
 
-    public OrganizationUserRoleMapping(String organizationId, String userId, String roleId, int hybridRoleId,  boolean cascadedRole) {
+    public OrganizationUserRoleMapping(String organizationId, String userId, String roleId, int hybridRoleId,
+                                       boolean cascadedRole) {
 
         this.organizationId = organizationId;
         this.userId = userId;

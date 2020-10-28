@@ -18,8 +18,9 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
 
-import org.apache.axis2.databinding.types.xsd._boolean;
-
+/**
+ * User object is UserRoleMapping.
+ */
 public class UserRoleMappingUser {
 
     private String userId;

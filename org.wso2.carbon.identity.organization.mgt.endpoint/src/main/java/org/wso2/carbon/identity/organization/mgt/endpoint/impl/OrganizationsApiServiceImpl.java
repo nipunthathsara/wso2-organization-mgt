@@ -204,7 +204,8 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
         try {
             UserRoleMapping userRoleMapping1 = new UserRoleMapping(userRoleMapping.getRoleId(),
                     userRoleMapping.getUsers().stream().map(mapping ->
-                    new UserRoleMappingUser(mapping.getUserId(), mapping.getIncludeSubOrgs())).collect(Collectors.toList()));
+                            new UserRoleMappingUser(mapping.getUserId(), mapping.getIncludeSubOrgs()))
+                            .collect(Collectors.toList()));
             getOrganizationUserRoleManager().addOrganizationUserRoleMappings(organizationId, userRoleMapping1);
             return Response.created(getOrganizationRoleResourceURI(organizationId)).build();
         } catch (OrganizationUserRoleMgtClientException e) {
@@ -251,7 +252,8 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
         try {
             boolean includeSubOrgsReq = includeSubOrgs != null ? includeSubOrgs.booleanValue() : false;
-            getOrganizationUserRoleManager().deleteOrganizationsUserRoleMapping(organizationId, userId, roleId, includeSubOrgsReq);
+            getOrganizationUserRoleManager()
+                    .deleteOrganizationsUserRoleMapping(organizationId, userId, roleId, includeSubOrgsReq);
             return Response.noContent().build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);

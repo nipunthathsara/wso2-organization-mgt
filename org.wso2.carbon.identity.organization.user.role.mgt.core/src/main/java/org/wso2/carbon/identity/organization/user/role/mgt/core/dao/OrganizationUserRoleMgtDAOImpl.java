@@ -146,7 +146,8 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                 Map<String, Object> attributes;
                 ObjectMapper mapper = new ObjectMapper();
                 attributes = mapper.readValue(scimResponse.getResponseMessage(),
-                        new TypeReference<Map<String, Object>>(){});
+                        new TypeReference<Map<String, Object>>() {
+                        });
                 users.add(new User(attributes));
             }
         } catch (UserStoreException | CharonException | IOException e) {

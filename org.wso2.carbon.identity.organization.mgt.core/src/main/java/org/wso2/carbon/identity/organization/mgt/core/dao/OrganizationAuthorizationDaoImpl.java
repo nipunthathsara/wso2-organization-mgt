@@ -123,6 +123,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         }
     }
 
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings,
                                                    int tenantID) throws OrganizationManagementServerException {

@@ -28,7 +28,6 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.Organization
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAOImpl;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
@@ -145,7 +144,10 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
         List<String> organizationListToBeDeleted = new ArrayList<>();
         organizationListToBeDeleted.add(organizationId);
 
-        // Traverse the sub organizations and added as the organizations to be checked for deleting the mentioned role mapping.
+        /*
+        Traverse the sub organizations and added as the organizations to be checked for deleting the
+        mentioned role mapping.
+         */
         if (includeSubOrgs) {
             Queue<String> organizationsList = new LinkedList<>();
             // Add starting organization.
