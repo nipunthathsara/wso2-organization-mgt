@@ -148,7 +148,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED("ORGMGT_00011", "Request caused an SQL query limit exceed : %s"),
         ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST("ORGMGT_00012",
                 "Invalid get organization Id by name request : %s"),
-        ERROR_CODE_INVALID_ATTRIBUTES("ORGMGT_00013", "Attribute validation failed : %s"),
+        ERROR_CODE_INVALID_EVENT("ORGMGT_00013", "Invalid event : %s"),
         ERROR_CODE_UNAUTHORIZED_ACTION("ORGMGT_00014", "Unauthorized action : %s"),
         ERROR_CODE_INVALID_DATE_FORMAT("ORGMGT_00015", "Invalid search criteria : %s"),
         ERROR_CODE_UNCLASSIFIED_ERROR("ORGMGT_00020", "Error while processing : %s"),
@@ -174,13 +174,12 @@ public class OrganizationMgtConstants {
         ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORGMGT_00032", "Error while checking if the attribute exist : %s"),
         ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR("ORGMGT_00033",
                 "Error while retrieving organization Id by name : %s"),
-        ERROR_CODE_ATTRIBUTE_VALIDATION_ERROR("ORGMGT_00034", "Error while validating attributes : %s"),
+        ERROR_CODE_EVENTING_ERROR("ORGMGT_00034", "Error while handling the event : %s"),
         ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGMGT_00035", "Error accessing user store : %s"),
         ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR("ORGMGT_00036", "Error checking RDN availability : %s"),
         ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR("ORGMGT_00037", "Error while authorizing : %s"),
         ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR("ORGMGT_00038",
                 "Organization Management Server configuration error : %s"),
-        ERROR_CODE_ORG_MGT_EVENTING_ERROR("ORGMGT_00039", "Error while handling organization management event : %s"),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

@@ -101,7 +101,8 @@ public class OrganizationMgtAuditHandler extends AbstractEventHandler {
                     .get(0) instanceof Organization) ? (List<Organization>) data : new ArrayList<>();
             AUDIT.info(String.format(AUDIT_MESSAGE, username, "list organizations",
                     organizations.stream().map(Organization::getId).collect(Collectors.toList()),
-                    organization.getName(), status));
+                    organizations.stream().map(Organization::getName).collect(Collectors.toList()),
+                    status));
             break;
         case POST_DELETE_ORGANIZATION:
             AUDIT.info(String.format(AUDIT_MESSAGE, username, "delete organization",
