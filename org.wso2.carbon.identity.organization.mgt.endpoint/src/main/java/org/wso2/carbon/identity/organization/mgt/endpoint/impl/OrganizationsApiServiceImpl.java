@@ -250,7 +250,8 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             String userId,  Boolean includeSubOrgs) {
 
         try {
-            getOrganizationUserRoleManager().deleteOrganizationsUserRoleMapping(organizationId, userId, roleId, includeSubOrgs);
+            boolean includeSubOrgsReq = includeSubOrgs != null ? includeSubOrgs.booleanValue() : false;
+            getOrganizationUserRoleManager().deleteOrganizationsUserRoleMapping(organizationId, userId, roleId, includeSubOrgsReq);
             return Response.noContent().build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);

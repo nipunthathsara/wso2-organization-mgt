@@ -233,7 +233,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                                                                                             int tenantId)
             throws OrganizationManagementException {
 
-        JdbcTemplate jdbcTemplate = getNewIdentityTemplate();
+        JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             return jdbcTemplate.executeQuery(GET_USER_ROLE_ORG_MAPPINGS_FOR_GIVEN_ORG, (resultSet, rowNumber) ->
                             new OrganizationUserRoleMapping(organizationId, resultSet.getString(UM_UM_USER_ID_COLUMN),

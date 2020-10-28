@@ -270,7 +270,9 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
 
         for (int i = 0; i < numberOfMapings; i++) {
             sb.append(UM_USER_ROLE_ORG_DATA);
-            sb.append(UNION_ALL);
+            if (i != numberOfMapings - 1) {
+                sb.append(UNION_ALL);
+            }
         }
         sb.append(")");
         sb.append(UPSERT_UM_USER_ROLE_ORG_END);
@@ -284,11 +286,11 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         sb.append(AND).append("(");
         for (int i = 0; i < numberOfOrganizations; i++) {
             sb.append(ORG_ID_ADDING);
-            if(i != numberOfOrganizations-1) {
+            if (i != numberOfOrganizations - 1) {
                 sb.append(OR);
             }
         }
-        sb.append(AND).append(")");
+        sb.append(")");
         return sb.toString();
     }
 }
