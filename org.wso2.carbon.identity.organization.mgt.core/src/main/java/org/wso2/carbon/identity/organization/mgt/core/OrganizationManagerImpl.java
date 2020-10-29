@@ -907,6 +907,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
         Event event = new Event(eventName, eventProperties);
         try {
             eventService.handleEvent(event);
+        } catch (OrganizationManagementClientException e) {
+            throw e;
+        } catch (OrganizationManagementServerException e) {
+            throw e;
         } catch (IdentityEventException e) {
             throw handleServerException(ERROR_CODE_EVENTING_ERROR, eventName, e);
         }
