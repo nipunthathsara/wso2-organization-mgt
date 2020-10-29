@@ -94,6 +94,7 @@ public class OrganizationMgtValidationHandler extends AbstractEventHandler {
         for (Attribute attribute : attributes) {
             try {
                 validateAttribute(attribute);
+                // TODO fix error handling. depending on authz service dao layer
             } catch (OrganizationManagementException e) {
                 throw new IdentityEventException(e.getMessage(), e);
             }
@@ -152,7 +153,7 @@ public class OrganizationMgtValidationHandler extends AbstractEventHandler {
             String[] allowedValues = criteria.split(",");
             boolean isValid = Arrays.stream(allowedValues).anyMatch(s -> s.trim().equals(attribute.getValue()));
             if (!isValid) {
-                String errorMsg = "attribute key : " + attribute.getKey() + ", attribute value : "
+                String errorMsg = "Invalid attribute. attribute key : " + attribute.getKey() + ", attribute value : "
                         + attribute.getValue() + ", validation criteria : " + criteria;
                 throw handleClientException(ERROR_CODE_INVALID_EVENT, errorMsg);
             }
