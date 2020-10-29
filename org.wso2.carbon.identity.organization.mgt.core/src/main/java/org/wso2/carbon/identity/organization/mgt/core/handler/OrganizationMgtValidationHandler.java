@@ -48,6 +48,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_IMPORT_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_PATCH_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 
 /**
  * This handler validates the attribute values of an organization
@@ -92,12 +93,7 @@ public class OrganizationMgtValidationHandler extends AbstractEventHandler {
         }
         // Validate attributes
         for (Attribute attribute : attributes) {
-            try {
-                validateAttribute(attribute);
-                // TODO fix error handling. depending on authz service dao layer
-            } catch (OrganizationManagementException e) {
-                throw new IdentityEventException(e.getMessage(), e);
-            }
+            validateAttribute(attribute);
         }
     }
 

@@ -23,10 +23,6 @@ package org.wso2.carbon.identity.organization.mgt.core.exception;
  */
 public class OrganizationManagementClientException extends OrganizationManagementException {
 
-    public OrganizationManagementClientException() {
-
-    }
-
     public OrganizationManagementClientException(String message, String errorCode) {
 
         super(message, errorCode);
@@ -35,10 +31,5 @@ public class OrganizationManagementClientException extends OrganizationManagemen
     public OrganizationManagementClientException(String message, String errorCode, Throwable cause) {
 
         super(message, errorCode, cause);
-    }
-
-    public OrganizationManagementClientException(Throwable cause) {
-
-        super(cause);
     }
 }
