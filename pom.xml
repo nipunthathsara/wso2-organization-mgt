@@ -29,6 +29,7 @@
         <module>org.wso2.carbon.identity.organization.mgt.core</module>
         <module>org.wso2.carbon.identity.organization.mgt.endpoint</module>
         <module>org.wso2.carbon.identity.organization.user.role.mgt.core</module>
+        <module>org.wso2.carbon.identity.organization.scope.handler</module>
     </modules>
 
     <artifactId>organization-mgt</artifactId>
