@@ -188,8 +188,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
     }
 
     private List<OrganizationUserRoleMapping> populateOrganizationUserRoleMappings(String organizationId, String roleId,
-                                                                                   int hybridRoleId,
-                                                                                   List<UserRoleMappingUser> usersList) {
+            int hybridRoleId, List<UserRoleMappingUser> usersList) {
 
         List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
         for (UserRoleMappingUser user : usersList) {

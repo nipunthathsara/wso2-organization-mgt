@@ -66,7 +66,7 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
     @Override
     public void deleteOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
 
-        Organization orgToBeDeleted = organizationMgtDao.getOrganization(tenantId, organizationId);
+        Organization orgToBeDeleted = organizationMgtDao.getOrganization(tenantId, organizationId, null);
         if (orgToBeDeleted != null) {
             String parentId = orgToBeDeleted.getParent().getId();
             // Clear the children cache for this orgId.
@@ -102,9 +102,10 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
     }
 
     @Override
-    public Organization getOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
+    public Organization getOrganization(int tenantId, String organizationId, String userId)
+            throws OrganizationManagementException {
 
-        return organizationMgtDao.getOrganization(tenantId, organizationId);
+        return organizationMgtDao.getOrganization(tenantId, organizationId, userId);
     }
 
     @Override
@@ -203,7 +204,7 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
     private void clearOrganizationCache(int tenantId, String organizationId) throws OrganizationManagementException {
 
         // TODO whether we have to check children list ??
-        Organization organization = this.getOrganization(tenantId, organizationId);
+        Organization organization = this.getOrganization(tenantId, organizationId, null);
         if (organization != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Removing entry for organization with id " + organizationId + " from cache.");

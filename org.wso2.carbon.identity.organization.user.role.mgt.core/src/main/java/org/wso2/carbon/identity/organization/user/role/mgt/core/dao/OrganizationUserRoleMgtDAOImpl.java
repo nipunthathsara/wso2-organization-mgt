@@ -28,10 +28,7 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.Organi
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils;
 import org.wso2.carbon.identity.scim2.common.impl.IdentitySCIMManager;
-import org.wso2.carbon.user.api.UserStoreException;
-import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.charon3.core.exceptions.CharonException;
 import org.wso2.charon3.core.extensions.UserManager;
 import org.wso2.charon3.core.protocol.SCIMResponse;
@@ -103,6 +100,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         }
     }
 
+    @SuppressFBWarnings({"SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING", "SIC_INNER_SHOULD_BE_STATIC_ANON"})
     @Override
     public List<User> getUserIdsByOrganizationAndRole(String organizationId, String roleId, int offset, int limit,
                                                           List<String> requestedAttributes, int tenantID)
@@ -132,10 +130,6 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         preparedStatement.setInt(++parameterIndex, tenantID);
                     });
             for (String userId : userIds) {
-                AbstractUserStoreManager userStoreManager =
-                        (AbstractUserStoreManager) Utils.getUserStoreManager(tenantID);
-                org.wso2.carbon.user.core.common.User user = userStoreManager.getUser(userId, null);
-
                 // Obtain the user store manager.
                 UserManager userManager = IdentitySCIMManager.getInstance().getUserManager();
                 // Create charon-SCIM user endpoint and hand-over the request.
@@ -150,7 +144,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         });
                 users.add(new User(attributes));
             }
-        } catch (UserStoreException | CharonException | IOException e) {
+        } catch (CharonException | IOException e) {
             //TODO
             throw new OrganizationUserRoleMgtServerException(e);
         } catch (DataAccessException e) {
@@ -159,11 +153,11 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                             organizationId);
             throw new OrganizationUserRoleMgtServerException(message,
                     ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR.getCode(), e);
-
         }
         return users;
     }
 
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public void deleteOrganizationsUserRoleMapping(List<String> organizationIds, String userId, String roleId,
                                                      int tenantId) throws OrganizationUserRoleMgtException {
