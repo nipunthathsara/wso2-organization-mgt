@@ -48,10 +48,12 @@ public interface OrganizationManager {
      * Retrieve the organization identified by the provided ID, if such exists within the tenant.
      *
      * @param organizationId
+     * @param includePermissions Include user permissions in the response
      * @return
      * @throws OrganizationManagementException
      */
-    Organization getOrganization(String organizationId) throws OrganizationManagementException;
+    Organization getOrganization(String organizationId, boolean includePermissions)
+            throws OrganizationManagementException;
 
     /**
      * Retrieve the ID of the organization identified by the provided name, if such exists within the tenant.

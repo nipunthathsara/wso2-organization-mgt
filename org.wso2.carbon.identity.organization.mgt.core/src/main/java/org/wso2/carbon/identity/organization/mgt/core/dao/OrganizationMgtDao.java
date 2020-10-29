@@ -76,10 +76,12 @@ public interface OrganizationMgtDao {
      *
      * @param tenantId
      * @param organizationId
+     * @param userId
      * @return
      * @throws OrganizationManagementException
      */
-    Organization getOrganization(int tenantId, String organizationId) throws OrganizationManagementException;
+    Organization getOrganization(int tenantId, String organizationId, String userId)
+            throws OrganizationManagementException;
 
     /**
      * Retrieve Organization ID if the given organization name exists for the tenant.

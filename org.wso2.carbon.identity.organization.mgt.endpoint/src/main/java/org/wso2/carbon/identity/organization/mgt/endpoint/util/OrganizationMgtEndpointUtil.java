@@ -168,6 +168,8 @@ public class OrganizationMgtEndpointUtil {
         organizationDTO.setMeta(metaDTO);
         organizationDTO.setAttributes(organization.getAttributes().values().stream()
                 .map(OrganizationMgtEndpointUtil::getAttributeDTOFromAttribute).collect(Collectors.toList()));
+        // Set permissions
+        organizationDTO.setPermissions(organization.getPermissions());
         return organizationDTO;
     }
 

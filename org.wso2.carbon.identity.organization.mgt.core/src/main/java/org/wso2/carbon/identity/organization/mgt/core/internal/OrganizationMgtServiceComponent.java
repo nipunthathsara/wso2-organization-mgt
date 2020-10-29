@@ -28,6 +28,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
@@ -36,6 +37,8 @@ import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizat
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.handler.OrganizationMgtAuditHandler;
+import org.wso2.carbon.identity.organization.mgt.core.handler.OrganizationMgtValidationHandler;
 import org.wso2.carbon.identity.organization.mgt.core.model.MetaUser;
 import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
@@ -85,6 +88,10 @@ public class OrganizationMgtServiceComponent {
             OrganizationMgtDataHolder.getInstance().setOrganizationMgtRoles(populateManagementRoles(-1234));
             BundleContext bundleContext = componentContext.getBundleContext();
             bundleContext.registerService(OrganizationManager.class.getName(), new OrganizationManagerImpl(), null);
+            bundleContext.registerService(AbstractEventHandler.class.getName(), new OrganizationMgtAuditHandler(),
+                    null);
+            bundleContext.registerService(AbstractEventHandler.class.getName(), new OrganizationMgtValidationHandler(),
+                    null);
             createRootIfNotExist();
             if (log.isDebugEnabled()) {
                 log.debug("Organization Management component activated successfully.");
