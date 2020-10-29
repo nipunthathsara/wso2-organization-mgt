@@ -92,12 +92,7 @@ public class OrganizationMgtValidationHandler extends AbstractEventHandler {
         }
         // Validate attributes
         for (Attribute attribute : attributes) {
-            try {
-                validateAttribute(attribute);
-                // TODO fix error handling. depending on authz service dao layer
-            } catch (OrganizationManagementException e) {
-                throw new IdentityEventException(e.getMessage(), e);
-            }
+            validateAttribute(attribute);
         }
     }
 

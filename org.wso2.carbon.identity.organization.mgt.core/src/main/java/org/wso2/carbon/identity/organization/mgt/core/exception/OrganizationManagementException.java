@@ -18,17 +18,14 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.exception;
 
+import org.wso2.carbon.identity.event.IdentityEventException;
+
 /**
  * Base exception class for Organization Management.
  */
-public class OrganizationManagementException extends Exception {
+public class OrganizationManagementException extends IdentityEventException {
 
     private String errorCode;
-
-    public OrganizationManagementException() {
-
-        super();
-    }
 
     public OrganizationManagementException(String message, String errorCode) {
 
@@ -42,17 +39,12 @@ public class OrganizationManagementException extends Exception {
         this.errorCode = errorCode;
     }
 
-    public OrganizationManagementException(Throwable cause) {
-
-        super(cause);
-    }
-
     public String getErrorCode() {
 
         return errorCode;
     }
 
-    protected void setErrorCode(String errorCode) {
+    public void setErrorCode(String errorCode) {
 
         this.errorCode = errorCode;
     }
