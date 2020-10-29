@@ -111,4 +111,15 @@ public interface OrganizationAuthorizationDao {
     List<OrganizationUserRoleMapping> getOrganizationUserRoleMappingsForOrganization(String organizationId,
                                                                                      int tenantId)
             throws OrganizationManagementException;
+
+    /**
+     * Find permissions for the authenticated user over all the organizations.
+     *
+     * @param template JDBC template to be used.
+     * @param userId   Authenticated user's ID.
+     * @return List of permissions assigned to the user across all organizations.
+     * @throws OrganizationManagementException if any errors occurred.
+     */
+    List<String> findUserPermissions(JdbcTemplate template, String userId)
+            throws OrganizationManagementException;
 }

@@ -308,4 +308,11 @@ public class SQLConstants {
             "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID) " +
                     "VALUES (?, ?, ?, ?, ?, ?) ";
     public static final String SELECT_DUMMY_RECORD = "SELECT 1 FROM DUAL";
+    public static final String GET_USER_PERMISSIONS =
+            "SELECT\n" +
+            "    DISTINCT UM_RESOURCE_ID, ORG_ID\n" +
+            "FROM\n" +
+            "    ORG_AUTHZ_VIEW\n" +
+            "WHERE\n" +
+            "    UM_USER_ID = ?";
 }
