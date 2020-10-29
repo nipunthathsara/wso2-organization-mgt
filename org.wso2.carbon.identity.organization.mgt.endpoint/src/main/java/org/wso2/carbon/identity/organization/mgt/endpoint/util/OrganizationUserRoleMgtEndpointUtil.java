@@ -20,7 +20,6 @@ package org.wso2.carbon.identity.organization.mgt.endpoint.util;
 
 import org.apache.commons.logging.Log;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.BadRequestException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ConflictRequestException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ForbiddenException;
@@ -28,10 +27,6 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.InternalSer
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.NotFoundException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.ws.rs.core.Response;
 
@@ -143,17 +138,5 @@ public class OrganizationUserRoleMgtEndpointUtil {
     private static void logError(Log log, Throwable throwable) {
 
         log.error(throwable.getMessage(), throwable);
-    }
-
-    public static List<UserDTO> getUserDTOsFromUsers(List<User> users) {
-
-        List<UserDTO> userDTOs = new ArrayList<>();
-        for (User user : users) {
-            UserDTO userDTO = new UserDTO();
-            userDTO.setUserId(user.getUserId());
-            userDTO.setUsername(user.getUserName());
-            userDTOs.add(userDTO);
-        }
-        return userDTOs;
     }
 }

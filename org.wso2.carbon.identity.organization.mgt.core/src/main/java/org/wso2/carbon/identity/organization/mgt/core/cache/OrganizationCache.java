@@ -16,28 +16,28 @@
  * under the License.
  */
 
-package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
+package org.wso2.carbon.identity.organization.mgt.core.cache;
 
-import java.util.Map;
+import org.wso2.carbon.identity.application.common.cache.BaseCache;
+import org.wso2.carbon.utils.CarbonUtils;
 
 /**
- * User representation
+ * Cache implementation for organization's children cache.
  */
-public class User {
+public class OrganizationCache extends BaseCache<OrganizationCacheKey, OrganizationCacheEntry> {
 
-    private Map<String, Object> userAttributes;
+    private static final String CACHE_NAME = "OrgChildrenCacheById";
 
-    public User(Map<String, Object> attributes) {
-        this.userAttributes = attributes;
+    private static final OrganizationCache instance = new OrganizationCache();
+
+    private OrganizationCache() {
+
+        super(CACHE_NAME);
     }
 
-    public Map<String, Object> getUserAttributes() {
+    public static OrganizationCache getInstance() {
 
-        return userAttributes;
-    }
-
-    public void setUserAttributes(Map<String, Object> userAttributes) {
-
-        this.userAttributes = userAttributes;
+        CarbonUtils.checkSecurity();
+        return instance;
     }
 }

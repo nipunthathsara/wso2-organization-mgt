@@ -16,9 +16,6 @@
 
 package org.wso2.carbon.identity.organization.mgt.endpoint.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingUsersDTO;
 import io.swagger.annotations.*;
 import com.fasterxml.jackson.annotation.*;
 
@@ -27,45 +24,59 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 @ApiModel(description = "")
-public class UserRoleMappingDTO {
+public class UserEmailsDTO {
 
     @Valid 
-    @NotNull(message = "Property roleId cannot be null.") 
-    private String roleId = null;
+    private String type = null;
 
     @Valid 
-    private List<UserRoleMappingUsersDTO> users = new ArrayList<UserRoleMappingUsersDTO>();
+    private String value = null;
+
+    @Valid 
+    private Boolean primary = null;
 
     /**
     **/
-    @ApiModelProperty(required = true, value = "")
-    @JsonProperty("roleId")
-    public String getRoleId() {
-        return roleId;
+    @ApiModelProperty(value = "")
+    @JsonProperty("type")
+    public String getType() {
+        return type;
     }
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
+    public void setType(String type) {
+        this.type = type;
     }
 
     /**
     **/
     @ApiModelProperty(value = "")
-    @JsonProperty("users")
-    public List<UserRoleMappingUsersDTO> getUsers() {
-        return users;
+    @JsonProperty("value")
+    public String getValue() {
+        return value;
     }
-    public void setUsers(List<UserRoleMappingUsersDTO> users) {
-        this.users = users;
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    /**
+    **/
+    @ApiModelProperty(value = "")
+    @JsonProperty("primary")
+    public Boolean getPrimary() {
+        return primary;
+    }
+    public void setPrimary(Boolean primary) {
+        this.primary = primary;
     }
 
     @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("class UserRoleMappingDTO {\n");
+        sb.append("class UserEmailsDTO {\n");
         
-        sb.append("    roleId: ").append(roleId).append("\n");
-        sb.append("    users: ").append(users).append("\n");
+        sb.append("    type: ").append(type).append("\n");
+        sb.append("    value: ").append(value).append("\n");
+        sb.append("    primary: ").append(primary).append("\n");
         
         sb.append("}\n");
         return sb.toString();

@@ -16,9 +16,6 @@
 
 package org.wso2.carbon.identity.organization.mgt.endpoint.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingUsersDTO;
 import io.swagger.annotations.*;
 import com.fasterxml.jackson.annotation.*;
 
@@ -27,45 +24,44 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 @ApiModel(description = "")
-public class UserRoleMappingDTO {
+public class UserNameDTO {
 
     @Valid 
-    @NotNull(message = "Property roleId cannot be null.") 
-    private String roleId = null;
+    private String givenName = null;
 
     @Valid 
-    private List<UserRoleMappingUsersDTO> users = new ArrayList<UserRoleMappingUsersDTO>();
+    private String familyName = null;
 
     /**
     **/
-    @ApiModelProperty(required = true, value = "")
-    @JsonProperty("roleId")
-    public String getRoleId() {
-        return roleId;
+    @ApiModelProperty(value = "")
+    @JsonProperty("givenName")
+    public String getGivenName() {
+        return givenName;
     }
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
+    public void setGivenName(String givenName) {
+        this.givenName = givenName;
     }
 
     /**
     **/
     @ApiModelProperty(value = "")
-    @JsonProperty("users")
-    public List<UserRoleMappingUsersDTO> getUsers() {
-        return users;
+    @JsonProperty("familyName")
+    public String getFamilyName() {
+        return familyName;
     }
-    public void setUsers(List<UserRoleMappingUsersDTO> users) {
-        this.users = users;
+    public void setFamilyName(String familyName) {
+        this.familyName = familyName;
     }
 
     @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("class UserRoleMappingDTO {\n");
+        sb.append("class UserNameDTO {\n");
         
-        sb.append("    roleId: ").append(roleId).append("\n");
-        sb.append("    users: ").append(users).append("\n");
+        sb.append("    givenName: ").append(givenName).append("\n");
+        sb.append("    familyName: ").append(familyName).append("\n");
         
         sb.append("}\n");
         return sb.toString();

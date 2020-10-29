@@ -18,34 +18,33 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core;
 
+import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
 
 import java.util.List;
 
+
 /**
  * Organization and user role manager service interface.
  */
 public interface OrganizationUserRoleManager {
 
-    void addOrganizationAndUserRoleMappings(String organizationId, List<UserRoleMapping> userRoleMappings)
+    void addOrganizationUserRoleMappings(String organizationId, UserRoleMapping userRoleMappings)
+            throws OrganizationUserRoleMgtException, OrganizationManagementException;
+
+    List<User> getUsersByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
+                                             List<String> requestedAttributes)
             throws OrganizationUserRoleMgtException;
 
-    void patchOrganizationAndUserRoleMapping(String organizationId, List<Operation> operations)
-            throws OrganizationUserRoleMgtException;
-
-    List<User> getUsersByOrganizationAndRole(String organizationID, String roleId)
-            throws OrganizationUserRoleMgtException;
-
-    void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, String roleId)
-            throws OrganizationUserRoleMgtException;
+    void deleteOrganizationsUserRoleMapping(String organizationId, String userId, String roleId, boolean includeSubOrgs)
+            throws OrganizationUserRoleMgtException, OrganizationManagementException;
 
     List<Role> getRolesByOrganizationAndUser(String organizationId, String userId)
             throws OrganizationUserRoleMgtException;
 
-    boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, String roleId)
+    boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId)
             throws OrganizationUserRoleMgtException;
 }

@@ -92,11 +92,13 @@ public class SQLConstants {
     public static final String VIEW_CONFIG_KEY_COLUMN = "CONFIG_KEY";
     public static final String VIEW_CONFIG_VALUE_COLUMN = "CONFIG_VALUE";
     public static final String UM_ROLE_ID_COLUMN = "UM_ROLE_ID";
+    public static final String UM_UM_USER_ID_COLUMN = "UM_USER_ID";
     public static final String UM_HYBRID_ROLE_ID_COLUMN = "UM_HYBRID_ROLE_ID";
     public static final String UM_RESOURCE_ID_COLUMN = "UM_RESOURCE_ID";
 
     public static final String UM_ID_COLUMN = "UM_ID";
     public static final String ATTR_VALUE_COLUMN = "ATTR_VALUE";
+    public static final String INSERT_ALL = "INSERT ALL ";
 
     public static final String LIKE_SYMBOL = "%";
     public static final String COLUMN_LOWER_WRAPPER = "lower(%s)";
@@ -295,4 +297,15 @@ public class SQLConstants {
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
             "    UM_USER_ID = ? AND ORG_ID IN (#)";
+    public static final String GET_USER_ROLE_ORG_MAPPINGS_FOR_GIVEN_ORG =
+            "SELECT\n" +
+            "    UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID\n" +
+            "FROM\n" +
+            "    UM_USER_ROLE_ORG\n" +
+            "WHERE\n" +
+            "    ORG_ID = ? AND UM_TENANT_ID = ?";
+    public static final String INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING =
+            "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID) " +
+                    "VALUES (?, ?, ?, ?, ?, ?) ";
+    public static final String SELECT_DUMMY_RECORD = "SELECT 1 FROM DUAL";
 }

@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.organization.mgt.core.dao.CacheBackedOrganizationMgtDAO;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
@@ -40,6 +41,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import org.wso2.carbon.identity.organization.mgt.core.usermgt.AbstractOrganizationMgtUserStoreManager;
@@ -139,6 +141,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
     private OrganizationMgtDao organizationMgtDao = OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao();
     private OrganizationAuthorizationDao authorizationDao = OrganizationMgtDataHolder.getInstance()
             .getOrganizationAuthDao();
+    private CacheBackedOrganizationMgtDAO cacheBackedOrganizationMgtDAO =
+            OrganizationMgtDataHolder.getInstance().getCacheBackedOrganizationMgtDAO();
 
     @Override
     public Organization addOrganization(OrganizationAdd organizationAdd, boolean isImport)
@@ -173,7 +177,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 log.debug("Creating LDAP subdirectory for the organization id : " + organization.getId());
             }
         }
-        organizationMgtDao.addOrganization(getTenantId(), organization);
+        cacheBackedOrganizationMgtDAO.addOrganization(getTenantId(), organization);
         grantCreatorWithFullPermission(organization.getId());
         // Fire post-event
         event = isImport ? POST_IMPORT_ORGANIZATION : POST_CREATE_ORGANIZATION;
@@ -315,7 +319,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
                     "Organization " + organizationId + " is not in the disabled status");
         }
-        organizationMgtDao.deleteOrganization(getTenantId(), organizationId.trim());
+        cacheBackedOrganizationMgtDAO.deleteOrganization(getTenantId(), organizationId.trim());
         // Fire post-event
         fireEvent(POST_DELETE_ORGANIZATION, organizationId, null, Status.SUCCESS);
     }
@@ -858,6 +862,28 @@ public class OrganizationManagerImpl implements OrganizationManager {
             authorizationDao
                     .addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationRoleManager.getGroupId(),
                             organizationRoleManager.getHybridRoleId(), getTenantId(), organizationId);
+        }
+    }
+
+    private void grantImmediateParentPermissions(String organizationId, String parentOrganizationId)
+            throws OrganizationManagementException {
+
+        // If parent's permissions will be inherited, propagate them to new organization.
+        if (StringUtils.isNotEmpty(parentOrganizationId)) {
+            List<OrganizationUserRoleMapping> organizationUserRoleMappingsOfParent = authorizationDao
+                    .getOrganizationUserRoleMappingsForOrganization(parentOrganizationId, getTenantId());
+            List<OrganizationUserRoleMapping> organizationUserRoleMappingsForNewOrganization = new ArrayList<>();
+            for (OrganizationUserRoleMapping mapping : organizationUserRoleMappingsOfParent) {
+                // Skip the role mappings for authenticated user. It should be assigned separately.
+                if (!mapping.getUserId().equals(getAuthenticatedUserId())) {
+                    OrganizationUserRoleMapping organizationUserRoleMapping =
+                            new OrganizationUserRoleMapping(organizationId, mapping.getUserId(), mapping.getRoleId(),
+                                    mapping.getHybridRoleId());
+                    organizationUserRoleMappingsForNewOrganization.add(organizationUserRoleMapping);
+                }
+            }
+            authorizationDao
+                    .addOrganizationAndUserRoleMappings(organizationUserRoleMappingsForNewOrganization, getTenantId());
         }
     }
 

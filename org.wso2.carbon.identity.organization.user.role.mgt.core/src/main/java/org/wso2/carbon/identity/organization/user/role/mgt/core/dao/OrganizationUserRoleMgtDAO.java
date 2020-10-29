@@ -31,22 +31,22 @@ import java.util.List;
  */
 public interface OrganizationUserRoleMgtDAO {
 
-    void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMapping,
-                                            Integer tenantID)
+    void addOrganizationUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings, int tenantID)
             throws OrganizationUserRoleMgtException;
 
-    List<User> getUserIdsByOrganizationAndRole(String organizationID, String roleId, Integer tenantID)
+    List<User> getUserIdsByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
+                                               List<String> requestedAttributes, int tenantID)
             throws OrganizationUserRoleMgtServerException;
 
-    void deleteOrganizationAndUserRoleMapping(String organizationId, String userId, String roleId, Integer tenantId)
+    void deleteOrganizationsUserRoleMapping(List<String> organizationIds, String userId, String roleId, int tenantId)
             throws OrganizationUserRoleMgtException;
 
-    List<Role> getRolesByOrganizationAndUser(String organizationID, String userId, Integer tenantID)
+    List<Role> getRolesByOrganizationAndUser(String organizationID, String userId, int tenantID)
             throws OrganizationUserRoleMgtServerException;
 
-    boolean isOrganizationAndUserRoleMappingExists(String organizationId, String userId, String roleId,
-                                                   Integer tenantId)
+    boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId,
+                                                   int tenantId)
             throws OrganizationUserRoleMgtException;
 
-    Integer getRoleIdBySCIMGroupName(String roleName, Integer tenantId) throws OrganizationUserRoleMgtServerException;
+    Integer getRoleIdBySCIMGroupName(String roleName, int tenantId) throws OrganizationUserRoleMgtServerException;
 }

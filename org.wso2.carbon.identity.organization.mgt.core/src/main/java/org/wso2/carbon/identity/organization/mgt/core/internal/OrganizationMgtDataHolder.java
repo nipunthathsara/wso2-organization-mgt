@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.internal;
 
+import org.wso2.carbon.identity.organization.mgt.core.dao.CacheBackedOrganizationMgtDAO;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
@@ -35,6 +36,7 @@ public class OrganizationMgtDataHolder {
     private static final OrganizationMgtDataHolder orgMgtDataHolder = new OrganizationMgtDataHolder();
     private OrganizationAuthorizationDao organizationAuthDao;
     private OrganizationMgtDao organizationMgtDao;
+    private CacheBackedOrganizationMgtDAO cacheBackedOrganizationMgtDAO;
     private RealmService realmService;
     private Map<String, OrganizationMgtRole> organizationMgtRoles = new HashMap<>();
     private IdentityEventService identityEventService;
@@ -70,6 +72,17 @@ public class OrganizationMgtDataHolder {
     public void setOrganizationAuthDao(OrganizationAuthorizationDao organizationAuthDao) {
 
         this.organizationAuthDao = organizationAuthDao;
+    }
+
+    public CacheBackedOrganizationMgtDAO getCacheBackedOrganizationMgtDAO() {
+
+        return cacheBackedOrganizationMgtDAO;
+    }
+
+    public void setCacheBackedOrganizationMgtDAO(
+            CacheBackedOrganizationMgtDAO cacheBackedOrganizationMgtDAO) {
+
+        this.cacheBackedOrganizationMgtDAO = cacheBackedOrganizationMgtDAO;
     }
 
     public RealmService getRealmService() {
