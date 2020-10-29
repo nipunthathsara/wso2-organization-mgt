@@ -47,6 +47,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_GROUP_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_HYBRID_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ORGANIZATIONS_PERMISSIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_PERMISSIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.IS_USER_AUTHORIZED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ID_COLUMN;
@@ -162,6 +163,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         // System generated list of organization IDs. No security concern here.
         query = query.replace("#", sj.toString());
         validateQueryLength(query);
+
         List<OrganizationPermission> permissions;
         try {
             permissions = template.executeQuery(query, (resultSet, rowNumber) -> {
@@ -177,6 +179,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
                     "error collecting permissions for user : " + userId, e);
         }
+
         // Initiate an empty map to hold list of permissions against organization id
         Map<String, List<String>> userOrgPermissions = organizationIds.stream()
                 .collect(Collectors.toMap(String::toString, permission -> new ArrayList<>()));
@@ -193,6 +196,32 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
             });
         }
         return userOrgPermissions;
+    }
+
+    @Override
+    public List<String> findUserPermissions(JdbcTemplate template, String userId)
+            throws OrganizationManagementException {
+
+        List<OrganizationPermission> orgPermissions;
+        try {
+            orgPermissions = template.executeQuery(GET_USER_PERMISSIONS, (resultSet, rowNumber) -> {
+                OrganizationPermission permission = new OrganizationPermission();
+                permission.setOrganizationId(resultSet.getString(VIEW_ORG_ID_COLUMN));
+                permission.setPermission(resultSet.getString(UM_RESOURCE_ID_COLUMN));
+                return permission;
+            }, preparedStatement -> {
+                int parameterIndex = 0;
+                preparedStatement.setString(++parameterIndex, userId);
+            });
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
+                    "error collecting permissions for user : " + userId, e);
+        }
+        List<String> permissions = new ArrayList<>();
+        for (OrganizationPermission permission : orgPermissions) {
+            permissions.add(permission.getPermission());
+        }
+        return permissions;
     }
 
     private void validateQueryLength(String query) throws OrganizationManagementClientException {

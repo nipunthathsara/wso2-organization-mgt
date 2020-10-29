@@ -54,7 +54,7 @@ public interface OrganizationAuthorizationDao {
      * @throws OrganizationManagementException
      */
     void addOrganizationAndUserRoleMapping(String userId, String roleId, int hybridRoleId, int tenantId,
-            String organizationId) throws OrganizationManagementException;
+                                           String organizationId) throws OrganizationManagementException;
 
     /**
      * Find the 'UM_ID' by 'UM_ROLE_NAME' from the 'UM_HYBRID_ROLE' table.
@@ -86,6 +86,17 @@ public interface OrganizationAuthorizationDao {
      * @throws OrganizationManagementException
      */
     Map<String, List<String>> findUserPermissionsForOrganizations(JdbcTemplate template, String userId,
-            List<String> organizationIds)
+                                                                  List<String> organizationIds)
+            throws OrganizationManagementException;
+
+    /**
+     * Find permissions for the authenticated user over all the organizations.
+     *
+     * @param template JDBC template to be used.
+     * @param userId   Authenticated user's ID.
+     * @return List of permissions assigned to the user across all organizations.
+     * @throws OrganizationManagementException if any errors occurred.
+     */
+    List<String> findUserPermissions(JdbcTemplate template, String userId)
             throws OrganizationManagementException;
 }

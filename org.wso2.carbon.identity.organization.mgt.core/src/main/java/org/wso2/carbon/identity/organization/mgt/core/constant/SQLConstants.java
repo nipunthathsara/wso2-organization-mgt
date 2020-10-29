@@ -295,4 +295,11 @@ public class SQLConstants {
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
             "    UM_USER_ID = ? AND ORG_ID IN (#)";
+    public static final String GET_USER_PERMISSIONS =
+            "SELECT\n" +
+            "    DISTINCT UM_RESOURCE_ID, ORG_ID\n" +
+            "FROM\n" +
+            "    ORG_AUTHZ_VIEW\n" +
+            "WHERE\n" +
+            "    UM_USER_ID = ?";
 }
