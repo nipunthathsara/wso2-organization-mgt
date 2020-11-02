@@ -960,12 +960,16 @@ definitions:
     properties:
       name:
         type: string
+        example: "Hesei"
       displayName:
         type: string
+        example: "Hesei constructions"
       description:
         type: string
+        example: "Building constructions"
       parentId:
         type: string
+        example: "b4526d91-a8bf-43d2-8b14-c548cf73065b"
       attributes:
         type: array
         items:
@@ -988,15 +992,20 @@ definitions:
     properties:
       id:
         type: string
+        example: '06c1f4e2-3339-44e4-a825-96585e3653b1'
       name:
         type: string
+        example: 'Hesei'
       displayName:
         type: string
+        example: 'Hesei constructions'
       description:
         type: string
+        example: 'Building constructions'
       status:
         type: string
         enum: [ACTIVE, DISABLED]
+        example: ACTIVE
       parent:
         $ref: '#/definitions/Parent'
       meta:
@@ -1015,15 +1024,20 @@ definitions:
     properties:
       id:
         type: string
+        example: '06c1f4e2-3339-44e4-a825-96585e3653b1'
       name:
         type: string
+        example: 'Hesei'
       displayName:
         type: string
+        example: 'Hesei constructions'
       description:
         type: string
+        example: 'Building constructions'
       status:
         type: string
         enum: [ACTIVE, DISABLED]
+        example: ACTIVE
       parent:
         $ref: '#/definitions/Parent'
       meta:
@@ -1036,6 +1050,7 @@ definitions:
         type: array
         items:
           type: string
+          example: '/permission/admin/manage/identity/rolemgt/create'
   #-----------------------------------------------------
   # Organization Parent Object
   #-----------------------------------------------------
@@ -1047,12 +1062,16 @@ definitions:
     properties:
       id:
         type: string
+        example: 'b4526d91-a8bf-43d2-8b14-c548cf73065b'
       $ref:
         type: string
+        example: '/t/carbon.super/api/identity/organization-mgt/v1.0/organizations/b4526d91-a8bf-43d2-8b14-c548cf73065b'
       name:
         type: string
+        example: 'ROOT'
       displayName:
         type: string
+        example: 'ROOT'
   #-----------------------------------------------------
   # Organization Meta Object
   #-----------------------------------------------------
@@ -1066,8 +1085,10 @@ definitions:
     properties:
       created:
         type: string
+        example: '2020-10-30T12:31:53.406Z'
       lastModified:
         type: string
+        example: '2020-10-30T12:31:53.406Z'
       createdBy:
         $ref: '#/definitions/MetaUser'
       lastModifiedBy:
@@ -1083,10 +1104,13 @@ definitions:
     properties:
       id:
         type: string
+        example: '3cf471bf-951a-46ca-b7a7-aed7d3351604'
       $ref:
         type: string
+        example: '/t/carbon.super/scim2/Users/3cf471bf-951a-46ca-b7a7-aed7d3351604'
       username:
         type: string
+        example: 'john'
   #-----------------------------------------------------
   # Organization Attribute Object
   #-----------------------------------------------------
@@ -1097,8 +1121,10 @@ definitions:
     properties:
       key:
         type: string
+        example: "Type"
       value:
         type: string
+        example: "partner"
   #-----------------------------------------------------
   # Organization UserStoreConfig Object
   #-----------------------------------------------------
@@ -1111,8 +1137,10 @@ definitions:
       key:
         type: string
         enum: [USER_STORE_DOMAIN, RDN, DN]
+        example: 'RDN'
       value:
         type: string
+        example: 'hesei'
   #-----------------------------------------------------
   # Organization User Role Mapping Object
   #-----------------------------------------------------
@@ -1136,7 +1164,7 @@ definitions:
               example: 'c4c3a320-e381-463a-846f-1c2bd083d38c'
             includeSubOrgs:
               type: boolean
-              example: 'true'
+              example: true
   #-----------------------------------------------------
   # User with userId and username
   #-----------------------------------------------------
