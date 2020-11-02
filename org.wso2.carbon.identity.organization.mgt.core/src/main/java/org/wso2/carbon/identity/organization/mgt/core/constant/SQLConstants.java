@@ -315,4 +315,15 @@ public class SQLConstants {
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
             "    UM_USER_ID = ?";
+    // TODO changed authz_view. Check if that's okay
+    // Permissions can be assigned at base level or leaf level. Hence, multiple UM_RESOURCE_IDs.
+    public static final String GET_DN_LIST_FOR_AUTHORIZED_ORGANIZATIONS =
+            "SELECT\n" +
+            "    DISTINCT CONFIG_VALUE\n" +
+            "FROM\n" +
+            "    ORG_AUTHZ_VIEW\n" +
+            "WHERE\n" +
+            "    UM_TENANT_ID = ? AND UM_USER_ID = ? \n" +
+            "    AND (UM_RESOURCE_ID = '/permission/admin' OR UM_RESOURCE_ID = '/permission/admin/manage' OR UM_RESOURCE_ID = '/permission/admin/manage/identity' OR UM_RESOURCE_ID = ? OR UM_RESOURCE_ID = ?)\n" +
+            "    AND CONFIG_KEY = 'DN';";
 }

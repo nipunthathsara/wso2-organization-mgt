@@ -34,17 +34,6 @@ public class OrganizationMgtConstants {
             "/t/%s/api/identity/organization-mgt/v1.0/organizations/%s";
     public static final String ACCOUNT_DISABLED_CLAIM_URI = "http://wso2.org/claims/identity/accountDisabled";
 
-    /**
-     * <OrganizationMgt>
-     * <AttributeValidatorClass>org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl
-     * </AttributeValidatorClass>
-     * </OrganizationMgt>
-     */
-    public static final String ATTRIBUTE_VALIDATOR_PROPERTIES_FILE_NAME = "org-mgt-attributes.properties";
-    public static final String ORGANIZATION_ATTRIBUTE_VALIDATOR = "OrganizationMgt.AttributeValidatorClass";
-    public static final String DEFAULT_ATTRIBUTE_VALIDATOR_CLASS =
-            "org.wso2.carbon.identity.organization.mgt.core.validator.AttributeValidatorImpl";
-
     public static final String PATCH_OP_ADD = "add";
     public static final String PATCH_OP_REMOVE = "remove";
     public static final String PATCH_OP_REPLACE = "replace";
@@ -180,6 +169,8 @@ public class OrganizationMgtConstants {
         ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR("ORGMGT_00037", "Error while authorizing : %s"),
         ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR("ORGMGT_00038",
                 "Organization Management Server configuration error : %s"),
+        ERROR_CODE_RETRIEVING_AUTHORIZED_DN_LIST("ORGMGT_00039", "Error while retrieving authorized DNs : %s"),
+
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

@@ -37,6 +37,7 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_AUTHORIZED_DN_LIST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
@@ -47,6 +48,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_GROUP_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_HYBRID_ID_FROM_ROLE_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_DN_LIST_FOR_AUTHORIZED_ORGANIZATIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ORGANIZATIONS_PERMISSIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_PERMISSIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ROLE_ORG_MAPPINGS_FOR_GIVEN_ORG;
@@ -60,6 +62,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_RESOURCE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ROLE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_UM_USER_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ORG_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.dissemblePermissionString;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
@@ -80,6 +83,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
     public boolean isUserAuthorized(String userId, String organizationId, String permission)
             throws OrganizationManagementException {
 
+        // TODO address base permission search
         JdbcTemplate jdbcTemplate = getNewTemplate();
         String basePermission = permission.contains(USER_MGT_BASE_PERMISSION) ? USER_MGT_BASE_PERMISSION :
                 (permission.contains(ROLE_MGT_BASE_PERMISSION) ? ROLE_MGT_BASE_PERMISSION :
@@ -277,6 +281,32 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
             throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
                     "Error obtaining organizationUserRole mappings for organization : " + organizationId +
                             ", tenant id : " + tenantId, e);
+        }
+    }
+
+    @Override
+    public List<String> findAuthorizedOrganizationDnList(String userId, int tenantId, String permission)
+            throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        String basePermission = permission.contains(USER_MGT_BASE_PERMISSION) ? USER_MGT_BASE_PERMISSION :
+                (permission.contains(ROLE_MGT_BASE_PERMISSION) ? ROLE_MGT_BASE_PERMISSION :
+                        (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION :
+                                permission));
+        try {
+            return jdbcTemplate.executeQuery(GET_DN_LIST_FOR_AUTHORIZED_ORGANIZATIONS,
+                    (resultSet, rowNumber) ->
+                            resultSet.getString(VIEW_CONFIG_VALUE_COLUMN),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                        preparedStatement.setString(++parameterIndex, userId);
+                        preparedStatement.setString(++parameterIndex, basePermission);
+                        preparedStatement.setString(++parameterIndex, permission);
+                    });
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_RETRIEVING_AUTHORIZED_DN_LIST,
+                    "userid : " + userId + ", tenantid : " + tenantId + ", permission : " + permission, e);
         }
     }
 
