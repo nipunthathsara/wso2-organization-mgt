@@ -37,7 +37,7 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_AUTHORIZED_DN_LIST;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_AUTHORIZED_ORGANIZATION_LIST_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
@@ -48,7 +48,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_GROUP_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_HYBRID_ID_FROM_ROLE_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_DN_LIST_FOR_AUTHORIZED_ORGANIZATIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ORGANIZATIONS_PERMISSIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_PERMISSIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ROLE_ORG_MAPPINGS_FOR_GIVEN_ORG;
@@ -62,7 +62,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_RESOURCE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ROLE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_UM_USER_ID_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ORG_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.dissemblePermissionString;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
@@ -285,7 +284,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
     }
 
     @Override
-    public List<String> findAuthorizedOrganizationDnList(String userId, int tenantId, String permission)
+    public List<String> findAuthorizedOrganizationsList(String userId, int tenantId, String permission)
             throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -294,9 +293,9 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                         (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION :
                                 permission));
         try {
-            return jdbcTemplate.executeQuery(GET_DN_LIST_FOR_AUTHORIZED_ORGANIZATIONS,
+            return jdbcTemplate.executeQuery(GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS,
                     (resultSet, rowNumber) ->
-                            resultSet.getString(VIEW_CONFIG_VALUE_COLUMN),
+                            resultSet.getString(VIEW_ORG_ID_COLUMN),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);
@@ -305,7 +304,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                         preparedStatement.setString(++parameterIndex, permission);
                     });
         } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_RETRIEVING_AUTHORIZED_DN_LIST,
+            throw handleServerException(ERROR_CODE_RETRIEVING_AUTHORIZED_ORGANIZATION_LIST_ERROR,
                     "userid : " + userId + ", tenantid : " + tenantId + ", permission : " + permission, e);
         }
     }

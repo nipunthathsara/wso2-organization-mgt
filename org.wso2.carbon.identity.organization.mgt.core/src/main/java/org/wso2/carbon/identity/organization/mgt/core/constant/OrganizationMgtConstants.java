@@ -169,8 +169,8 @@ public class OrganizationMgtConstants {
         ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR("ORGMGT_00037", "Error while authorizing : %s"),
         ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR("ORGMGT_00038",
                 "Organization Management Server configuration error : %s"),
-        ERROR_CODE_RETRIEVING_AUTHORIZED_DN_LIST("ORGMGT_00039", "Error while retrieving authorized DNs : %s"),
-
+        ERROR_CODE_RETRIEVING_AUTHORIZED_ORGANIZATION_LIST_ERROR("ORGMGT_00039",
+                "Error while retrieving authorized organizations list : %s"),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 
