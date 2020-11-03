@@ -73,6 +73,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_IMPORT_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_DELETE_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNAUTHORIZED_ACTION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_RESOURCE_BASE_PATH;
@@ -315,11 +316,17 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
         Organization organization = organizationMgtDao.getOrganization(getTenantId(), organizationId, null);
+        Map<String, UserStoreConfig> configs = organizationMgtDao.getUserStoreConfigsByOrgId(getTenantId(),
+                organizationId);
+        String userStoreDomain = configs.get(USER_STORE_DOMAIN).getValue();
+        String dn = configs.get(DN).getValue();
         // Organization should be in the disabled status
         if (!Organization.OrgStatus.DISABLED.equals(organization.getStatus())) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
                     "Organization " + organizationId + " is not in the disabled status");
         }
+        // Remove OU from LDAP
+        deleteLdapDirectory(getTenantId(), userStoreDomain, dn);
         cacheBackedOrganizationMgtDAO.deleteOrganization(getTenantId(), organizationId.trim());
         // Fire post-event
         fireEvent(POST_DELETE_ORGANIZATION, organizationId, null, Status.SUCCESS);
@@ -826,6 +833,40 @@ public class OrganizationManagerImpl implements OrganizationManager {
         } catch (UserStoreException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_ADD_ERROR,
                     "Error creating the DN : " + dn + " in the user store domain : " + userStoreDomain, e);
+        }
+    }
+
+    private void deleteLdapDirectory(int tenantId, String userStoreDomain, String dn)
+            throws OrganizationManagementException {
+
+        try {
+            UserRealm tenantUserRealm = ((UserRealm) OrganizationMgtDataHolder.getInstance().getRealmService()
+                    .getTenantUserRealm(tenantId));
+            if (tenantUserRealm == null) {
+                throw handleServerException(ERROR_CODE_ORGANIZATION_DELETE_ERROR,
+                        "Error obtaining tenant realm for the tenant id : " + tenantId);
+            }
+            if (tenantUserRealm.getUserStoreManager() == null
+                    || tenantUserRealm.getUserStoreManager().getSecondaryUserStoreManager(userStoreDomain) == null) {
+                throw handleServerException(ERROR_CODE_ORGANIZATION_DELETE_ERROR,
+                        "Error obtaining user store manager for the domain : " + userStoreDomain + ", tenant id : "
+                                + tenantId);
+            }
+            UserStoreManager userStoreManager = tenantUserRealm.getUserStoreManager()
+                    .getSecondaryUserStoreManager(userStoreDomain);
+            if (userStoreManager instanceof AbstractOrganizationMgtUserStoreManager) {
+                ((AbstractOrganizationMgtUserStoreManager) userStoreManager).deleteOu(dn);
+                if (log.isDebugEnabled()) {
+                    log.debug("Removed subdirectory : " + dn + ", in the user store domain : " + userStoreDomain);
+                }
+            } else {
+                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
+                        "User store manager doesn't support manipulating LDAP directories. Tenant id : " + tenantId
+                                + ", Domain : " + userStoreDomain);
+            }
+        } catch (UserStoreException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_DELETE_ERROR,
+                    "Error deleting the DN : " + dn + " in the user store domain : " + userStoreDomain, e);
         }
     }
 

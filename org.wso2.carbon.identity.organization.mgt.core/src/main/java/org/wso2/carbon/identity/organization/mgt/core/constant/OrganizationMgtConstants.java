@@ -88,8 +88,26 @@ public class OrganizationMgtConstants {
     public static final String ROLE_MGT_DELETE_PERMISSION = "/permission/admin/manage/identity/rolemgt/delete";
     public static final String UI_EXECUTE = "ui.execute";
 
+    // Organization mgt claim details
+    /**
+     *  <IS_HOME>/repository/resources/conf/templates/repository/conf/identity/identity.xml.j2
+     *
+     *     <!--Organization management properties-->
+     *     <OrganizationMgt>
+     *             <OrgNameClaimUri>{{organization.mgt.org_name_claim_uri}}</OrgNameClaimUri>
+     *             <OrgIdClaimUri>{{organization.mgt.org_id_claim_uri}}</OrgIdClaimUri>
+     *     </OrganizationMgt>
+     *
+     *  <IS_HOME>>/repository/conf/deployment.toml
+     *
+     *      [organization.mgt]
+     *      org_name_claim_uri = "http://wso2.org/claims/organizationName"
+     *      org_id_claim_uri = "http://wso2.org/claims/organizationId"
+     */
     public static final String ORGANIZATION_ID_CLAIM_URI = "OrganizationMgt.OrgIdClaimUri";
     public static final String ORGANIZATION_ID_DEFAULT_CLAIM_URI = "http://wso2.org/claims/organizationId";
+    public static final String ORGANIZATION_NAME_CLAIM_URI = "OrganizationMgt.OrgNameClaimUri";
+    public static final String ORGANIZATION_NAME_DEFAULT_CLAIM_URI = "http://wso2.org/claims/organization";
 
     /**
      * Identity property keys for organization mgt roles
@@ -171,6 +189,7 @@ public class OrganizationMgtConstants {
                 "Organization Management Server configuration error : %s"),
         ERROR_CODE_RETRIEVING_AUTHORIZED_ORGANIZATION_LIST_ERROR("ORGMGT_00039",
                 "Error while retrieving authorized organizations list : %s"),
+        ERROR_CODE_INITIALIZATION_ERROR("ORGMGT_00040", "Error while initializing the organization mgt component : %s"),
 
         ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
 

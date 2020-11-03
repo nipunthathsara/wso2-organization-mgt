@@ -40,4 +40,13 @@ public abstract class AbstractOrganizationMgtUserStoreManager extends UniqueIDRe
      * @throws UserStoreException
      */
     public abstract void createOu(String dn) throws UserStoreException;
+
+    /**
+     * This method removes the provided subdirectory from the LDAP.
+     * Subdirectory should be empty. (No users nor leaf OUs)
+     *
+     * @param dn
+     * @throws UserStoreException
+     */
+    public abstract void deleteOu(String dn) throws UserStoreException;
 }

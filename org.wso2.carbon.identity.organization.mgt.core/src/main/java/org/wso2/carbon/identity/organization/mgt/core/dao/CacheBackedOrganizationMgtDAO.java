@@ -24,6 +24,7 @@ import org.wso2.carbon.identity.organization.mgt.core.cache.OrganizationCache;
 import org.wso2.carbon.identity.organization.mgt.core.cache.OrganizationCacheEntry;
 import org.wso2.carbon.identity.organization.mgt.core.cache.OrganizationCacheKey;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
