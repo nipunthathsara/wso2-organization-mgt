@@ -262,14 +262,23 @@ public class SQLConstants {
             "FROM\n" +
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
-            "    UM_RESOURCE_ID = ? OR UM_RESOURCE_ID = ?";
+            "    UM_RESOURCE_ID = '/permission/admin' " +
+                    "OR UM_RESOURCE_ID = '/permission/admin/manage' " +
+                    "OR UM_RESOURCE_ID = '/permission/admin/manage/identity' " +
+                    "OR UM_RESOURCE_ID = ? " +
+                    "OR UM_RESOURCE_ID = ?";
     public static final String IS_USER_AUTHORIZED =
             "SELECT" +
             "    COUNT(1)\n" +
             "FROM\n" +
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
-            "    UM_USER_ID = ? AND ORG_ID = ? AND (UM_RESOURCE_ID = ? OR UM_RESOURCE_ID = ?)";
+            "    UM_USER_ID = ? AND ORG_ID = ? AND (" +
+                    "UM_RESOURCE_ID = '/permission/admin' " +
+                    "OR UM_RESOURCE_ID = '/permission/admin/manage' " +
+                    "OR UM_RESOURCE_ID = '/permission/admin/manage/identity' " +
+                    "OR UM_RESOURCE_ID = ? " +
+                    "OR UM_RESOURCE_ID = ?)";
     public static final String ADD_USER_ROLE_ORG_MAPPING =
             "INSERT INTO\n" +
             "    UM_USER_ROLE_ORG\n" +
