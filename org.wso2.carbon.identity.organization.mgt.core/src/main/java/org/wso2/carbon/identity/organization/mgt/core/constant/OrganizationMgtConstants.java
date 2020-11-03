@@ -88,7 +88,6 @@ public class OrganizationMgtConstants {
     public static final String ROLE_MGT_DELETE_PERMISSION = "/permission/admin/manage/identity/rolemgt/delete";
     public static final String UI_EXECUTE = "ui.execute";
 
-    // Organization mgt claim details
     /**
      *  <IS_HOME>/repository/resources/conf/templates/repository/conf/identity/identity.xml.j2
      *
@@ -104,6 +103,7 @@ public class OrganizationMgtConstants {
      *      org_name_claim_uri = "http://wso2.org/claims/organizationName"
      *      org_id_claim_uri = "http://wso2.org/claims/organizationId"
      */
+    // Organization mgt claim details
     public static final String ORGANIZATION_ID_CLAIM_URI = "OrganizationMgt.OrgIdClaimUri";
     public static final String ORGANIZATION_ID_DEFAULT_CLAIM_URI = "http://wso2.org/claims/organizationId";
     public static final String ORGANIZATION_NAME_CLAIM_URI = "OrganizationMgt.OrgNameClaimUri";
@@ -158,6 +158,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_INVALID_EVENT("ORGMGT_00013", "Invalid event : %s"),
         ERROR_CODE_UNAUTHORIZED_ACTION("ORGMGT_00014", "Unauthorized action : %s"),
         ERROR_CODE_INVALID_DATE_FORMAT("ORGMGT_00015", "Invalid search criteria : %s"),
+        ERROR_CODE_CONFLICTING_REQUEST("ORGMGT_00016", "Conflict : %s"),
         ERROR_CODE_UNCLASSIFIED_ERROR("ORGMGT_00020", "Error while processing : %s"),
 
         // Server errors (ORGMGT_00020-ORGMGT_00040)
@@ -227,5 +228,13 @@ public class OrganizationMgtConstants {
     public enum NotFoundErrorMessages {
 
         ORGMGT_00004;
+    }
+
+    /**
+     * Conflict Error Messages
+     */
+    public enum ConflictErrorMessages {
+
+        ORGMGT_00016;
     }
 }

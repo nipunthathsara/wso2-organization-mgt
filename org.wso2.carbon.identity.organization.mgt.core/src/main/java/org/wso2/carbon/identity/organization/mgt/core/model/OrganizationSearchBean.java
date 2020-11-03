@@ -74,7 +74,6 @@ public class OrganizationSearchBean implements SearchBean {
     private String parentId;
     private String parentName;
     private String parentDisplayName;
-    //TODO fix time search : Caused by: java.sql.SQLDataException: ORA-01843: not a valid month
     private Timestamp created;
     private Timestamp lastModified;
     private String createdBy;
@@ -159,7 +158,6 @@ public class OrganizationSearchBean implements SearchBean {
     public PrimitiveCondition mapPrimitiveCondition(PrimitiveCondition primitiveCondition)
             throws PrimitiveConditionValidationException {
 
-        //TODO Convert '2020-09-01 15:54:52.905' to '01-SEP-20 10.06.17.867000000 AM'
         return primitiveCondition;
     }
 

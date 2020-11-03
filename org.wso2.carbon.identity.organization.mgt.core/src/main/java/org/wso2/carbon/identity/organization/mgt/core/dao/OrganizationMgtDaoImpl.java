@@ -892,7 +892,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         List<String> roleIds;
         String basePermission = permission.contains(USER_MGT_BASE_PERMISSION) ? USER_MGT_BASE_PERMISSION :
                 (permission.contains(ROLE_MGT_BASE_PERMISSION) ? ROLE_MGT_BASE_PERMISSION :
-                        (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION : ""));
+                        (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION :
+                                permission));
         try {
             roleIds = jdbcTemplate.executeQuery(GET_ROLE_IDS_FOR_PERMISSION,
                     (resultSet, rowNumber) -> resultSet.getString(UM_ROLE_ID_COLUMN),

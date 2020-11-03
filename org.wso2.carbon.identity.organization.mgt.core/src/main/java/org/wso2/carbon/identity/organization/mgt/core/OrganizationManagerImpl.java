@@ -61,6 +61,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CONFLICTING_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_EVENTING_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST;
@@ -474,7 +475,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         // Check if the organization name already exists for the given tenant
         if (isOrganizationExistByName(organizationAdd.getName())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
+            throw handleClientException(ERROR_CODE_CONFLICTING_REQUEST,
                     "Organization name " + organizationAdd.getName() + " already exists in this tenant.");
         }
         // Check if the parent organization exists
@@ -552,7 +553,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         boolean isAvailable = organizationMgtDao.isRdnAvailable(organization.getUserStoreConfigs().get(RDN).getValue(),
                 organization.getParent().getId(), getTenantId());
         if (!isAvailable) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
+            throw handleClientException(ERROR_CODE_CONFLICTING_REQUEST,
                     "RDN : " + organization.getUserStoreConfigs().get(RDN) + ", is not available for the parent : "
                             + organization.getParent().getId());
         }

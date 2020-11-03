@@ -24,7 +24,6 @@ import org.wso2.carbon.identity.organization.mgt.core.cache.OrganizationCache;
 import org.wso2.carbon.identity.organization.mgt.core.cache.OrganizationCacheEntry;
 import org.wso2.carbon.identity.organization.mgt.core.cache.OrganizationCacheKey;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
-import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
@@ -41,8 +40,8 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
 
     private static final Log log = LogFactory.getLog(CacheBackedOrganizationMgtDAO.class);
 
-    private OrganizationMgtDao organizationMgtDao = null;
-    private OrganizationCache organizationCache = null;
+    private OrganizationMgtDao organizationMgtDao;
+    private OrganizationCache organizationCache;
 
     public CacheBackedOrganizationMgtDAO(OrganizationMgtDao organizationMgtDao) {
 

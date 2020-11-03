@@ -82,11 +82,11 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
     public boolean isUserAuthorized(String userId, String organizationId, String permission)
             throws OrganizationManagementException {
 
-        // TODO address base permission search
         JdbcTemplate jdbcTemplate = getNewTemplate();
         String basePermission = permission.contains(USER_MGT_BASE_PERMISSION) ? USER_MGT_BASE_PERMISSION :
                 (permission.contains(ROLE_MGT_BASE_PERMISSION) ? ROLE_MGT_BASE_PERMISSION :
-                        (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION : ""));
+                        (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION
+                                : permission));
         try {
             int mappingsCount = jdbcTemplate
                     .fetchSingleRecord(IS_USER_AUTHORIZED, (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),

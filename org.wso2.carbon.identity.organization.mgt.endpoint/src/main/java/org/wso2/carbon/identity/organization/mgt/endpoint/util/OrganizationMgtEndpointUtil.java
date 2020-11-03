@@ -286,7 +286,13 @@ public class OrganizationMgtEndpointUtil {
 
     private static boolean isConflictError(OrganizationManagementClientException e) {
 
-        //TODO implement once error codes are finalized
+        for (OrganizationMgtConstants.ConflictErrorMessages conflictError :
+                OrganizationMgtConstants.ConflictErrorMessages
+                        .values()) {
+            if (conflictError.toString().equals(e.getErrorCode())) {
+                return true;
+            }
+        }
         return false;
     }
 
