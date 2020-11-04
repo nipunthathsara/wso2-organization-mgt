@@ -130,12 +130,12 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_DISPLAY_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_STATUS_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.checkForActiveUsers;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getUserIDFromUserName;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getUserNameFromUserID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.hasActiveUsers;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationAddObject;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationObject;
 
@@ -772,15 +772,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
      * To disable an organization, it shouldn't have any 'ACTIVE' organizations as its sub-organizations.
      * To disable an organization, all user accounts should be disabled.
      *
-     * @param organizationId
-     * @return
-     * @throws OrganizationManagementException
+     * @param organizationId ID of the organization.
+     * @return True if above conditions are met and the organization can be disabled, false otherwise.
+     * @throws OrganizationManagementException If any errors occurred.
      */
     private boolean canDisable(String organizationId) throws OrganizationManagementException {
 
         int tenantId = getTenantId();
-        //TODO test this
-        if (checkForActiveUsers(organizationId, tenantId)) {
+        if (hasActiveUsers(organizationId, tenantId)) {
             return false;
         }
         List<String> children = organizationMgtDao.getChildOrganizationIds(organizationId, null);

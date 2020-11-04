@@ -294,8 +294,16 @@ public class Utils {
         }
     }
 
-    public static boolean checkForActiveUsers(String organizationId, int tenantId)
-            throws OrganizationManagementException {
+    /**
+     * Checks whether a given organization has any active users. accountDisabled claim is used to determine the
+     * active status of a user. If the claim value is false or empty, the user is active.
+     *
+     * @param organizationId ID of the organization.
+     * @param tenantId Tenant ID
+     * @return True if at least one active user found, false otherwise.
+     * @throws OrganizationManagementException If any errors occurred.
+     */
+    public static boolean hasActiveUsers(String organizationId, int tenantId) throws OrganizationManagementException {
 
         String userStoreDomain = getOrganizationManager().getUserStoreConfigs(organizationId).get(USER_STORE_DOMAIN)
                 .getValue();
@@ -326,12 +334,27 @@ public class Utils {
             // Find the attribute name for 'accountDisabled' claim
             String accDisabledAttribute = claimManager.getAttributeName(userStoreDomain, ACCOUNT_DISABLED_CLAIM_URI);
             String orgIdAttribute = claimManager.getAttributeName(userStoreDomain, orgIdClaimUri);
-            ExpressionCondition accDisabledCondition = new ExpressionCondition("EQ", accDisabledAttribute, "false");
+
+            ExpressionCondition accDisabledEmptyCondition = new ExpressionCondition("EM", accDisabledAttribute,
+                    "");
             ExpressionCondition orgIdCondition = new ExpressionCondition("EQ", orgIdAttribute, organizationId);
-            OperationalCondition opCondition = new OperationalCondition("AND", orgIdCondition, accDisabledCondition);
-            String[] userList = ((AbstractUserStoreManager) userStoreManager)
+            OperationalCondition opCondition = new OperationalCondition("AND", orgIdCondition,
+                    accDisabledEmptyCondition);
+            String[] accountDisableEmptyUsers = ((AbstractUserStoreManager) userStoreManager)
                     .getUserList(opCondition, userStoreDomain, null, 1, 0, null, null);
-            return userList.length > 0;
+
+            if (accountDisableEmptyUsers.length > 0) {
+                return true;
+            }
+            // If accountDisable claim value empty users are 0, look for any users with claim value false.
+            ExpressionCondition accDisabledFalseCondition = new ExpressionCondition("EQ", accDisabledAttribute,
+                    "false");
+            OperationalCondition opCondition2 = new OperationalCondition("AND", orgIdCondition,
+                    accDisabledFalseCondition);
+            String[] accountDisableFalseUsers = ((AbstractUserStoreManager) userStoreManager)
+                    .getUserList(opCondition2, userStoreDomain, null, 1, 0, null, null);
+            return accountDisableFalseUsers.length > 0;
+
         } catch (org.wso2.carbon.user.api.UserStoreException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR, "Error while checking for active users",
                     e);
