@@ -665,13 +665,17 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 }
             }
             // You can't deactivate an organization which is having any ACTIVE users or ACTIVE child organizations.
-            if (path.equals(PATCH_PATH_ORG_STATUS) && value.equals(Organization.OrgStatus.DISABLED.toString())
-                    && !canDisable(organizationId)) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Can't disable organization : " + organizationId
-                                + " as it has one or more ACTIVE organization/s or user/s.");
+            if (path.equals(PATCH_PATH_ORG_STATUS) && value.equals(Organization.OrgStatus.DISABLED.toString())) {
+                if (hasActiveChildOrganizations(organizationId)) {
+                    throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+                            "Can't disable organization: " + organizationId + " as it has one or more ACTIVE " +
+                                    "child organization/s.");
+                } else if (hasActiveUsers(organizationId, getTenantId())) {
+                    throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+                            "Can't disable organization: " + organizationId + " as it has one or more ACTIVE user/s.");
+                }
             }
-            // You can't activate an organization, whom's parent organization is not in ACTIVE state.
+            // You can't activate an organization, whom parent organization is not in ACTIVE state.
             if (path.equals(PATCH_PATH_ORG_STATUS) && value.equals(Organization.OrgStatus.ACTIVE.toString())
                     && !canEnable(organizationId)) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
@@ -763,30 +767,25 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     /**
-     * To disable an organization, it shouldn't have any 'ACTIVE' organizations as its sub-organizations.
-     * To disable an organization, all user accounts should be disabled.
+     * Checks whether a given organization has any active child organizations.
      *
      * @param organizationId ID of the organization.
-     * @return True if above conditions are met and the organization can be disabled, false otherwise.
+     * @return True if at least one active child organization found, false otherwise.
      * @throws OrganizationManagementException If any errors occurred.
      */
-    private boolean canDisable(String organizationId) throws OrganizationManagementException {
+    private boolean hasActiveChildOrganizations(String organizationId) throws OrganizationManagementException {
 
-        int tenantId = getTenantId();
-        if (hasActiveUsers(organizationId, tenantId)) {
-            return false;
-        }
         List<String> children = organizationMgtDao.getChildOrganizationIds(organizationId, null);
-        for (String child : children) {
+        for (String child: children) {
             Organization organization = getOrganization(child, false);
             if (organization.getStatus() == Organization.OrgStatus.ACTIVE) {
                 if (log.isDebugEnabled()) {
                     log.debug("Active child organization detected : " + organization.getId());
                 }
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     private boolean canEnable(String organizationId) throws OrganizationManagementException {
