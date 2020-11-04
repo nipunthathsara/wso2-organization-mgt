@@ -103,11 +103,13 @@ public interface OrganizationMgtDao {
      * @param requestedAttributes
      * @param userId
      * @param includePermissions
+     * @param listAsAdmin
      * @return
      * @throws OrganizationManagementException
      */
     List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
-            String sortOrder, List<String> requestedAttributes, String userId, boolean includePermissions)
+            String sortOrder, List<String> requestedAttributes, String userId, boolean includePermissions,
+            boolean listAsAdmin)
             throws OrganizationManagementException;
 
     /**

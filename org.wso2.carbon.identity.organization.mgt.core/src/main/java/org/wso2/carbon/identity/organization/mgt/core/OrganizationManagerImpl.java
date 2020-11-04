@@ -46,6 +46,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRole
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import org.wso2.carbon.identity.organization.mgt.core.usermgt.AbstractOrganizationMgtUserStoreManager;
+import org.wso2.carbon.user.api.AuthorizationManager;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreManager;
@@ -76,6 +77,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_DELETE_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNAUTHORIZED_ACTION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ADMIN_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_RESOURCE_BASE_PATH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_MGT_ROLE;
@@ -93,6 +96,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.SCIM2_USER_RESOURCE_BASE_PATH;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.UI_EXECUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.DATA;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.ORGANIZATION_ID;
@@ -181,6 +185,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             }
         }
         cacheBackedOrganizationMgtDAO.addOrganization(getTenantId(), organization);
+        //TODO fix permission issue here
         grantCreatorWithFullPermission(organization.getId());
         // Fire post-event
         event = isImport ? POST_IMPORT_ORGANIZATION : POST_CREATE_ORGANIZATION;
@@ -238,9 +243,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
         fireEvent(PRE_LIST_ORGANIZATIONS, null, condition, Status.FAILURE);
         // Validate pagination and sorting parameters
         sortBy = getMatchingColumnNameForSortingParameter(sortBy);
+        boolean listAsAdmin = isAuthorizedAsAdmin();
         List<Organization> organizations = organizationMgtDao
                 .getOrganizations(condition, getTenantId(), offset, limit, sortBy, sortOrder, requestedAttributes,
-                        getAuthenticatedUserId(), includePermissions);
+                        getAuthenticatedUserId(), includePermissions, listAsAdmin);
         // Populate derivable information of the organizations
         for (Organization organization : organizations) {
             if (!ROOT.equals(organization.getName())) {
@@ -955,6 +961,22 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw e;
         } catch (IdentityEventException e) {
             throw handleServerException(ERROR_CODE_EVENTING_ERROR, eventName, e);
+        }
+    }
+
+    private boolean isAuthorizedAsAdmin() throws OrganizationManagementException {
+
+        // Having this permission ('/permission/admin/manage/identity/organizationmgt/admin') assigned from the WSO2
+        // default registry based permission model allows :  listing all the organizations, listing all the users,
+        // listing all the groups and granting any permission to any user against any organization.
+        try {
+            AuthorizationManager authorizationManager = OrganizationMgtDataHolder.getInstance().
+                    getRealmService().getTenantUserRealm(getTenantId()).getAuthorizationManager();
+            return authorizationManager
+                    .isUserAuthorized(getAuthenticatedUsername(), ORGANIZATION_ADMIN_PERMISSION, UI_EXECUTE);
+        } catch (UserStoreException e) {
+            throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
+                    "Error while checking if an admin user", e);
         }
     }
 

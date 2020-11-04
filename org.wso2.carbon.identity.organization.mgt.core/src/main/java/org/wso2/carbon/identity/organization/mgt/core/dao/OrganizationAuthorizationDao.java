@@ -93,11 +93,12 @@ public interface OrganizationAuthorizationDao {
      * @param template
      * @param userId
      * @param organizationIds
+     * @param listAsAdmin
      * @return
      * @throws OrganizationManagementException
      */
     Map<String, List<String>> findUserPermissionsForOrganizations(JdbcTemplate template, String userId,
-                                                                  List<String> organizationIds)
+                                                                  List<String> organizationIds, boolean listAsAdmin)
             throws OrganizationManagementException;
 
     /**

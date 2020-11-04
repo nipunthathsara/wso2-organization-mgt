@@ -41,8 +41,12 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_BASE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_CREATE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_BASE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_LIST_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ADD_USER_ROLE_ORG_MAPPING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
@@ -189,7 +193,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public Map<String, List<String>> findUserPermissionsForOrganizations(JdbcTemplate template, String userId,
-            List<String> organizationIds) throws OrganizationManagementException {
+            List<String> organizationIds, boolean listAsAdmin) throws OrganizationManagementException {
 
         String query = GET_USER_ORGANIZATIONS_PERMISSIONS;
         StringJoiner sj = new StringJoiner(",");
@@ -229,6 +233,23 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                 List<String> list = userOrgPermissions.get(permission.getOrganizationId());
                 if (!list.contains(leafPermission)) {
                     list.add(leafPermission);
+                }
+            });
+        }
+        // If listing as admin, below permissions will be implicitly granted for all the organizations
+        if (listAsAdmin) {
+            userOrgPermissions.forEach((id, permissionsList) -> {
+                if (!permissionsList.contains(ORGANIZATION_VIEW_PERMISSION)) {
+                    permissionsList.add(ORGANIZATION_VIEW_PERMISSION);
+                }
+                if (!permissionsList.contains(USER_MGT_LIST_PERMISSION)) {
+                    permissionsList.add(USER_MGT_LIST_PERMISSION);
+                }
+                if (!permissionsList.contains(ROLE_MGT_CREATE_PERMISSION)) {
+                    permissionsList.add(ROLE_MGT_CREATE_PERMISSION);
+                }
+                if (!permissionsList.contains(ROLE_MGT_VIEW_PERMISSION)) {
+                    permissionsList.add(ROLE_MGT_VIEW_PERMISSION);
                 }
             });
         }
