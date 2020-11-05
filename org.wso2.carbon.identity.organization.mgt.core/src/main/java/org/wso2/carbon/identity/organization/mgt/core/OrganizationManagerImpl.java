@@ -136,6 +136,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getUserN
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.hasActiveUsers;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.hasUsers;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationAddObject;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationObject;
 
@@ -327,16 +328,35 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 organizationId);
         String userStoreDomain = configs.get(USER_STORE_DOMAIN).getValue();
         String dn = configs.get(DN).getValue();
-        // Organization should be in the disabled status
-        if (!Organization.OrgStatus.DISABLED.equals(organization.getStatus())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
-                    "Organization " + organizationId + " is not in the disabled status");
-        }
+
+        validateOrganizationDelete(organizationId, organization);
+
         // Remove OU from LDAP
         deleteLdapDirectory(getTenantId(), userStoreDomain, dn);
         cacheBackedOrganizationMgtDAO.deleteOrganization(getTenantId(), organizationId.trim());
         // Fire post-event
         fireEvent(POST_DELETE_ORGANIZATION, organizationId, null, Status.SUCCESS);
+    }
+
+    private void validateOrganizationDelete(String organizationId, Organization organization)
+            throws OrganizationManagementException {
+
+        // Organization should be in the disabled status
+        if (!Organization.OrgStatus.DISABLED.equals(organization.getStatus())) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
+                    "Organization " + organizationId + " is not in the disabled status.");
+        }
+        // Organization shouldn't have any child organizations.
+        if (organizationMgtDao.getChildOrganizationIds(organizationId, null).size() != 0) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
+                    "Organization " + organizationId + " has one or more child organizations.");
+        }
+
+        // Organization shouldn't have any users.
+        if (hasUsers(organizationId, getTenantId())) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
+                    "Organization " + organizationId + " has one or more users.");
+        }
     }
 
     @Override
