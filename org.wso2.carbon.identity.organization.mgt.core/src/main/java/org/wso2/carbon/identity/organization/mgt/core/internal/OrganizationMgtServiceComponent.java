@@ -207,7 +207,6 @@ public class OrganizationMgtServiceComponent {
         }
     }
 
-    //TODO this will fail if you don't have claims when root is created
     private void assignSuperUserToRootOrganization(int tenantId, String rootId, String superUsername) throws
             OrganizationManagementServerException {
 
