@@ -36,7 +36,6 @@ import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.CacheBackedOrganizationMgtDAO;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
-import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
@@ -202,8 +201,9 @@ public class OrganizationMgtServiceComponent {
             userStoreConfigs.put(RDN, new UserStoreConfig(RDN, userSearchBase));
             userStoreConfigs.put(DN, new UserStoreConfig(DN, userSearchBase));
             // Create root
-            OrganizationMgtDao organizationMgtDao = OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao();
-            organizationMgtDao.addOrganization(tenantId, root);
+            CacheBackedOrganizationMgtDAO cacheBackedOrganizationMgtDAO =
+                    OrganizationMgtDataHolder.getInstance().getCacheBackedOrganizationMgtDAO();
+            cacheBackedOrganizationMgtDAO.addOrganization(tenantId, root);
             // Assign super user to the ROOT organization
             assignSuperUserToRootOrganization(tenantId, root.getId(), userName);
         }
