@@ -68,7 +68,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generate
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getLdapRootDn;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getUserIDFromUserName;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.populateManagementRoles;
 
 /**
  * OSGI service component for organization management core bundle.
@@ -92,7 +91,6 @@ public class OrganizationMgtServiceComponent {
             OrganizationMgtDataHolder.getInstance().setOrganizationAuthDao(new OrganizationAuthorizationDaoImpl());
             OrganizationMgtDataHolder.getInstance().setCacheBackedOrganizationMgtDAO(
                     new CacheBackedOrganizationMgtDAO(OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao()));
-            OrganizationMgtDataHolder.getInstance().setOrganizationMgtRoles(populateManagementRoles(-1234));
             BundleContext bundleContext = componentContext.getBundleContext();
             bundleContext.registerService(OrganizationManager.class.getName(), new OrganizationManagerImpl(), null);
             bundleContext.registerService(AbstractEventHandler.class.getName(), new OrganizationMgtAuditHandler(),
