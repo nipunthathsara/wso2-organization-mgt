@@ -233,8 +233,6 @@ public class OrganizationManagerImpl implements OrganizationManager {
             String sortOrder, List<String> requestedAttributes, boolean includePermissions)
             throws OrganizationManagementException {
 
-        //TODO sort by org name default
-
         // Fire pre-event
         fireEvent(PRE_LIST_ORGANIZATIONS, null, condition, Status.FAILURE);
         // Validate pagination and sorting parameters
@@ -571,7 +569,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throws OrganizationManagementClientException {
 
         if (sortBy == null) {
-            return null;
+            return VIEW_NAME_COLUMN;
         }
         switch (sortBy.trim().toLowerCase(Locale.ENGLISH)) {
         case "name":
