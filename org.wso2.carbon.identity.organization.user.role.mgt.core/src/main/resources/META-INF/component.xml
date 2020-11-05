@@ -20,5 +20,9 @@
             <DisplayName>Create</DisplayName>
             <ResourceId>/permission/admin/manage/identity/organizationmgt/create</ResourceId>
         </ManagementPermission>
+        <ManagementPermission>
+            <DisplayName>Admin</DisplayName>
+            <ResourceId>/permission/admin/manage/identity/organizationmgt/admin</ResourceId>
+        </ManagementPermission>
     </ManagementPermissions>
 </component>
