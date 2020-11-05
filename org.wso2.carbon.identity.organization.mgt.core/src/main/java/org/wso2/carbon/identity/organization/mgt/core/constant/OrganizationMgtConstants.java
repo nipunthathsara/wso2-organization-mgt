@@ -66,6 +66,8 @@ public class OrganizationMgtConstants {
     public static final String ADMIN_MANAGE_IDENTITY_PERMISSION = "/permission/admin/manage/identity";
     // organization permissions
     public static final String ORGANIZATION_BASE_PERMISSION = "/permission/admin/manage/identity/organizationmgt";
+    public static final String ORGANIZATION_ADMIN_PERMISSION =
+            "/permission/admin/manage/identity/organizationmgt/admin";
     public static final String ORGANIZATION_CREATE_PERMISSION =
             "/permission/admin/manage/identity/organizationmgt/create";
     public static final String ORGANIZATION_VIEW_PERMISSION = "/permission/admin/manage/identity/organizationmgt/view";

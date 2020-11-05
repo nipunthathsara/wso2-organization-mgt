@@ -197,7 +197,9 @@ public class SQLConstants {
             "FROM\n" +
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
-            "    TENANT_ID = ? AND UM_USER_ID = ? AND UM_ROLE_ID IN (#)";
+            "    TENANT_ID = ?";
+    public static final String GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION =
+            "UM_USER_ID = ? AND UM_ROLE_ID IN (#)";
     public static final String ORDER_BY =
             "%nORDER BY" +
             "%n   %s %s";

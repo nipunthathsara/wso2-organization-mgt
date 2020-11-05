@@ -98,6 +98,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_AUTHORIZED_CHILD_ORG_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATIONS_BY_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_ID_BY_NAME;
@@ -189,10 +190,11 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
-            String sortOrder, List<String> requestedAttributes, String userId, boolean includePermissions)
+            String sortOrder, List<String> requestedAttributes, String userId, boolean includePermissions,
+            boolean listAsAdmin)
             throws OrganizationManagementException {
 
-        PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder);
+        PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder, listAsAdmin);
         JdbcTemplate jdbcTemplate = getNewTemplate();
         // Get list of roles with the required permission
         List<String> roleIds = getRoleListForPermission(jdbcTemplate, ORGANIZATION_VIEW_PERMISSION);
@@ -221,8 +223,10 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         int parameterIndex = 0;
                         // Populate tenant ID
                         preparedStatement.setInt(++parameterIndex, tenantId);
-                        // Populate user Id
-                        preparedStatement.setString(++parameterIndex, userId);
+                        if (!listAsAdmin) {
+                            // Populate user id for non-admin users
+                            preparedStatement.setString(++parameterIndex, userId);
+                        }
                         // Populate generated conditions if any
                         for (int count = 0;
                              placeholderSQL.getData() != null && count < placeholderSQL.getData().size(); count++) {
@@ -296,7 +300,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             // Populate each organization with permissions if required
             if (includePermissions) {
                 Map<String, List<String>> userOrgPermissions = OrganizationMgtDataHolder.getInstance()
-                        .getOrganizationAuthDao().findUserPermissionsForOrganizations(jdbcTemplate, userId, orgIds);
+                        .getOrganizationAuthDao().findUserPermissionsForOrganizations(jdbcTemplate, userId, orgIds,
+                                listAsAdmin);
                 organizationMap.forEach((id, org) -> org.setPermissions(userOrgPermissions.get(id)));
             }
             // When sorting is required, organization IDs were fetched sorted from the DB. But the collected
@@ -351,7 +356,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         .findUserPermissionsForOrganizations(
                                 jdbcTemplate,
                                 userId,
-                                Arrays.asList(organizationId)
+                                Arrays.asList(organizationId),
+                                false
                         ).get(organizationId);
             }
             return (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?
@@ -835,7 +841,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
     }
 
-    private PlaceholderSQL buildQuery(Condition condition, int offset, int limit, String sortBy, String sortOrder)
+    private PlaceholderSQL buildQuery(Condition condition, int offset, int limit, String sortBy, String sortOrder,
+            boolean listAsAdmin)
             throws OrganizationManagementException {
 
         boolean paginationReq = offset > -1 && limit > 0;
@@ -859,13 +866,19 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         StringBuilder sb = new StringBuilder();
         // Base query
         sb.append(GET_ALL_ORGANIZATION_IDS);
+        // Check organization permissions for non admin users
+        if (!listAsAdmin) {
+            sb.append(" AND ").append(GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION);
+        }
         // Append generated search conditions
         if (searchReq) {
             sb.append(" AND ").append(placeholderSQL.getQuery());
         }
+        // Append sorting condition
         if (sortingReq) {
             sb.append(String.format(ORDER_BY, sortBy, sortOrder));
         }
+        // Append pagination condition
         if (paginationReq) {
             sb.append(String.format(PAGINATION, offset, limit));
         }

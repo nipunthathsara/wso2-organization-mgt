@@ -35,7 +35,6 @@ import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManagerImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.CacheBackedOrganizationMgtDAO;
-import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
@@ -46,16 +45,13 @@ import org.wso2.carbon.identity.organization.mgt.core.handler.OrganizationMgtVal
 import org.wso2.carbon.identity.organization.mgt.core.model.MetaUser;
 import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
-import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.ConfigurationContextService;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
@@ -64,9 +60,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ID_DEFAULT_CLAIM_URI;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_NAME_CLAIM_URI;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_NAME_DEFAULT_CLAIM_URI;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_MGT_ROLE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_ROLE_MGT_ROLE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_USER_MGT_ROLE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PRIMARY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
@@ -211,36 +204,6 @@ public class OrganizationMgtServiceComponent {
             // Create root
             OrganizationMgtDao organizationMgtDao = OrganizationMgtDataHolder.getInstance().getOrganizationMgtDao();
             organizationMgtDao.addOrganization(tenantId, root);
-            // Grant super user with full permission over ROOT
-            List<String> tempGroupIds = new ArrayList<>();
-            Map<String, OrganizationMgtRole> organizationMgtRoles = OrganizationMgtDataHolder.getInstance()
-                    .getOrganizationMgtRoles();
-            OrganizationMgtRole role = organizationMgtRoles.get(ORGANIZATION_MGT_ROLE.toString());
-            tempGroupIds.add(role.getGroupId());
-            // Add an entry for 'organization management' purposes
-            OrganizationAuthorizationDao authorizationDao = OrganizationMgtDataHolder.getInstance()
-                    .getOrganizationAuthDao();
-            authorizationDao
-                    .addOrganizationAndUserRoleMapping(userId, role.getGroupId(), role.getHybridRoleId(), tenantId,
-                            root.getId());
-            role = organizationMgtRoles.get(ORGANIZATION_USER_MGT_ROLE.toString());
-            // If the 'OrganizationMgtRole' and the 'OrganizationUserMgtRole' are the same, avoid adding duplicate
-            // entries
-            if (!tempGroupIds.contains(role.getGroupId())) {
-                tempGroupIds.add(role.getGroupId());
-                // Add an entry for 'organization user management' purposes
-                authorizationDao
-                        .addOrganizationAndUserRoleMapping(userId, role.getGroupId(), role.getHybridRoleId(), tenantId,
-                                root.getId());
-            }
-            role = organizationMgtRoles.get(ORGANIZATION_ROLE_MGT_ROLE.toString());
-            // If the 'OrganizationRoleMgtRole' is the same as any of the above, avoid adding duplicate entries
-            if (!tempGroupIds.contains(role.getGroupId())) {
-                // Add an entry for 'organization role management' purposes
-                authorizationDao
-                        .addOrganizationAndUserRoleMapping(userId, role.getGroupId(), role.getHybridRoleId(), tenantId,
-                                root.getId());
-            }
             // Assign super user to the ROOT organization
             assignSuperUserToRootOrganization(tenantId, root.getId(), userName);
         }
@@ -265,8 +228,9 @@ public class OrganizationMgtServiceComponent {
              claims.put(orgNameClaimUri, ROOT);
              userStoreManager.setUserClaimValues(superUsername, claims, "default");
         } catch (UserStoreException e) {
-            throw handleServerException(ERROR_CODE_INITIALIZATION_ERROR, "Error while assigning " + superUsername +
-                    " to the ROOT organization " + rootId, e);
+            throw handleServerException(ERROR_CODE_INITIALIZATION_ERROR,
+                    "Error while assigning " + superUsername + " to the ROOT organization " + rootId +
+                            ". Check if the claims are available : " + orgIdClaimUri + ", " + orgNameClaimUri, e);
         }
     }
 }

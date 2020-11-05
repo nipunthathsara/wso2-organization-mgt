@@ -117,12 +117,13 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
 
     @Override
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
-                                               String sortOrder, List<String> requestedAttributes, String userId,
-                                               boolean includePermissions) throws OrganizationManagementException {
+            String sortOrder, List<String> requestedAttributes, String userId, boolean includePermissions,
+            boolean listAsAdmin)
+            throws OrganizationManagementException {
 
         return organizationMgtDao
                 .getOrganizations(condition, tenantId, offset, limit, sortBy, sortOrder, requestedAttributes, userId,
-                        includePermissions);
+                        includePermissions, listAsAdmin);
     }
 
     @Override
