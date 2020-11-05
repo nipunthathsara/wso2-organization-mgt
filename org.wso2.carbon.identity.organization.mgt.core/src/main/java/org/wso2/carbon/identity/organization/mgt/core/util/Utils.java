@@ -289,7 +289,7 @@ public class Utils {
 
     /**
      * Checks whether a given organization has any active users. accountDisabled claim is used to determine the
-     * active status of a user. If the claim value is false or empty, the user is active.
+     * active status of a user. If the claim value is false, the user is considered active.
      *
      * @param organizationId ID of the organization.
      * @param tenantId Tenant ID
@@ -328,25 +328,65 @@ public class Utils {
             String accDisabledAttribute = claimManager.getAttributeName(userStoreDomain, ACCOUNT_DISABLED_CLAIM_URI);
             String orgIdAttribute = claimManager.getAttributeName(userStoreDomain, orgIdClaimUri);
 
-            ExpressionCondition accDisabledEmptyCondition = new ExpressionCondition("EM", accDisabledAttribute,
-                    "");
+            // We assume the accountDisabled attribute is set with an appropriate value for all the users.
             ExpressionCondition orgIdCondition = new ExpressionCondition("EQ", orgIdAttribute, organizationId);
-            OperationalCondition opCondition = new OperationalCondition("AND", orgIdCondition,
-                    accDisabledEmptyCondition);
-            String[] accountDisableEmptyUsers = ((AbstractUserStoreManager) userStoreManager)
-                    .getUserList(opCondition, userStoreDomain, null, 1, 0, null, null);
-
-            if (accountDisableEmptyUsers.length > 0) {
-                return true;
-            }
-            // If accountDisable claim value empty users are 0, look for any users with claim value false.
             ExpressionCondition accDisabledFalseCondition = new ExpressionCondition("EQ", accDisabledAttribute,
                     "false");
-            OperationalCondition opCondition2 = new OperationalCondition("AND", orgIdCondition,
+            OperationalCondition opCondition = new OperationalCondition("AND", orgIdCondition,
                     accDisabledFalseCondition);
-            String[] accountDisableFalseUsers = ((AbstractUserStoreManager) userStoreManager)
-                    .getUserList(opCondition2, userStoreDomain, null, 1, 0, null, null);
-            return accountDisableFalseUsers.length > 0;
+            String[] users = ((AbstractUserStoreManager) userStoreManager)
+                    .getUserList(opCondition, userStoreDomain, null, 1, 0, null, null);
+            return users.length > 0;
+
+        } catch (org.wso2.carbon.user.api.UserStoreException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR, "Error while checking for active users",
+                    e);
+        }
+    }
+
+    /**
+     * Checks whether a given organization has any users.
+     *
+     * @param organizationId ID of the organization.
+     * @param tenantId Tenant ID
+     * @return True if at least one user found, false otherwise.
+     * @throws OrganizationManagementException If any errors occurred.
+     */
+    public static boolean hasUsers(String organizationId, int tenantId) throws OrganizationManagementException {
+
+        String userStoreDomain = getOrganizationManager().getUserStoreConfigs(organizationId).get(USER_STORE_DOMAIN)
+                .getValue();
+        // Find realmConfigurations for the user store domain
+        List<RealmConfiguration> realmConfigurations = getRealmConfigurations(tenantId);
+        RealmConfiguration matchingRealmConfig = null;
+        for (RealmConfiguration realmConfig : realmConfigurations) {
+            if (realmConfig.getUserStoreProperties().get(DOMAIN_NAME).equalsIgnoreCase(userStoreDomain)) {
+                matchingRealmConfig = realmConfig;
+                break;
+            }
+        }
+        if (matchingRealmConfig == null) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
+                    "Couldn't find realm configurations for the user store domain : " + userStoreDomain);
+        }
+        String orgIdClaimUri = StringUtils.isNotBlank(IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI)) ?
+                IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI).trim() :
+                ORGANIZATION_ID_DEFAULT_CLAIM_URI;
+        try {
+            // Get user store manager for the domain
+            UserStoreManager userStoreManager = OrganizationMgtDataHolder.getInstance().getRealmService()
+                    .getUserRealm(matchingRealmConfig).getUserStoreManager();
+            // Get tenant user realm
+            org.wso2.carbon.user.api.UserRealm tenantUserRealm = OrganizationMgtDataHolder.getInstance()
+                    .getRealmService().getTenantUserRealm(tenantId);
+            org.wso2.carbon.user.api.ClaimManager claimManager = tenantUserRealm.getClaimManager();
+            // Find the attribute name for 'accountDisabled' claim
+            String orgIdAttribute = claimManager.getAttributeName(userStoreDomain, orgIdClaimUri);
+
+            ExpressionCondition orgIdCondition = new ExpressionCondition("EQ", orgIdAttribute, organizationId);
+            String[] users = ((AbstractUserStoreManager) userStoreManager)
+                    .getUserList(orgIdCondition, userStoreDomain, null, 1, 0, null, null);
+            return users.length > 0;
 
         } catch (org.wso2.carbon.user.api.UserStoreException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR, "Error while checking for active users",
