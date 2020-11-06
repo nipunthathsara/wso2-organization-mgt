@@ -23,12 +23,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
+import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.usermgt.AbstractOrganizationMgtUserStoreManager;
+import org.wso2.carbon.identity.organization.mgt.core.util.Utils;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.internal.OrganizationUserRoleMgtDataHolder;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.scim2.common.impl.IdentitySCIMManager;
+import org.wso2.carbon.user.api.RealmConfiguration;
+import org.wso2.carbon.user.api.UserStoreManager;
+import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.charon3.core.exceptions.CharonException;
 import org.wso2.charon3.core.extensions.UserManager;
 import org.wso2.charon3.core.protocol.SCIMResponse;
@@ -40,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_HYBRID_ROLE_ID_RETRIEVING_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_ERROR;
@@ -130,6 +138,21 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         preparedStatement.setInt(++parameterIndex, tenantID);
                     });
             for (String userId : userIds) {
+
+                String userStoreDomain = Utils.getOrganizationManager().getUserStoreConfigs(organizationId)
+                        .get(USER_STORE_DOMAIN).getValue();
+
+                RealmConfiguration matchingRealmConfig = Utils.getMatchingRealmConfiguration(tenantID, userStoreDomain);
+                if (matchingRealmConfig == null) {
+                    throw handleServerException(ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR,
+                            "Couldn't find realm configurations for the user store domain : " + userStoreDomain);
+                }
+
+                UserStoreManager userStoreManager = OrganizationUserRoleMgtDataHolder.getInstance()
+                                .getRealmService().getUserRealm(matchingRealmConfig).getUserStoreManager();
+                ((AbstractOrganizationMgtUserStoreManager) userStoreManager).doGetUserList(organizationId, userIds,
+                        "DEFAULT", limit, offset);
+
                 // Obtain the user store manager.
                 UserManager userManager = IdentitySCIMManager.getInstance().getUserManager();
                 // Create charon-SCIM user endpoint and hand-over the request.
@@ -151,8 +174,10 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
             String message =
                     String.format(String.valueOf(ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR), roleId,
                             organizationId);
-            throw new OrganizationUserRoleMgtServerException(message,
-                    ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR.getCode(), e);
+            throw new OrganizationUserRoleMgtServerException(
+                    message, ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR.getCode(), e);
+        } catch (OrganizationManagementException | UserStoreException e) {
+            //todo
         }
         return users;
     }
