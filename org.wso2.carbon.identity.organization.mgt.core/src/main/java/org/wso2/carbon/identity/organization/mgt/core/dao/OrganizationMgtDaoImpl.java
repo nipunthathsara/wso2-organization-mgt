@@ -196,23 +196,26 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder, listAsAdmin);
         JdbcTemplate jdbcTemplate = getNewTemplate();
-        // Get list of roles with the required permission
-        List<String> roleIds = getRoleListForPermission(jdbcTemplate, ORGANIZATION_VIEW_PERMISSION);
-        if (roleIds.isEmpty()) {
-            return new ArrayList<>();
-        }
         String query = placeholderSQL.getQuery();
         StringJoiner sj = new StringJoiner(",");
-        for (String id : roleIds) {
-            sj.add("'" + id + "'");
+        // Check permissions for non-admin users
+        if (!listAsAdmin) {
+            // Get list of roles with the required permission
+            List<String> roleIds = getRoleListForPermission(jdbcTemplate, ORGANIZATION_VIEW_PERMISSION);
+            if (roleIds.isEmpty()) {
+                return new ArrayList<>();
+            }
+            for (String id : roleIds) {
+                sj.add("'" + id + "'");
+            }
+            // Can not perform this in a prepared statement due to character escaping.
+            // System generated list of role IDs. No security concern here.
+            query = query.replace("#", sj.toString());
+            if (log.isDebugEnabled()) {
+                log.debug("Get matching organization IDs query with role IDs : " + query);
+            }
+            validateQueryLength(query);
         }
-        // Can not perform this in a prepared statement due to character escaping.
-        // System generated list of role IDs. No security concern here.
-        query = query.replace("#", sj.toString());
-        if (log.isDebugEnabled()) {
-            log.debug("Get matching organization IDs query with role IDs : " + query);
-        }
-        validateQueryLength(query);
 
         // Get organization IDs
         List<String> orgIds;
