@@ -849,7 +849,6 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         boolean searchReq = condition != null;
         // Ascending if not specified otherwise.
         sortOrder = sortOrder != null && "DESC".equals(sortOrder.trim().toUpperCase(Locale.ENGLISH)) ? "DESC" : "ASC";
-        boolean sortingReq = sortBy != null;
 
         PlaceholderSQL placeholderSQL;
         try {
@@ -875,9 +874,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             sb.append(" AND ").append(placeholderSQL.getQuery());
         }
         // Append sorting condition
-        if (sortingReq) {
-            sb.append(String.format(ORDER_BY, sortBy, sortOrder));
-        }
+        sb.append(String.format(ORDER_BY, sortBy, sortOrder));
         // Append pagination condition
         if (paginationReq) {
             sb.append(String.format(PAGINATION, offset, limit));

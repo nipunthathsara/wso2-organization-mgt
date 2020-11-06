@@ -112,28 +112,6 @@ public class OrganizationMgtConstants {
     public static final String ORGANIZATION_NAME_DEFAULT_CLAIM_URI = "http://wso2.org/claims/organization";
 
     /**
-     * Identity property keys for organization mgt roles
-     */
-    public enum OrganizationMgtRoles {
-
-        ORGANIZATION_MGT_ROLE("OrganizationMgt.OrganizationMgtRole"),
-        ORGANIZATION_ROLE_MGT_ROLE("OrganizationMgt.OrganizationRoleMgtRole"),
-        ORGANIZATION_USER_MGT_ROLE("OrganizationMgt.OrganizationUserMgtRole");
-
-        private String propertyName;
-
-        OrganizationMgtRoles(String propertyName) {
-
-            this.propertyName = propertyName;
-        }
-
-        public String getPropertyName() {
-
-            return propertyName;
-        }
-    }
-
-    /**
      * Error Messages.
      */
     public enum ErrorMessages {

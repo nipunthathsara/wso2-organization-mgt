@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.identity.organization.mgt.core;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,7 +40,6 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
-import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
@@ -81,9 +79,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ADMIN_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_RESOURCE_BASE_PATH;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_MGT_ROLE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_ROLE_MGT_ROLE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles.ORGANIZATION_USER_MGT_ROLE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
@@ -136,6 +131,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getUserN
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.hasActiveUsers;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.hasUsers;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationAddObject;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.logOrganizationObject;
 
@@ -185,8 +181,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             }
         }
         cacheBackedOrganizationMgtDAO.addOrganization(getTenantId(), organization);
-        //TODO fix permission issue here
-        grantCreatorWithFullPermission(organization.getId());
+        grantImmediateParentPermissions(organization.getId(), organization.getParent().getId(), false);
         // Fire post-event
         event = isImport ? POST_IMPORT_ORGANIZATION : POST_CREATE_ORGANIZATION;
         fireEvent(event, null, organization, Status.SUCCESS);
@@ -216,7 +211,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     "Organization id " + organizationId + " doesn't exist in this tenant : " + getTenantId());
         }
         // Set derivable attributes
-        if (!ROOT.equals(organization.getParent().getId())) {
+        if (!ROOT.equals(organization.getName())) {
             organization.getParent().setRef(String
                     .format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), organization.getParent().getId()));
         }
@@ -327,16 +322,35 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 organizationId);
         String userStoreDomain = configs.get(USER_STORE_DOMAIN).getValue();
         String dn = configs.get(DN).getValue();
-        // Organization should be in the disabled status
-        if (!Organization.OrgStatus.DISABLED.equals(organization.getStatus())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
-                    "Organization " + organizationId + " is not in the disabled status");
-        }
+
+        validateOrganizationDelete(organizationId, organization);
+
         // Remove OU from LDAP
         deleteLdapDirectory(getTenantId(), userStoreDomain, dn);
         cacheBackedOrganizationMgtDAO.deleteOrganization(getTenantId(), organizationId.trim());
         // Fire post-event
         fireEvent(POST_DELETE_ORGANIZATION, organizationId, null, Status.SUCCESS);
+    }
+
+    private void validateOrganizationDelete(String organizationId, Organization organization)
+            throws OrganizationManagementException {
+
+        // Organization should be in the disabled status
+        if (!Organization.OrgStatus.DISABLED.equals(organization.getStatus())) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
+                    "Organization " + organizationId + " is not in the disabled status.");
+        }
+        // Organization shouldn't have any child organizations.
+        if (organizationMgtDao.getChildOrganizationIds(organizationId, null).size() != 0) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
+                    "Organization " + organizationId + " has one or more child organizations.");
+        }
+
+        // Organization shouldn't have any users.
+        if (hasUsers(organizationId, getTenantId())) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
+                    "Organization " + organizationId + " has one or more users.");
+        }
     }
 
     @Override
@@ -575,7 +589,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throws OrganizationManagementClientException {
 
         if (sortBy == null) {
-            return null;
+            return VIEW_NAME_COLUMN;
         }
         switch (sortBy.trim().toLowerCase(Locale.ENGLISH)) {
         case "name":
@@ -671,13 +685,17 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 }
             }
             // You can't deactivate an organization which is having any ACTIVE users or ACTIVE child organizations.
-            if (path.equals(PATCH_PATH_ORG_STATUS) && value.equals(Organization.OrgStatus.DISABLED.toString())
-                    && !canDisable(organizationId)) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Can't disable organization : " + organizationId
-                                + " as it has one or more ACTIVE organization/s or user/s.");
+            if (path.equals(PATCH_PATH_ORG_STATUS) && value.equals(Organization.OrgStatus.DISABLED.toString())) {
+                if (hasActiveChildOrganizations(organizationId)) {
+                    throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+                            "Can't disable organization: " + organizationId + " as it has one or more ACTIVE " +
+                                    "child organization/s.");
+                } else if (hasActiveUsers(organizationId, getTenantId())) {
+                    throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+                            "Can't disable organization: " + organizationId + " as it has one or more ACTIVE user/s.");
+                }
             }
-            // You can't activate an organization, whom's parent organization is not in ACTIVE state.
+            // You can't activate an organization, whom parent organization is not in ACTIVE state.
             if (path.equals(PATCH_PATH_ORG_STATUS) && value.equals(Organization.OrgStatus.ACTIVE.toString())
                     && !canEnable(organizationId)) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
@@ -769,30 +787,25 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     /**
-     * To disable an organization, it shouldn't have any 'ACTIVE' organizations as its sub-organizations.
-     * To disable an organization, all user accounts should be disabled.
+     * Checks whether a given organization has any active child organizations.
      *
      * @param organizationId ID of the organization.
-     * @return True if above conditions are met and the organization can be disabled, false otherwise.
+     * @return True if at least one active child organization found, false otherwise.
      * @throws OrganizationManagementException If any errors occurred.
      */
-    private boolean canDisable(String organizationId) throws OrganizationManagementException {
+    private boolean hasActiveChildOrganizations(String organizationId) throws OrganizationManagementException {
 
-        int tenantId = getTenantId();
-        if (hasActiveUsers(organizationId, tenantId)) {
-            return false;
-        }
         List<String> children = organizationMgtDao.getChildOrganizationIds(organizationId, null);
-        for (String child : children) {
+        for (String child: children) {
             Organization organization = getOrganization(child, false);
             if (organization.getStatus() == Organization.OrgStatus.ACTIVE) {
                 if (log.isDebugEnabled()) {
                     log.debug("Active child organization detected : " + organization.getId());
                 }
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     private boolean canEnable(String organizationId) throws OrganizationManagementException {
@@ -884,37 +897,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
         return authorizationDao.isUserAuthorized(getAuthenticatedUserId(), parentId, ORGANIZATION_CREATE_PERMISSION);
     }
 
-    private void grantCreatorWithFullPermission(String organizationId) throws OrganizationManagementException {
-
-        List<String> tempGroupIds = new ArrayList<>();
-        Map<String, OrganizationMgtRole> organizationMgtRoles = OrganizationMgtDataHolder.getInstance()
-                .getOrganizationMgtRoles();
-        OrganizationMgtRole organizationManager = organizationMgtRoles.get(ORGANIZATION_MGT_ROLE.toString());
-        tempGroupIds.add(organizationManager.getGroupId());
-        // Add an entry for 'organization management' purposes
-        authorizationDao.addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationManager.getGroupId(),
-                organizationManager.getHybridRoleId(), getTenantId(), organizationId);
-        OrganizationMgtRole organizationUserManager = organizationMgtRoles.get(ORGANIZATION_USER_MGT_ROLE.toString());
-        // If the 'OrganizationMgtRole' and the 'OrganizationUserMgtRole' are the same, avoid adding duplicate entries
-        if (!tempGroupIds.contains(organizationUserManager.getGroupId())) {
-            tempGroupIds.add(organizationUserManager.getGroupId());
-            // Add an entry for 'organization user management' purposes
-            authorizationDao
-                    .addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationUserManager.getGroupId(),
-                            organizationUserManager.getHybridRoleId(), getTenantId(), organizationId);
-        }
-        OrganizationMgtRole organizationRoleManager = organizationMgtRoles.get(ORGANIZATION_ROLE_MGT_ROLE.toString());
-        // If the 'OrganizationRoleMgtRole' is the same as any of the above, avoid adding duplicate entries
-        if (!tempGroupIds.contains(organizationRoleManager.getGroupId())) {
-            // Add an entry for 'organization role management' purposes
-            authorizationDao
-                    .addOrganizationAndUserRoleMapping(getAuthenticatedUserId(), organizationRoleManager.getGroupId(),
-                            organizationRoleManager.getHybridRoleId(), getTenantId(), organizationId);
-        }
-    }
-
-    @SuppressFBWarnings
-    private void grantImmediateParentPermissions(String organizationId, String parentOrganizationId)
+    private void grantImmediateParentPermissions(String organizationId, String parentOrganizationId,
+            boolean propagatePermissionsOfAllUsers)
             throws OrganizationManagementException {
 
         // If parent's permissions will be inherited, propagate them to new organization.
@@ -923,11 +907,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     .getOrganizationUserRoleMappingsForOrganization(parentOrganizationId, getTenantId());
             List<OrganizationUserRoleMapping> organizationUserRoleMappingsForNewOrganization = new ArrayList<>();
             for (OrganizationUserRoleMapping mapping : organizationUserRoleMappingsOfParent) {
-                // Skip the role mappings for authenticated user. It should be assigned separately.
-                if (!mapping.getUserId().equals(getAuthenticatedUserId())) {
-                    OrganizationUserRoleMapping organizationUserRoleMapping =
-                            new OrganizationUserRoleMapping(organizationId, mapping.getUserId(), mapping.getRoleId(),
-                                    mapping.getHybridRoleId());
+                // Either inherit permission for all users, or inherit permissions for the creator only
+                if (propagatePermissionsOfAllUsers || mapping.getUserId().equals(getAuthenticatedUserId())) {
+                    OrganizationUserRoleMapping organizationUserRoleMapping = new OrganizationUserRoleMapping(
+                            organizationId, mapping.getUserId(), mapping.getRoleId(), mapping.getHybridRoleId());
                     organizationUserRoleMappingsForNewOrganization.add(organizationUserRoleMapping);
                 }
             }

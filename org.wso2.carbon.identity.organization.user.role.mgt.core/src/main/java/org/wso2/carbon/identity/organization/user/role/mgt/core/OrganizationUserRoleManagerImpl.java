@@ -93,7 +93,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
             }
         }
 
-        //@TODO check for mapping existance
+        //@TODO check for mapping existence
         List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
 
         // Get child organizations and add role mappings.

@@ -28,14 +28,12 @@ import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants;
-import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationAuthorizationDao;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.internal.OrganizationMgtDataHolder;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationAdd;
-import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationMgtRole;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
@@ -46,12 +44,9 @@ import org.wso2.carbon.user.core.model.ExpressionCondition;
 import org.wso2.carbon.user.core.model.OperationalCondition;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.StringJoiner;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ACCOUNT_DISABLED_CLAIM_URI;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ADMIN_MANAGE_IDENTITY_PERMISSION;
@@ -59,7 +54,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ADMIN_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNCLASSIFIED_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR;
@@ -71,7 +65,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ID_CLAIM_URI;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ID_DEFAULT_CLAIM_URI;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_VIEW_PERMISSION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.OrganizationMgtRoles;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_DELETE_PERMISSION;
@@ -270,6 +263,9 @@ public class Utils {
     public static String getUserIDFromUserName(String username, int tenantId)
             throws OrganizationManagementServerException {
 
+        if (username == null) {
+            return null;
+        }
         try {
             AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationMgtDataHolder
                     .getInstance().getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
@@ -296,7 +292,7 @@ public class Utils {
 
     /**
      * Checks whether a given organization has any active users. accountDisabled claim is used to determine the
-     * active status of a user. If the claim value is false or empty, the user is active.
+     * active status of a user. If the claim value is false, the user is considered active.
      *
      * @param organizationId ID of the organization.
      * @param tenantId Tenant ID
@@ -335,25 +331,65 @@ public class Utils {
             String accDisabledAttribute = claimManager.getAttributeName(userStoreDomain, ACCOUNT_DISABLED_CLAIM_URI);
             String orgIdAttribute = claimManager.getAttributeName(userStoreDomain, orgIdClaimUri);
 
-            ExpressionCondition accDisabledEmptyCondition = new ExpressionCondition("EM", accDisabledAttribute,
-                    "");
+            // We assume the accountDisabled attribute is set with an appropriate value for all the users.
             ExpressionCondition orgIdCondition = new ExpressionCondition("EQ", orgIdAttribute, organizationId);
-            OperationalCondition opCondition = new OperationalCondition("AND", orgIdCondition,
-                    accDisabledEmptyCondition);
-            String[] accountDisableEmptyUsers = ((AbstractUserStoreManager) userStoreManager)
-                    .getUserList(opCondition, userStoreDomain, null, 1, 0, null, null);
-
-            if (accountDisableEmptyUsers.length > 0) {
-                return true;
-            }
-            // If accountDisable claim value empty users are 0, look for any users with claim value false.
             ExpressionCondition accDisabledFalseCondition = new ExpressionCondition("EQ", accDisabledAttribute,
                     "false");
-            OperationalCondition opCondition2 = new OperationalCondition("AND", orgIdCondition,
+            OperationalCondition opCondition = new OperationalCondition("AND", orgIdCondition,
                     accDisabledFalseCondition);
-            String[] accountDisableFalseUsers = ((AbstractUserStoreManager) userStoreManager)
-                    .getUserList(opCondition2, userStoreDomain, null, 1, 0, null, null);
-            return accountDisableFalseUsers.length > 0;
+            String[] users = ((AbstractUserStoreManager) userStoreManager)
+                    .getUserList(opCondition, userStoreDomain, null, 1, 0, null, null);
+            return users.length > 0;
+
+        } catch (org.wso2.carbon.user.api.UserStoreException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR, "Error while checking for active users",
+                    e);
+        }
+    }
+
+    /**
+     * Checks whether a given organization has any users.
+     *
+     * @param organizationId ID of the organization.
+     * @param tenantId Tenant ID
+     * @return True if at least one user found, false otherwise.
+     * @throws OrganizationManagementException If any errors occurred.
+     */
+    public static boolean hasUsers(String organizationId, int tenantId) throws OrganizationManagementException {
+
+        String userStoreDomain = getOrganizationManager().getUserStoreConfigs(organizationId).get(USER_STORE_DOMAIN)
+                .getValue();
+        // Find realmConfigurations for the user store domain
+        List<RealmConfiguration> realmConfigurations = getRealmConfigurations(tenantId);
+        RealmConfiguration matchingRealmConfig = null;
+        for (RealmConfiguration realmConfig : realmConfigurations) {
+            if (realmConfig.getUserStoreProperties().get(DOMAIN_NAME).equalsIgnoreCase(userStoreDomain)) {
+                matchingRealmConfig = realmConfig;
+                break;
+            }
+        }
+        if (matchingRealmConfig == null) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
+                    "Couldn't find realm configurations for the user store domain : " + userStoreDomain);
+        }
+        String orgIdClaimUri = StringUtils.isNotBlank(IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI)) ?
+                IdentityUtil.getProperty(ORGANIZATION_ID_CLAIM_URI).trim() :
+                ORGANIZATION_ID_DEFAULT_CLAIM_URI;
+        try {
+            // Get user store manager for the domain
+            UserStoreManager userStoreManager = OrganizationMgtDataHolder.getInstance().getRealmService()
+                    .getUserRealm(matchingRealmConfig).getUserStoreManager();
+            // Get tenant user realm
+            org.wso2.carbon.user.api.UserRealm tenantUserRealm = OrganizationMgtDataHolder.getInstance()
+                    .getRealmService().getTenantUserRealm(tenantId);
+            org.wso2.carbon.user.api.ClaimManager claimManager = tenantUserRealm.getClaimManager();
+            // Find the attribute name for 'accountDisabled' claim
+            String orgIdAttribute = claimManager.getAttributeName(userStoreDomain, orgIdClaimUri);
+
+            ExpressionCondition orgIdCondition = new ExpressionCondition("EQ", orgIdAttribute, organizationId);
+            String[] users = ((AbstractUserStoreManager) userStoreManager)
+                    .getUserList(orgIdCondition, userStoreDomain, null, 1, 0, null, null);
+            return users.length > 0;
 
         } catch (org.wso2.carbon.user.api.UserStoreException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR, "Error while checking for active users",
@@ -365,37 +401,6 @@ public class Utils {
 
         return (OrganizationManager) PrivilegedCarbonContext.getThreadLocalCarbonContext()
                 .getOSGiService(OrganizationManager.class, null);
-    }
-
-    public static Map<String, OrganizationMgtRole> populateManagementRoles(int tenantId)
-            throws OrganizationManagementException {
-
-        Map<String, OrganizationMgtRole> organizationMgtRoles = new HashMap<>();
-        for (OrganizationMgtRoles mgtRole : OrganizationMgtRoles.values()) {
-            String role = IdentityUtil.getProperty(mgtRole.getPropertyName());
-            if (StringUtils.isBlank(role)) {
-                throw handleServerException(ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR,
-                        "Organization Management roles can not be empty : " + mgtRole.getPropertyName());
-            }
-            role = role.trim();
-            // If the domain is defined, it should be 'internal'
-            if (role.contains("/") && !"Internal".equalsIgnoreCase(role.substring(0, role.indexOf("/")))) {
-                throw handleServerException(ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR,
-                        "Management roles should be 'INTERNAL' roles : " + role);
-            } else {
-                // Remove the 'internal/' prefix from the role name
-                role = role.replaceAll("(?i)" + Pattern.quote("Internal/"), "");
-            }
-            OrganizationAuthorizationDao authorizationDao = OrganizationMgtDataHolder.getInstance()
-                    .getOrganizationAuthDao();
-            // Find hybrid role id of the internal role
-            int hybridRoleId = authorizationDao.findHybridRoleIdFromRoleName(role, tenantId);
-            // Find SCIM group id
-            role = "Internal/".concat(role);
-            String groupId = authorizationDao.findGroupIdFromRoleName(role, tenantId);
-            organizationMgtRoles.put(mgtRole.toString(), new OrganizationMgtRole(role, groupId, hybridRoleId));
-        }
-        return organizationMgtRoles;
     }
 
     public static List<String> dissemblePermissionString(String permission) throws OrganizationManagementException {
