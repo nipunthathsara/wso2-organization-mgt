@@ -25,4 +25,15 @@
             <ResourceId>/permission/admin/manage/identity/organizationmgt/admin</ResourceId>
         </ManagementPermission>
     </ManagementPermissions>
+
+    <ManagementPermissions>
+        <ManagementPermission>
+            <DisplayName>User Role Management</DisplayName>
+            <ResourceId>/permission/admin/manage/identity/userrolemgt</ResourceId>
+        </ManagementPermission>
+        <ManagementPermission>
+            <DisplayName>View</DisplayName>
+            <ResourceId>/permission/admin/manage/identity/userrolemgt/view</ResourceId>
+        </ManagementPermission>
+    </ManagementPermissions>
 </component>
