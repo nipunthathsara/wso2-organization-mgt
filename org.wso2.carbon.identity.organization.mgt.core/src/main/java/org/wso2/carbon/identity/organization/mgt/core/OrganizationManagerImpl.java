@@ -211,8 +211,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     "Organization id " + organizationId + " doesn't exist in this tenant : " + getTenantId());
         }
         // Set derivable attributes
-        //TODO fix this
-        if (!ROOT.equals(organization.getParent().getId())) {
+        if (!ROOT.equals(organization.getName())) {
             organization.getParent().setRef(String
                     .format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), organization.getParent().getId()));
         }
