@@ -263,6 +263,9 @@ public class Utils {
     public static String getUserIDFromUserName(String username, int tenantId)
             throws OrganizationManagementServerException {
 
+        if (username == null) {
+            return null;
+        }
         try {
             AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationMgtDataHolder
                     .getInstance().getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
