@@ -4,11 +4,9 @@ import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.claim.ClaimManager;
-import org.wso2.carbon.user.core.common.PaginatedSearchResult;
 import org.wso2.carbon.user.core.ldap.UniqueIDReadWriteLDAPUserStoreManager;
 import org.wso2.carbon.user.core.profile.ProfileConfigurationManager;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -51,7 +49,4 @@ public abstract class AbstractOrganizationMgtUserStoreManager extends UniqueIDRe
      * @throws UserStoreException
      */
     public abstract void deleteOu(String dn) throws UserStoreException;
-
-    public abstract PaginatedSearchResult doGetUserList(String orgId, List<String> userIDs, String profileName,
-                                                        int limit, int offset) throws UserStoreException;
 }

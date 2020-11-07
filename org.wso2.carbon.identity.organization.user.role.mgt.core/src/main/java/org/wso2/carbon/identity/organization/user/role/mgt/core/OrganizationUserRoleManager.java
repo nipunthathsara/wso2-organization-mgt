@@ -36,7 +36,7 @@ public interface OrganizationUserRoleManager {
             throws OrganizationUserRoleMgtException, OrganizationManagementException;
 
     List<User> getUsersByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
-                                             List<String> requestedAttributes)
+                                             List<String> requestedAttributes, String filter)
             throws OrganizationUserRoleMgtException;
 
     void deleteOrganizationsUserRoleMapping(String organizationId, String userId, String roleId, boolean includeSubOrgs)

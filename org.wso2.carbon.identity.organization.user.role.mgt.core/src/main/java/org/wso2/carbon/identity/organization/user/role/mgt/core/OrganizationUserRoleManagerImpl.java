@@ -123,13 +123,13 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
 
     @Override
     public List<User> getUsersByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
-                                                    List<String> requestedAttributes)
+                                                    List<String> requestedAttributes, String filter)
             throws OrganizationUserRoleMgtException {
 
         OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
         return organizationUserRoleMgtDAO
                 .getUserIdsByOrganizationAndRole(organizationID, roleId, offset, limit, requestedAttributes,
-                        getTenantId());
+                        getTenantId(), filter);
     }
 
     @Override
