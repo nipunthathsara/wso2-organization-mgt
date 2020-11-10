@@ -28,7 +28,9 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.Organi
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.internal.OrganizationUserRoleMgtDataHolder;
 import org.wso2.carbon.user.api.UserRealm;
+import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 
 import java.util.UUID;
@@ -96,5 +98,22 @@ public class Utils {
         userStoreManager = (UserStoreManager) tenantUserRealm.getUserStoreManager();
 
         return userStoreManager;
+    }
+
+    public static String getUserIDFromUserName(String username, int tenantId)
+            throws OrganizationUserRoleMgtServerException {
+
+        if (username == null) {
+            return null;
+        }
+        try {
+            AbstractUserStoreManager userStoreManager = (AbstractUserStoreManager) OrganizationUserRoleMgtDataHolder
+                    .getInstance().getRealmService().getTenantUserRealm(tenantId).getUserStoreManager();
+            return userStoreManager.getUserIDFromUserName(username);
+        } catch (UserStoreException e) {
+            throw handleServerException(
+                    OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
+                    "Error obtaining ID for the username : " + username + ", tenant id : " + tenantId);
+        }
     }
 }

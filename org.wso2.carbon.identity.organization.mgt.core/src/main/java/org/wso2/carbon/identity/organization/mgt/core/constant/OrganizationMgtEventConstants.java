@@ -42,6 +42,12 @@ public class OrganizationMgtEventConstants {
     public static final String PRE_GET_CHILD_ORGANIZATIONS = "PRE_GET_CHILD_ORGANIZATIONS";
     public static final String POST_GET_CHILD_ORGANIZATIONS = "POST_GET_CHILD_ORGANIZATIONS";
 
+    // Organization user role management events.
+    public static final String PRE_ASSIGN_ORGANIZATION_USER_ROLE = "PRE_ASSIGN_ORGANIZATION_USER_ROLE";
+    public static final String POST_ASSIGN_ORGANIZATION_USER_ROLE = "POST_ASSIGN_ORGANIZATION_USER_ROLE";
+    public static final String PRE_REVOKE_ORGANIZATION_USER_ROLE = "PRE_REVOKE_ORGANIZATION_USER_ROLE";
+    public static final String POST_REVOKE_ORGANIZATION_USER_ROLE = "POST_REVOKE_ORGANIZATION_USER_ROLE";
+
     public static final String USER_NAME = "username";
     public static final String TENANT_DOMAIN = "tenantDomain";
     public static final String USER_ID = "userId";

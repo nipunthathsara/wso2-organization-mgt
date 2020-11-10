@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core.internal;
 
+import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAO;
 import org.wso2.carbon.user.core.service.RealmService;
 
@@ -30,6 +31,7 @@ public class OrganizationUserRoleMgtDataHolder {
             new OrganizationUserRoleMgtDataHolder();
     private OrganizationUserRoleMgtDAO orgAndUSerRoleMgtDao;
     private RealmService realmService;
+    private IdentityEventService identityEventService;
 
     public static OrganizationUserRoleMgtDataHolder getInstance() {
 
@@ -54,5 +56,15 @@ public class OrganizationUserRoleMgtDataHolder {
     public void setRealmService(RealmService realmService) {
 
         this.realmService = realmService;
+    }
+
+    public IdentityEventService getIdentityEventService() {
+
+        return identityEventService;
+    }
+
+    public void setIdentityEventService(IdentityEventService identityEventService) {
+
+        this.identityEventService = identityEventService;
     }
 }

@@ -20,6 +20,7 @@ package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.organization.mgt.core.cache.OrganizationCache;
 import org.wso2.carbon.identity.organization.mgt.core.cache.OrganizationCacheEntry;
 import org.wso2.carbon.identity.organization.mgt.core.cache.OrganizationCacheKey;
@@ -32,6 +33,8 @@ import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 
 import java.util.List;
 import java.util.Map;
+
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
 
 /**
  * Cached organization tree nodes for organization management.
@@ -171,7 +174,27 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
     @Override
     public void patchOrganization(String organizationId, Operation operation) throws OrganizationManagementException {
 
-        //TODO if Parent is changing impact for the cache. Otherwise no issue.
+        String path = operation.getPath();
+        String op = operation.getOp();
+        int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
+        if (path.equals(PATCH_PATH_ORG_PARENT_ID) && op.equalsIgnoreCase("REPLACE")) {
+            String newParentId = operation.getValue();
+            // Clear the children cache for the newParentId.
+            if (log.isDebugEnabled()) {
+                log.debug("Removing entry for Organization: " + newParentId + " from cache.");
+            }
+            clearOrganizationCache(tenantId, newParentId);
+
+            Organization organizationToBePatched = organizationMgtDao.getOrganization(tenantId, organizationId, null);
+            if (organizationToBePatched != null) {
+                String currentParentId = organizationToBePatched.getParent().getId();
+                // Clear the children cache for the currentParentId.
+                if (log.isDebugEnabled()) {
+                    log.debug("Removing entry for Organization: " + currentParentId + " from cache.");
+                }
+                clearOrganizationCache(tenantId, currentParentId);
+            }
+        }
         organizationMgtDao.patchOrganization(organizationId, operation);
     }
 

@@ -48,7 +48,9 @@ public class OrganizationUserRoleMgtConstants {
         ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR("ORGPERMMGT_00025",
                 "Error while retrieving users for role: %s , organization : $s"),
         ERROR_CODE_ROLES_PER_ORG_USER_RETRIEVING_ERROR("ORGPERMMGT_00026",
-                "Error while retrieving roles for user: %s , organization : $s");
+                "Error while retrieving roles for user: %s , organization : $s"),
+        ERROR_CODE_EVENTING_ERROR("ORGPERMMGT_00027", "Error while handling the event : %s"),
+        ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGPERMMGT_00028", "Error accessing user store : %s");
 
         private final String code;
         private final String message;

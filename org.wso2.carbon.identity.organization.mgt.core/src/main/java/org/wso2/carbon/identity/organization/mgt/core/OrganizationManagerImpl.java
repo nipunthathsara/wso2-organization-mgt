@@ -231,7 +231,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
     @Override
     public List<Organization> getOrganizations(Condition condition, int offset, int limit, String sortBy,
-            String sortOrder, List<String> requestedAttributes, boolean includePermissions)
+                                               String sortOrder, List<String> requestedAttributes,
+                                               boolean includePermissions)
             throws OrganizationManagementException {
 
         // Fire pre-event
@@ -293,7 +294,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         validateOrganizationPatchOperations(operations, organizationId);
         for (Operation operation : operations) {
-            organizationMgtDao.patchOrganization(organizationId, operation);
+            cacheBackedOrganizationMgtDAO.patchOrganization(organizationId, operation);
             // Fire post-event
             fireEvent(POST_PATCH_ORGANIZATION, organizationId, operation, Status.SUCCESS);
         }
@@ -592,26 +593,26 @@ public class OrganizationManagerImpl implements OrganizationManager {
             return VIEW_NAME_COLUMN;
         }
         switch (sortBy.trim().toLowerCase(Locale.ENGLISH)) {
-        case "name":
-            return VIEW_NAME_COLUMN;
-        case "displayname":
-            return VIEW_DISPLAY_NAME_COLUMN;
-        case "description":
-            return VIEW_DESCRIPTION_COLUMN;
-        case "created":
-            return VIEW_CREATED_TIME_COLUMN;
-        case "lastmodified":
-            return VIEW_LAST_MODIFIED_COLUMN;
-        case "status":
-            return VIEW_STATUS_COLUMN;
-        case "parentname":
-            return VIEW_PARENT_NAME_COLUMN;
-        case "parentdisplayname":
-            return VIEW_PARENT_DISPLAY_NAME_COLUMN;
-        default:
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
-                    "Invalid sort parameter. 'sortOrder' [ASC | DESC] and 'sortBy' [name | description |"
-                            + " displayName | status | lastModified | created | parentName | parentDisplayName]");
+            case "name":
+                return VIEW_NAME_COLUMN;
+            case "displayname":
+                return VIEW_DISPLAY_NAME_COLUMN;
+            case "description":
+                return VIEW_DESCRIPTION_COLUMN;
+            case "created":
+                return VIEW_CREATED_TIME_COLUMN;
+            case "lastmodified":
+                return VIEW_LAST_MODIFIED_COLUMN;
+            case "status":
+                return VIEW_STATUS_COLUMN;
+            case "parentname":
+                return VIEW_PARENT_NAME_COLUMN;
+            case "parentdisplayname":
+                return VIEW_PARENT_DISPLAY_NAME_COLUMN;
+            default:
+                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
+                        "Invalid sort parameter. 'sortOrder' [ASC | DESC] and 'sortBy' [name | description |"
+                                + " displayName | status | lastModified | created | parentName | parentDisplayName]");
         }
     }
 
@@ -796,7 +797,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
     private boolean hasActiveChildOrganizations(String organizationId) throws OrganizationManagementException {
 
         List<String> children = organizationMgtDao.getChildOrganizationIds(organizationId, null);
-        for (String child: children) {
+        for (String child : children) {
             Organization organization = getOrganization(child, false);
             if (organization.getStatus() == Organization.OrgStatus.ACTIVE) {
                 if (log.isDebugEnabled()) {
@@ -898,7 +899,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     private void grantImmediateParentPermissions(String organizationId, String parentOrganizationId,
-            boolean propagatePermissionsOfAllUsers)
+                                                 boolean propagatePermissionsOfAllUsers)
             throws OrganizationManagementException {
 
         // If parent's permissions will be inherited, propagate them to new organization.
