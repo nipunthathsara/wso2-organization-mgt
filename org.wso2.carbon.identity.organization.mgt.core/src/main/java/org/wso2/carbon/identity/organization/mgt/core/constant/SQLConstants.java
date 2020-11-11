@@ -321,7 +321,7 @@ public class SQLConstants {
     public static final String SELECT_DUMMY_RECORD = "SELECT 1 FROM DUAL";
     public static final String GET_USER_PERMISSIONS =
             "SELECT\n" +
-            "    DISTINCT UM_RESOURCE_ID, ORG_ID\n" +
+            "    DISTINCT UM_RESOURCE_ID\n" +
             "FROM\n" +
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +

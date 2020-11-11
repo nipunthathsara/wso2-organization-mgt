@@ -260,24 +260,16 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
     public List<String> findUserPermissions(JdbcTemplate template, String userId)
             throws OrganizationManagementException {
 
-        List<OrganizationPermission> orgPermissions;
+        List<String> permissions;
         try {
-            orgPermissions = template.executeQuery(GET_USER_PERMISSIONS, (resultSet, rowNumber) -> {
-                OrganizationPermission permission = new OrganizationPermission();
-                permission.setOrganizationId(resultSet.getString(VIEW_ORG_ID_COLUMN));
-                permission.setPermission(resultSet.getString(UM_RESOURCE_ID_COLUMN));
-                return permission;
-            }, preparedStatement -> {
+            permissions = template.executeQuery(GET_USER_PERMISSIONS, (resultSet, rowNumber) ->
+                    resultSet.getString(UM_RESOURCE_ID_COLUMN), preparedStatement -> {
                 int parameterIndex = 0;
                 preparedStatement.setString(++parameterIndex, userId);
             });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR,
                     "error collecting permissions for user : " + userId, e);
-        }
-        List<String> permissions = new ArrayList<>();
-        for (OrganizationPermission permission : orgPermissions) {
-            permissions.add(permission.getPermission());
         }
         return permissions;
     }
