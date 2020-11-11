@@ -42,7 +42,7 @@ public abstract class OrganizationsApiService {
 
     public abstract Response organizationsOrganizationIdRolesPost(String organizationId, UserRoleMappingDTO userRoles);
 
-    public abstract Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId, Integer offset, Integer limit, String attributes);
+    public abstract Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId, Integer offset, Integer limit, String attributes, String filter);
 
     public abstract Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, String roleId, String userId, Boolean includeSubOrgs);
 

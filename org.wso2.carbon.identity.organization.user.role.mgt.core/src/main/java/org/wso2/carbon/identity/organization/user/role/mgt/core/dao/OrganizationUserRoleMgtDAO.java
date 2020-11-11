@@ -35,7 +35,7 @@ public interface OrganizationUserRoleMgtDAO {
             throws OrganizationUserRoleMgtException;
 
     List<User> getUserIdsByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
-                                               List<String> requestedAttributes, int tenantID)
+                                               List<String> requestedAttributes, int tenantID, String filter)
             throws OrganizationUserRoleMgtServerException;
 
     void deleteOrganizationsUserRoleMapping(List<String> organizationIds, String userId, String roleId, int tenantId)

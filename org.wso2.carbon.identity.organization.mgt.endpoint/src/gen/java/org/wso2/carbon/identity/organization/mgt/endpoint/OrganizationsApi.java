@@ -302,9 +302,10 @@ public class OrganizationsApi {
     @ApiParam(value = "ID of the role of which, the user will be returned.",required=true ) @PathParam("role-id")  String roleId,
     @ApiParam(value = "Number of items to be skipped before starting to collect the result set. (Should be 0 or positive)") @QueryParam("offset")  Integer offset,
     @ApiParam(value = "Max number of items to be returned. (Should be greater than 0)") @QueryParam("limit")  Integer limit,
-    @ApiParam(value = "Comma separated list of SCIM user attributes to be returned in the response.") @QueryParam("attributes")  String attributes) {
+    @ApiParam(value = "Comma separated list of SCIM user attributes to be returned in the response.") @QueryParam("attributes")  String attributes,
+    @ApiParam(value = "SCIM filtering to fine tune the search results. Support operations are 'eq', 'co', 'sw', 'ew'.") @QueryParam("filter")  String filter) {
 
-        return delegate.organizationsOrganizationIdRolesRoleIdUsersGet(organizationId,roleId,offset,limit,attributes);
+        return delegate.organizationsOrganizationIdRolesRoleIdUsersGet(organizationId,roleId,offset,limit,attributes,filter);
     }
 
     @DELETE

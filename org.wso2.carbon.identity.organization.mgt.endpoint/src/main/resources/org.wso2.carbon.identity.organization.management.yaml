@@ -735,6 +735,10 @@ paths:
           name: attributes
           type: string
           description: Comma separated list of SCIM user attributes to be returned in the response.
+        - in: query
+          name: filter
+          type: string
+          description: SCIM filtering to fine tune the search results. Support operations are 'eq', 'co', 'sw', 'ew'.
       responses:
         '200':
           description: Ok

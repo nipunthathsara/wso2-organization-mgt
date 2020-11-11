@@ -303,15 +303,7 @@ public class Utils {
 
         String userStoreDomain = getOrganizationManager().getUserStoreConfigs(organizationId).get(USER_STORE_DOMAIN)
                 .getValue();
-        // Find realmConfigurations for the user store domain
-        List<RealmConfiguration> realmConfigurations = getRealmConfigurations(tenantId);
-        RealmConfiguration matchingRealmConfig = null;
-        for (RealmConfiguration realmConfig : realmConfigurations) {
-            if (realmConfig.getUserStoreProperties().get(DOMAIN_NAME).equalsIgnoreCase(userStoreDomain)) {
-                matchingRealmConfig = realmConfig;
-                break;
-            }
-        }
+        RealmConfiguration matchingRealmConfig = Utils.getMatchingRealmConfiguration(tenantId, userStoreDomain);
         if (matchingRealmConfig == null) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
                     "Couldn't find realm configurations for the user store domain : " + userStoreDomain);
@@ -359,15 +351,7 @@ public class Utils {
 
         String userStoreDomain = getOrganizationManager().getUserStoreConfigs(organizationId).get(USER_STORE_DOMAIN)
                 .getValue();
-        // Find realmConfigurations for the user store domain
-        List<RealmConfiguration> realmConfigurations = getRealmConfigurations(tenantId);
-        RealmConfiguration matchingRealmConfig = null;
-        for (RealmConfiguration realmConfig : realmConfigurations) {
-            if (realmConfig.getUserStoreProperties().get(DOMAIN_NAME).equalsIgnoreCase(userStoreDomain)) {
-                matchingRealmConfig = realmConfig;
-                break;
-            }
-        }
+        RealmConfiguration matchingRealmConfig = Utils.getMatchingRealmConfiguration(tenantId, userStoreDomain);
         if (matchingRealmConfig == null) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
                     "Couldn't find realm configurations for the user store domain : " + userStoreDomain);
@@ -448,5 +432,27 @@ public class Utils {
                     "Unknown base permission to dissemble : " + permission);
         }
         return leafPermissions;
+    }
+
+    /**
+     * Return the matching realm config for the given tenant and the user store domain.
+     *
+     * @param tenantID Tenant ID
+     * @param userStoreDomain User store domain name
+     * @return Matching realm config, null if not found.
+     * @throws OrganizationManagementException If any errors occurred.
+     */
+    public static RealmConfiguration getMatchingRealmConfiguration(int tenantID, String userStoreDomain)
+            throws OrganizationManagementException {
+
+        List<RealmConfiguration> realmConfigurations = Utils.getRealmConfigurations(tenantID);
+        RealmConfiguration matchingRealmConfig = null;
+        for (RealmConfiguration realmConfig : realmConfigurations) {
+            if (realmConfig.getUserStoreProperties().get(DOMAIN_NAME).equalsIgnoreCase(userStoreDomain)) {
+                matchingRealmConfig = realmConfig;
+                break;
+            }
+        }
+        return matchingRealmConfig;
     }
 }
