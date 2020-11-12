@@ -738,7 +738,7 @@ paths:
         - in: query
           name: filter
           type: string
-          description: SCIM filtering to fine tune the search results. Support operations are 'eq', 'co', 'sw', 'ew'.
+          description: SCIM filtering to fine tune the search results. Supported operations are 'eq', 'co', 'sw', 'ew' and 'and'.
       responses:
         '200':
           description: Ok
