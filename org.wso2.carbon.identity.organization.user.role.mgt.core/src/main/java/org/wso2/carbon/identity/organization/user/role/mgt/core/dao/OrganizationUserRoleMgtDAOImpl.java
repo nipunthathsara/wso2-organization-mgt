@@ -21,6 +21,7 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.dao;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
@@ -55,7 +56,6 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_USERS_BY_ORG_AND_ROLE;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.OR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.ORG_ID_ADDING;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.PAGINATION;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UM_USER_ROLE_ORG_DATA;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UNION_ALL;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UPSERT_UM_USER_ROLE_ORG_BASE;
@@ -103,21 +103,18 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
     @SuppressFBWarnings({"SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING", "SIC_INNER_SHOULD_BE_STATIC_ANON"})
     @Override
     public List<User> getUserIdsByOrganizationAndRole(String organizationId, String roleId, int offset, int limit,
-                                                          List<String> requestedAttributes, int tenantID)
+                                                          List<String> requestedAttributes, int tenantID, String filter)
             throws OrganizationUserRoleMgtServerException {
 
-        boolean paginationReq = offset > -1 && limit > 0;
+        boolean paginationReq = offset > -1 || limit > 0;
         JdbcTemplate jdbcTemplate = getNewTemplate();
-        List<String> userIds = null;
+        List<String> userIds;
         List<User> users = new ArrayList<>();
 
         // Build query.
         StringBuilder sb = new StringBuilder();
         // Base query.
         sb.append(GET_USERS_BY_ORG_AND_ROLE);
-        if (paginationReq) {
-            sb.append(String.format(PAGINATION, offset, limit));
-        }
 
         try {
             userIds = jdbcTemplate.executeQuery(sb.toString(),
@@ -130,31 +127,56 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         preparedStatement.setInt(++parameterIndex, tenantID);
                     });
             for (String userId : userIds) {
+
                 // Obtain the user store manager.
                 UserManager userManager = IdentitySCIMManager.getInstance().getUserManager();
                 // Create charon-SCIM user endpoint and hand-over the request.
                 UserResourceManager userResourceManager = new UserResourceManager();
-                SCIMResponse scimResponse =
-                        userResourceManager.get(userId, userManager, requestedAttributes.stream().collect(
-                                Collectors.joining(",")), null);
+
+                // Modify the given filter by adding the user ID.
+                String modifiedFilter;
+                if (StringUtils.isNotEmpty(filter)) {
+                    modifiedFilter = filter + " and id eq " + userId;
+                } else {
+                    modifiedFilter = "id eq " + userId;
+                }
+
+                SCIMResponse scimResponse = userResourceManager.listWithGET(userManager, modifiedFilter,
+                        null, null, null, null, null,
+                        requestedAttributes.stream().collect(Collectors.joining(",")), null);
+
+                // Decode the received response.
                 Map<String, Object> attributes;
                 ObjectMapper mapper = new ObjectMapper();
                 attributes = mapper.readValue(scimResponse.getResponseMessage(),
                         new TypeReference<Map<String, Object>>() {
                         });
-                users.add(new User(attributes));
+                if (attributes.containsKey("totalResults") && ((Integer) attributes.get("totalResults")) > 0 &&
+                attributes.containsKey("Resources") && ((ArrayList) attributes.get("Resources")).size() > 0) {
+                    Map<String, Object> userAttributes =
+                            (Map<String, Object>) ((ArrayList) attributes.get("Resources")).get(0);
+                    users.add(new User(userAttributes));
+                }
             }
-        } catch (CharonException | IOException e) {
-            //TODO
-            throw new OrganizationUserRoleMgtServerException(e);
-        } catch (DataAccessException e) {
-            String message =
-                    String.format(String.valueOf(ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR), roleId,
+
+            if (paginationReq) {
+                return getPaginatedResult(users, offset, limit);
+            }
+        } catch (CharonException | IOException | DataAccessException e) {
+            String message = String.format(String.valueOf(ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR), roleId,
                             organizationId);
             throw new OrganizationUserRoleMgtServerException(message,
                     ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR.getCode(), e);
         }
         return users;
+    }
+
+    private List<User> getPaginatedResult(List<User> users, int offset, int limit) {
+
+        if (offset < 0) {
+            offset = 0;
+        }
+        return users.subList(offset, offset + limit);
     }
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")

@@ -32,6 +32,8 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationMana
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.util.Utils;
 import org.wso2.carbon.identity.organization.scope.handler.internal.OrganizationScopeHandlerDataHolder;
+import org.wso2.carbon.user.api.AuthorizationManager;
+import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.utils.CarbonUtils;
 
 import java.io.File;
@@ -50,12 +52,21 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ADMIN_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.UI_EXECUTE;
+
 /**
  * Custom scope handler to include all available scopes of the user, if the organization system scope is requested.
  */
 public class OrganizationScopeHandler implements ScopeValidator {
 
     private static final Log log = LogFactory.getLog(OrganizationScopeHandler.class);
+
+    /**
+     * Map to hold the scope bindings read from the config file.
+     *      permission -> scopes
+     * Multiple scopes can be mapped to the same permission as a space separated scopes array.
+     */
     private Map<String, String> scopeBindings;
     private static final String ORG_SCOPE_BINDING_PATH = "identity/org-mgt-scope-bindings.xml";
     private static final String ORG_SYSTEM_SCOPE = "ORGANIZATION_SYSTEM";
@@ -85,18 +96,39 @@ public class OrganizationScopeHandler implements ScopeValidator {
                 List<String> permissions = OrganizationScopeHandlerDataHolder.getInstance().
                         getOrganizationAuthDao().findUserPermissions(Utils.getNewTemplate(), userId);
                 for (String permission : permissions) {
-                    if (scopeBindings.containsKey(permission) &&
-                            !orgSystemScopes.contains(scopeBindings.get(permission))) {
-                        orgSystemScopes.add(scopeBindings.get(permission));
+                    if (log.isDebugEnabled()) {
+                        log.debug("Considering user permission: " + permission);
+                    }
+                    if (scopeBindings.containsKey(permission)) {
+                        String[] scopesOfPermission = scopeBindings.get(permission).trim().split(" ");
+                        addScopes(scopesOfPermission, orgSystemScopes);
                     } else {
                         // Check for higher level permission entries.
                         for (Map.Entry<String, String> entry : scopeBindings.entrySet()) {
                             if (entry.getKey().startsWith(permission) && !orgSystemScopes.contains(entry.getValue())) {
-                                orgSystemScopes.add(entry.getValue());
+                                String[] scopesOfPermission = entry.getValue().trim().split(" ");
+                                addScopes(scopesOfPermission, orgSystemScopes);
                             }
                         }
                     }
                 }
+                // Handle organization admin permission
+                if (scopeBindings.containsKey(ORGANIZATION_ADMIN_PERMISSION)) {
+                    AuthorizationManager authorizationManager = OrganizationScopeHandlerDataHolder.getInstance().
+                            getRealmService().getTenantUserRealm(tenantId).getAuthorizationManager();
+                    boolean hasOrgAdminPermission = authorizationManager.isUserAuthorized(
+                            tokenReqMessageContext.getAuthorizedUser().getUserName(),
+                            ORGANIZATION_ADMIN_PERMISSION, UI_EXECUTE);
+                    if (hasOrgAdminPermission) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Including scopes related to organization admin permission.");
+                        }
+                        String[] scopesOfPermission =
+                                scopeBindings.get(ORGANIZATION_ADMIN_PERMISSION).trim().split(" ");
+                        addScopes(scopesOfPermission, orgSystemScopes);
+                    }
+                }
+
                 String[] scopesToReturn = (String[]) ArrayUtils.addAll(scopes, orgSystemScopes.toArray());
                 tokenReqMessageContext.setScope(scopesToReturn);
             } catch (OrganizationManagementServerException e) {
@@ -105,10 +137,24 @@ public class OrganizationScopeHandler implements ScopeValidator {
             } catch (OrganizationManagementException e) {
                 throw new IdentityOAuth2Exception("Error while obtaining user permissions for the user: " +
                         tokenReqMessageContext.getAuthorizedUser().getUserName());
+            } catch (UserStoreException e) {
+                throw new IdentityOAuth2Exception("Error while obtaining authorization manager.", e);
             }
         }
 
         return true;
+    }
+
+    private void addScopes(String[] scopesOfPermission, List<String> orgSystemScopes) {
+
+        for (String scope: scopesOfPermission) {
+            if (!orgSystemScopes.contains(scope)) {
+                orgSystemScopes.add(scope);
+                if (log.isDebugEnabled()) {
+                    log.debug("Adding scope: " + scope);
+                }
+            }
+        }
     }
 
     @Override

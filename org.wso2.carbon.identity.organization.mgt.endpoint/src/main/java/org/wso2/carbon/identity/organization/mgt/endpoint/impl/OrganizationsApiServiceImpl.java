@@ -220,7 +220,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsOrganizationIdRolesRoleIdUsersGet(String organizationId, String roleId, Integer offset,
-                                                                   Integer limit, String attributes) {
+                                                                   Integer limit, String attributes, String filter) {
 
         try {
             if ((limit != null && limit < 1) || (offset != null && offset < 0)) {
@@ -235,7 +235,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             List<String> requestedAttributes = attributes == null ? new ArrayList<>() :
                     Arrays.stream(attributes.split(",")).map(String::trim).collect(Collectors.toList());
             List<User> users = getOrganizationUserRoleManager()
-                    .getUsersByOrganizationAndRole(organizationId, roleId, offset, limit, requestedAttributes);
+                    .getUsersByOrganizationAndRole(organizationId, roleId, offset, limit, requestedAttributes, filter);
             return Response.ok().entity(users.stream().map(
                     User::getUserAttributes).collect(Collectors.toList())).build();
         } catch (OrganizationUserRoleMgtClientException e) {
