@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.handler;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
@@ -130,8 +131,8 @@ public class OrganizationMgtValidationHandler extends AbstractEventHandler {
         List<Attribute> attributes = new ArrayList<>();
         for (Operation operation : operations) {
             // Consider all attribute addition and replacement operations
-            if (operation.getPath().startsWith(PATCH_PATH_ORG_ATTRIBUTES) && !PATCH_OP_REMOVE
-                    .equals(operation.getOp())) {
+            if (StringUtils.isNotBlank(operation.getPath()) && operation.getPath().startsWith(PATCH_PATH_ORG_ATTRIBUTES)
+                    && !PATCH_OP_REMOVE.equals(operation.getOp())) {
                 Attribute attribute = new Attribute();
                 attribute.setKey(operation.getPath().replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim());
                 attribute.setValue(operation.getValue());
