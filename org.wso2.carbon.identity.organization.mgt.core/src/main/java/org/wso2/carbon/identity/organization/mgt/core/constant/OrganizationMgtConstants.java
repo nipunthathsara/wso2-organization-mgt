@@ -61,6 +61,7 @@ public class OrganizationMgtConstants {
     public static final String ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_VALUE = "userStoreConfigValue";
 
     // Permission strings
+    public static final String PERMISSION = "/permission";
     public static final String ADMIN_PERMISSION = "/permission/admin";
     public static final String ADMIN_MANAGE_PERMISSION = "/permission/admin/manage";
     public static final String ADMIN_MANAGE_IDENTITY_PERMISSION = "/permission/admin/manage/identity";
@@ -88,6 +89,9 @@ public class OrganizationMgtConstants {
     public static final String ROLE_MGT_VIEW_PERMISSION = "/permission/admin/manage/identity/rolemgt/view";
     public static final String ROLE_MGT_EDIT_PERMISSION = "/permission/admin/manage/identity/rolemgt/update";
     public static final String ROLE_MGT_DELETE_PERMISSION = "/permission/admin/manage/identity/rolemgt/delete";
+    // User role management permissions
+    public static final String USER_ROLE_MGT_BASE_PERMISSION = "/permission/admin/manage/identity/userrolemgt";
+    public static final String USER_ROLE_MGT_VIEW_PERMISSION = "/permission/admin/manage/identity/userrolemgt/view";
     public static final String UI_EXECUTE = "ui.execute";
 
     /**

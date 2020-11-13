@@ -54,10 +54,10 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ADMIN_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNCLASSIFIED_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ADMIN_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_DELETE_PERMISSION;
@@ -65,6 +65,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ID_CLAIM_URI;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ID_DEFAULT_CLAIM_URI;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_VIEW_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_DELETE_PERMISSION;
@@ -76,6 +77,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_EDIT_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_LIST_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_VIEW_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_BASE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.DOMAIN_NAME;
@@ -407,6 +410,7 @@ public class Utils {
 
         List<String> leafPermissions = new ArrayList<>();
         switch (permission) {
+        case PERMISSION:
         case ADMIN_PERMISSION:
         case ADMIN_MANAGE_PERMISSION:
         case ADMIN_MANAGE_IDENTITY_PERMISSION:
@@ -414,6 +418,7 @@ public class Utils {
             leafPermissions.add(ORGANIZATION_VIEW_PERMISSION);
             leafPermissions.add(ORGANIZATION_EDIT_PERMISSION);
             leafPermissions.add(ORGANIZATION_DELETE_PERMISSION);
+            leafPermissions.add(ORGANIZATION_ADMIN_PERMISSION);
             leafPermissions.add(USER_MGT_CREATE_PERMISSION);
             leafPermissions.add(USER_MGT_VIEW_PERMISSION);
             leafPermissions.add(USER_MGT_LIST_PERMISSION);
@@ -423,12 +428,14 @@ public class Utils {
             leafPermissions.add(ROLE_MGT_VIEW_PERMISSION);
             leafPermissions.add(ROLE_MGT_EDIT_PERMISSION);
             leafPermissions.add(ROLE_MGT_DELETE_PERMISSION);
+            leafPermissions.add(USER_ROLE_MGT_VIEW_PERMISSION);
             break;
         case ORGANIZATION_BASE_PERMISSION:
             leafPermissions.add(ORGANIZATION_CREATE_PERMISSION);
             leafPermissions.add(ORGANIZATION_VIEW_PERMISSION);
             leafPermissions.add(ORGANIZATION_EDIT_PERMISSION);
             leafPermissions.add(ORGANIZATION_DELETE_PERMISSION);
+            leafPermissions.add(ORGANIZATION_ADMIN_PERMISSION);
             break;
         case USER_MGT_BASE_PERMISSION:
             leafPermissions.add(USER_MGT_CREATE_PERMISSION);
@@ -443,9 +450,53 @@ public class Utils {
             leafPermissions.add(ROLE_MGT_EDIT_PERMISSION);
             leafPermissions.add(ROLE_MGT_DELETE_PERMISSION);
             break;
+        case USER_ROLE_MGT_BASE_PERMISSION:
+        case USER_ROLE_MGT_VIEW_PERMISSION:
+            leafPermissions.add(USER_ROLE_MGT_VIEW_PERMISSION);
+            break;
+        case ORGANIZATION_CREATE_PERMISSION:
+            leafPermissions.add(ORGANIZATION_CREATE_PERMISSION);
+            break;
+        case ORGANIZATION_VIEW_PERMISSION:
+            leafPermissions.add(ORGANIZATION_VIEW_PERMISSION);
+            break;
+        case ORGANIZATION_EDIT_PERMISSION:
+            leafPermissions.add(ORGANIZATION_EDIT_PERMISSION);
+            break;
+        case ORGANIZATION_DELETE_PERMISSION:
+            leafPermissions.add(ORGANIZATION_DELETE_PERMISSION);
+            break;
+        case USER_MGT_CREATE_PERMISSION:
+            leafPermissions.add(USER_MGT_CREATE_PERMISSION);
+            break;
+        case USER_MGT_VIEW_PERMISSION:
+            leafPermissions.add(USER_MGT_VIEW_PERMISSION);
+            break;
+        case USER_MGT_LIST_PERMISSION:
+            leafPermissions.add(USER_MGT_LIST_PERMISSION);
+            break;
+        case USER_MGT_EDIT_PERMISSION:
+            leafPermissions.add(USER_MGT_EDIT_PERMISSION);
+            break;
+        case USER_MGT_DELETE_PERMISSION:
+            leafPermissions.add(USER_MGT_DELETE_PERMISSION);
+            break;
+        case ROLE_MGT_CREATE_PERMISSION:
+            leafPermissions.add(ROLE_MGT_CREATE_PERMISSION);
+            break;
+        case ROLE_MGT_VIEW_PERMISSION:
+            leafPermissions.add(ROLE_MGT_VIEW_PERMISSION);
+            break;
+        case ROLE_MGT_EDIT_PERMISSION:
+            leafPermissions.add(ROLE_MGT_EDIT_PERMISSION);
+            break;
+        case ROLE_MGT_DELETE_PERMISSION:
+            leafPermissions.add(ROLE_MGT_DELETE_PERMISSION);
+            break;
         default:
-            throw handleServerException(ERROR_CODE_UNCLASSIFIED_ERROR,
-                    "Unknown base permission to dissemble : " + permission);
+            if (log.isDebugEnabled()) {
+                log.debug("Omitting the unrelated permission : " + permission);
+            }
         }
         return leafPermissions;
     }
