@@ -140,6 +140,7 @@ public class OrganizationMgtAuditHandler extends AbstractEventHandler {
             case POST_REVOKE_ORGANIZATION_USER_ROLE:
                 AUDIT.warn(String.format(AUDIT_MESSAGE, username, "revoke organization user roles", organizationId,
                         formatRoleMappingRevokeData(data), status));
+                break;
             default:
                 return;
         }
