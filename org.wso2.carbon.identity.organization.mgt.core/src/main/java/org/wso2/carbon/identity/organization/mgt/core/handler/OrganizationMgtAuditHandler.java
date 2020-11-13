@@ -28,6 +28,8 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.Status;
 import org.wso2.carbon.identity.organization.mgt.core.model.Operation;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMappingForEvent;
+import org.wso2.carbon.identity.organization.mgt.core.model.UserRoleInheritance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +38,7 @@ import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.DATA;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.ORGANIZATION_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_ASSIGN_ORGANIZATION_USER_ROLE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_CREATE_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_DELETE_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_GET_CHILD_ORGANIZATIONS;
@@ -45,6 +48,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_LIST_ORGANIZATIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_PATCH_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_PATCH_USER_STORE_CONFIGS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_REVOKE_ORGANIZATION_USER_ROLE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.STATUS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_NAME;
 
@@ -60,11 +64,13 @@ public class OrganizationMgtAuditHandler extends AbstractEventHandler {
 
     @Override
     public String getName() {
+
         return "organizationMgtAuditHandler";
     }
 
     @Override
     public int getPriority(MessageContext messageContext) {
+
         return 51;
     }
 
@@ -84,59 +90,98 @@ public class OrganizationMgtAuditHandler extends AbstractEventHandler {
         Object data = eventProperties.get(DATA);
 
         switch (event.getEventName()) {
-        case POST_CREATE_ORGANIZATION:
-            AUDIT.info(String.format(AUDIT_MESSAGE, username, "create organization",
-                    organization.getId(), organization.getName(), status));
-            break;
-        case POST_IMPORT_ORGANIZATION:
-            AUDIT.info(String.format(AUDIT_MESSAGE, username, "import organization",
-                    organization.getId(), organization.getName(), status));
-            break;
-        case POST_GET_ORGANIZATION:
-            AUDIT.info(String.format(AUDIT_MESSAGE, username, "retrieve organization",
-                    organization.getId(), organization.getName(), status));
-            break;
-        case POST_LIST_ORGANIZATIONS:
-            List<Organization> organizations = (data instanceof List && !((List) data).isEmpty() && ((List) data)
-                    .get(0) instanceof Organization) ? (List<Organization>) data : new ArrayList<>();
-            AUDIT.info(String.format(AUDIT_MESSAGE, username, "list organizations",
-                    organizations.stream().map(Organization::getId).collect(Collectors.toList()),
-                    organizations.stream().map(Organization::getName).collect(Collectors.toList()),
-                    status));
-            break;
-        case POST_DELETE_ORGANIZATION:
-            AUDIT.info(String.format(AUDIT_MESSAGE, username, "delete organization",
-                    organizationId, null, status));
-            break;
-        case POST_PATCH_ORGANIZATION:
-            AUDIT.info(String.format(AUDIT_MESSAGE, username, "patch organization", organizationId,
-                    formatOperationData(data), status));
-            break;
-        case POST_GET_CHILD_ORGANIZATIONS:
-            List<String> children = (data instanceof List && !((List) data).isEmpty() && ((List) data)
-                    .get(0) instanceof String) ? (List<String>) data : new ArrayList<>();
-            AUDIT.info(String.format(AUDIT_MESSAGE, username, "list child organizations", organizationId,
-                    StringUtils.join(children, ", "), status));
-            break;
-        case POST_GET_USER_STORE_CONFIGS:
-            AUDIT.info(String.format(AUDIT_MESSAGE, username, "retrieve organization user store configs",
-                    organizationId, null, status));
-            break;
-        case POST_PATCH_USER_STORE_CONFIGS:
-            AUDIT.info(String.format(AUDIT_MESSAGE, username, "patch organization user store config", organizationId,
-                    formatOperationData(data), status));
-            break;
-        default:
-            return;
+            case POST_CREATE_ORGANIZATION:
+                AUDIT.info(String.format(AUDIT_MESSAGE, username, "create organization",
+                        organization.getId(), organization.getName(), status));
+                break;
+            case POST_IMPORT_ORGANIZATION:
+                AUDIT.info(String.format(AUDIT_MESSAGE, username, "import organization",
+                        organization.getId(), organization.getName(), status));
+                break;
+            case POST_GET_ORGANIZATION:
+                AUDIT.info(String.format(AUDIT_MESSAGE, username, "retrieve organization",
+                        organization.getId(), organization.getName(), status));
+                break;
+            case POST_LIST_ORGANIZATIONS:
+                List<Organization> organizations = (data instanceof List && !((List) data).isEmpty() && ((List) data)
+                        .get(0) instanceof Organization) ? (List<Organization>) data : new ArrayList<>();
+                AUDIT.info(String.format(AUDIT_MESSAGE, username, "list organizations",
+                        organizations.stream().map(Organization::getId).collect(Collectors.toList()),
+                        organizations.stream().map(Organization::getName).collect(Collectors.toList()),
+                        status));
+                break;
+            case POST_DELETE_ORGANIZATION:
+                AUDIT.info(String.format(AUDIT_MESSAGE, username, "delete organization",
+                        organizationId, null, status));
+                break;
+            case POST_PATCH_ORGANIZATION:
+                AUDIT.info(String.format(AUDIT_MESSAGE, username, "patch organization", organizationId,
+                        formatOperationData(data), status));
+                break;
+            case POST_GET_CHILD_ORGANIZATIONS:
+                List<String> children = (data instanceof List && !((List) data).isEmpty() && ((List) data)
+                        .get(0) instanceof String) ? (List<String>) data : new ArrayList<>();
+                AUDIT.info(String.format(AUDIT_MESSAGE, username, "list child organizations", organizationId,
+                        StringUtils.join(children, ", "), status));
+                break;
+            case POST_GET_USER_STORE_CONFIGS:
+                AUDIT.info(String.format(AUDIT_MESSAGE, username, "retrieve organization user store configs",
+                        organizationId, null, status));
+                break;
+            case POST_PATCH_USER_STORE_CONFIGS:
+                AUDIT.info(
+                        String.format(AUDIT_MESSAGE, username, "patch organization user store config", organizationId,
+                                formatOperationData(data), status));
+                break;
+            case POST_ASSIGN_ORGANIZATION_USER_ROLE:
+                AUDIT.warn(String.format(AUDIT_MESSAGE, username, "assign organization user roles", organizationId,
+                        formatRoleMappingAssignmentData(data), status));
+                break;
+            case POST_REVOKE_ORGANIZATION_USER_ROLE:
+                AUDIT.warn(String.format(AUDIT_MESSAGE, username, "revoke organization user roles", organizationId,
+                        formatRoleMappingRevokeData(data), status));
+            default:
+                return;
         }
     }
 
     private String formatOperationData(Object data) {
+
         Operation operation = data instanceof Operation ? (Operation) data : new Operation();
         StringBuilder builder = new StringBuilder();
         builder.append("Operation : " + operation.getOp());
         builder.append(", Path : " + operation.getPath());
         builder.append(", Value : " + operation.getValue());
+        return builder.toString();
+    }
+
+    private String formatRoleMappingRevokeData(Object data) {
+
+        OrganizationUserRoleMappingForEvent organizationUserRoleMappingForRevokeEvent =
+                data instanceof OrganizationUserRoleMappingForEvent ? (OrganizationUserRoleMappingForEvent) data :
+                        new OrganizationUserRoleMappingForEvent();
+        StringBuilder builder = new StringBuilder();
+        builder.append("OrganizationId : " + organizationUserRoleMappingForRevokeEvent.getOrganizationId());
+        builder.append(", RoleId : " + organizationUserRoleMappingForRevokeEvent.getRoleId());
+        builder.append(", UserId : " + organizationUserRoleMappingForRevokeEvent.getUserId());
+        builder.append(", includeSubOrgs : " + organizationUserRoleMappingForRevokeEvent.isIncludeSubOrgs());
+        return builder.toString();
+    }
+
+    private String formatRoleMappingAssignmentData(Object data) {
+
+        OrganizationUserRoleMappingForEvent organizationUserRoleMappingForRevokeEvent =
+                data instanceof OrganizationUserRoleMappingForEvent ? (OrganizationUserRoleMappingForEvent) data :
+                        new OrganizationUserRoleMappingForEvent();
+        StringBuilder builder = new StringBuilder();
+        builder.append("OrganizationId : " + organizationUserRoleMappingForRevokeEvent.getOrganizationId());
+        builder.append(", RoleId : " + organizationUserRoleMappingForRevokeEvent.getRoleId());
+        for (UserRoleInheritance userRoleInheritance : organizationUserRoleMappingForRevokeEvent
+                .getUsersRoleInheritance()) {
+            builder.append(", { UserId : " + userRoleInheritance.getUserId());
+            builder.append(", includeSubOrgs : " + userRoleInheritance.isCascadedRole());
+            builder.append(" }");
+        }
         return builder.toString();
     }
 }

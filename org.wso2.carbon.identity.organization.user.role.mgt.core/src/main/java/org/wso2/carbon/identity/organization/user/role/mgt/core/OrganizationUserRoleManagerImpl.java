@@ -20,34 +20,56 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.event.event.Event;
+import org.wso2.carbon.identity.event.services.IdentityEventService;
+import org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants;
 import org.wso2.carbon.identity.organization.mgt.core.dao.CacheBackedOrganizationMgtDAO;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDao;
 import org.wso2.carbon.identity.organization.mgt.core.dao.OrganizationMgtDaoImpl;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMappingForEvent;
+import org.wso2.carbon.identity.organization.mgt.core.model.UserRoleInheritance;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAO;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAOImpl;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.internal.OrganizationUserRoleMgtDataHolder;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMappingUser;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils;
 import org.wso2.carbon.identity.scim2.common.DAO.GroupDAO;
 import org.wso2.carbon.identity.scim2.common.exceptions.IdentitySCIMException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.stream.Collectors;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.DATA;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.ORGANIZATION_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_ASSIGN_ORGANIZATION_USER_ROLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_REVOKE_ORGANIZATION_USER_ROLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_ASSIGN_ORGANIZATION_USER_ROLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.PRE_REVOKE_ORGANIZATION_USER_ROLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.STATUS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.TENANT_DOMAIN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_NAME;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ADD_NONE_INTERNAL_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ROLE_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.handleServerException;
 
 /**
- * Organization User Role Manager Impl
+ * Organization User Role Manager Impl.
  */
 public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleManager {
 
@@ -56,6 +78,9 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
             throws OrganizationUserRoleMgtException, OrganizationManagementException {
 
 //        validateAddRoleMappingRequest(organizationUserRoleMappings);
+        // Fire pre-event.
+        fireEvent(PRE_ASSIGN_ORGANIZATION_USER_ROLE, organizationId, null,
+                OrganizationMgtEventConstants.Status.FAILURE);
         GroupDAO groupDAO = new GroupDAO();
         OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
         OrganizationMgtDao organizationMgtDao = new OrganizationMgtDaoImpl();
@@ -93,9 +118,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
             }
         }
 
-        //@TODO check for mapping existence
         List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
-
         // Get child organizations and add role mappings.
         if (CollectionUtils.isNotEmpty(usersGetPermissionsForSubOrgs)) {
             Queue<String> organizationList = new LinkedList<>();
@@ -119,6 +142,13 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
         organizationUserRoleMappings.addAll(populateOrganizationUserRoleMappings(organizationId, roleId, hybridRoleId,
                 usersGetPermissionOnlyToOneOrg));
         organizationUserRoleMgtDAO.addOrganizationUserRoleMappings(organizationUserRoleMappings, getTenantId());
+        // Fire post-event.
+        OrganizationUserRoleMappingForEvent organizationUserRoleMappingForEvent =
+                new OrganizationUserRoleMappingForEvent(organizationId, roleId, userRoleMapping.getUsers().stream()
+                        .map(m -> new UserRoleInheritance(m.getUserId(), m.isCascadedRole()))
+                        .collect(Collectors.toList()));
+        fireEvent(POST_ASSIGN_ORGANIZATION_USER_ROLE, organizationId, organizationUserRoleMappingForEvent,
+                OrganizationMgtEventConstants.Status.SUCCESS);
     }
 
     @Override
@@ -137,6 +167,9 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                                                    boolean includeSubOrgs)
             throws OrganizationUserRoleMgtException, OrganizationManagementException {
 
+        // Fire pre-event.
+        fireEvent(PRE_REVOKE_ORGANIZATION_USER_ROLE, organizationId, null,
+                OrganizationMgtEventConstants.Status.FAILURE);
         OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
         OrganizationMgtDao organizationMgtDao = new OrganizationMgtDaoImpl();
         CacheBackedOrganizationMgtDAO cacheBackedOrganizationMgtDAO =
@@ -163,6 +196,11 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
         }
         organizationUserRoleMgtDAO
                 .deleteOrganizationsUserRoleMapping(organizationListToBeDeleted, userId, roleId, getTenantId());
+        // Fire post-event.
+        OrganizationUserRoleMappingForEvent organizationUserRoleMappingForEvent =
+                new OrganizationUserRoleMappingForEvent(organizationId, roleId, userId, includeSubOrgs);
+        fireEvent(POST_REVOKE_ORGANIZATION_USER_ROLE, organizationId, organizationUserRoleMappingForEvent,
+                OrganizationMgtEventConstants.Status.SUCCESS);
     }
 
     @Override
@@ -200,5 +238,44 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
             organizationUserRoleMappings.add(organizationUserRoleMapping);
         }
         return organizationUserRoleMappings;
+    }
+
+    private void fireEvent(String eventName, String organizationId, Object data,
+                           OrganizationMgtEventConstants.Status status) throws OrganizationUserRoleMgtServerException {
+
+        IdentityEventService eventService = OrganizationUserRoleMgtDataHolder.getInstance().getIdentityEventService();
+        Map<String, Object> eventProperties = new HashMap<>();
+        eventProperties.put(USER_NAME, getAuthenticatedUsername());
+        eventProperties.put(USER_ID, getAuthenticatedUserId());
+        eventProperties.put(TENANT_DOMAIN, getTenantDomain());
+        eventProperties.put(STATUS, status);
+        if (data != null) {
+            eventProperties.put(DATA, data);
+        }
+        if (organizationId != null) {
+            eventProperties.put(ORGANIZATION_ID, organizationId);
+        }
+        Event event = new Event(eventName, eventProperties);
+        try {
+            eventService.handleEvent(event);
+        } catch (IdentityEventException e) {
+            throw handleServerException(OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_EVENTING_ERROR,
+                    eventName, e);
+        }
+    }
+
+    private String getTenantDomain() {
+
+        return PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+    }
+
+    private String getAuthenticatedUserId() throws OrganizationUserRoleMgtServerException {
+
+        return Utils.getUserIDFromUserName(getAuthenticatedUsername(), getTenantId());
+    }
+
+    private String getAuthenticatedUsername() {
+
+        return PrivilegedCarbonContext.getThreadLocalCarbonContext().getUsername();
     }
 }

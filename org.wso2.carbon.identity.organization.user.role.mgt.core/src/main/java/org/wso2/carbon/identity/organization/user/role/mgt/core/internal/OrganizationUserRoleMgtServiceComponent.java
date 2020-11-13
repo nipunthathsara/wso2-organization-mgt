@@ -27,6 +27,9 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
+import org.wso2.carbon.identity.event.services.IdentityEventService;
+import org.wso2.carbon.identity.organization.mgt.core.handler.OrganizationMgtAuditHandler;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.OrganizationUserRoleManager;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.OrganizationUserRoleManagerImpl;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.dao.OrganizationUserRoleMgtDAOImpl;
@@ -57,6 +60,9 @@ public class OrganizationUserRoleMgtServiceComponent {
             BundleContext bundleContext = componentContext.getBundleContext();
             bundleContext.registerService(OrganizationUserRoleManager.class.getName(),
                     new OrganizationUserRoleManagerImpl(), null);
+            bundleContext.registerService(
+                    AbstractEventHandler.class.getName(), new OrganizationMgtAuditHandler(),
+                    null);
             if (log.isDebugEnabled()) {
                 log.debug("Organization and User Role Management component activated successfully.");
             }
@@ -87,4 +93,20 @@ public class OrganizationUserRoleMgtServiceComponent {
         OrganizationUserRoleMgtDataHolder.getInstance().setRealmService(null);
     }
 
+    @Reference(
+            name = "identity.event.service",
+            service = IdentityEventService.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetIdentityEventService"
+    )
+    protected void setIdentityEventService(IdentityEventService identityEventService) {
+
+        OrganizationUserRoleMgtDataHolder.getInstance().setIdentityEventService(identityEventService);
+    }
+
+    protected void unsetIdentityEventService(IdentityEventService identityEventService) {
+
+        OrganizationUserRoleMgtDataHolder.getInstance().setIdentityEventService(null);
+    }
 }
