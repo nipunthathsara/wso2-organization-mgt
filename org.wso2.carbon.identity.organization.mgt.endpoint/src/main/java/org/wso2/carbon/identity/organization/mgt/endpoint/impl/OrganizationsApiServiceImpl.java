@@ -249,12 +249,11 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
     @Override
     public Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(String organizationId, String roleId,
-            String userId,  Boolean includeSubOrgs) {
+            String userId) {
 
         try {
-            boolean includeSubOrgsReq = includeSubOrgs != null ? includeSubOrgs.booleanValue() : false;
             getOrganizationUserRoleManager()
-                    .deleteOrganizationsUserRoleMapping(organizationId, userId, roleId, includeSubOrgsReq);
+                    .deleteOrganizationsUserRoleMapping(organizationId, userId, roleId);
             return Response.noContent().build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);

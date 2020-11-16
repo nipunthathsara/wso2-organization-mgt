@@ -95,6 +95,8 @@ public class SQLConstants {
     public static final String UM_UM_USER_ID_COLUMN = "UM_USER_ID";
     public static final String UM_HYBRID_ROLE_ID_COLUMN = "UM_HYBRID_ROLE_ID";
     public static final String UM_RESOURCE_ID_COLUMN = "UM_RESOURCE_ID";
+    public static final String UM_ASSIGNED_AT_COLUMN = "ASSIGNED_AT";
+    public static final String UM_INHERIT_COLUMN = "INHERIT";
 
     public static final String UM_ID_COLUMN = "UM_ID";
     public static final String ATTR_VALUE_COLUMN = "ATTR_VALUE";
@@ -312,13 +314,13 @@ public class SQLConstants {
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
             "    UM_USER_ID = ? AND ORG_ID IN (#)";
-    public static final String GET_USER_ROLE_ORG_MAPPINGS_FOR_GIVEN_ORG =
+    public static final String GET_USER_ROLE_ORG_MAPPINGS_DELEGATE_TO_NEW_ORG =
             "SELECT\n" +
-            "    UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID\n" +
+            "    UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, ASSIGNED_AT, INHERIT\n" +
             "FROM\n" +
             "    UM_USER_ROLE_ORG\n" +
             "WHERE\n" +
-            "    ORG_ID = ? AND UM_TENANT_ID = ?";
+            "    ORG_ID = ? AND UM_TENANT_ID = ? AND (INHERIT = 1 OR UM_USER_ID = ?)";
     public static final String INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING =
             "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID) " +
                     "VALUES (?, ?, ?, ?, ?, ?) ";

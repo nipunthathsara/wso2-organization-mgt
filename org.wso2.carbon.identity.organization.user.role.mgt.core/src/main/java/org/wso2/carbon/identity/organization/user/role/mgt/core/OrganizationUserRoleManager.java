@@ -39,7 +39,7 @@ public interface OrganizationUserRoleManager {
                                              List<String> requestedAttributes, String filter)
             throws OrganizationUserRoleMgtException;
 
-    void deleteOrganizationsUserRoleMapping(String organizationId, String userId, String roleId, boolean includeSubOrgs)
+    void deleteOrganizationsUserRoleMapping(String organizationId, String userId, String roleId)
             throws OrganizationUserRoleMgtException, OrganizationManagementException;
 
     void deleteOrganizationsUserRoleMappings(String userId) throws OrganizationUserRoleMgtException;

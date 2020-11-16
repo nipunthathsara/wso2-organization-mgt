@@ -334,10 +334,9 @@ public class OrganizationsApi {
 
     public Response organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(@ApiParam(value = "ID of the organization of which, the user role mappings will be deleted.",required=true ) @PathParam("organization-id")  String organizationId,
     @ApiParam(value = "ID of the role of which, the user will be deleted.",required=true ) @PathParam("role-id")  String roleId,
-    @ApiParam(value = "ID of the user.",required=true ) @PathParam("user-id")  String userId,
-    @ApiParam(value = "Filter the role mappings to delete. Check whether sub organization's role mappings will be deleted or not.") @QueryParam("includeSubOrgs")  Boolean includeSubOrgs) {
+    @ApiParam(value = "ID of the user.",required=true ) @PathParam("user-id")  String userId) {
 
-        return delegate.organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(organizationId,roleId,userId,includeSubOrgs);
+        return delegate.organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(organizationId,roleId,userId);
     }
 
     @GET

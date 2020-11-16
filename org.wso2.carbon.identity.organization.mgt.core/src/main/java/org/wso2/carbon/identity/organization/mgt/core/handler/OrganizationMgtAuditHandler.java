@@ -165,7 +165,6 @@ public class OrganizationMgtAuditHandler extends AbstractEventHandler {
         builder.append("OrganizationId : " + organizationUserRoleMappingForRevokeEvent.getOrganizationId());
         builder.append(", RoleId : " + organizationUserRoleMappingForRevokeEvent.getRoleId());
         builder.append(", UserId : " + organizationUserRoleMappingForRevokeEvent.getUserId());
-        builder.append(", includeSubOrgs : " + organizationUserRoleMappingForRevokeEvent.isIncludeSubOrgs());
         return builder.toString();
     }
 
