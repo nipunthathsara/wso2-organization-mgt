@@ -251,13 +251,14 @@ public class SQLConstants {
             "    LAST_MODIFIED = ?, LAST_MODIFIED_BY = ?\n" +
             "WHERE\n" +
             "    ID = ?";
+    // LDAP OU names are case insensitive
     public static final String CHECK_RDN_AVAILABILITY =
             "SELECT\n" +
             "    COUNT(1)\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
-            "    TENANT_ID = ? AND PARENT_ID = ? AND CONFIG_KEY = 'RDN' AND CONFIG_VALUE = ?";
+            "    TENANT_ID = ? AND PARENT_ID = ? AND CONFIG_KEY = 'RDN' AND lower(CONFIG_VALUE) = lower(?)";
     public static final String GET_ROLE_IDS_FOR_PERMISSION =
             "SELECT\n" +
             "    DISTINCT UM_ROLE_ID\n" +
