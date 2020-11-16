@@ -99,6 +99,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS_WHERE_CLAUSE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATIONS_BY_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_ID_BY_NAME;
@@ -868,6 +869,11 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         StringBuilder sb = new StringBuilder();
         // Base query
         sb.append(GET_ALL_ORGANIZATION_IDS);
+        // If multi attribute 'AND' search conditions are available
+        if (!placeholderSQL.getAttrSearchJoins().isEmpty()) {
+            placeholderSQL.getAttrSearchJoins().stream().forEach(join -> sb.append(join));
+        }
+        sb.append(GET_ALL_ORGANIZATION_IDS_WHERE_CLAUSE);
         // Check organization permissions for non admin users
         if (!listAsAdmin) {
             sb.append(" AND ").append(GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION);

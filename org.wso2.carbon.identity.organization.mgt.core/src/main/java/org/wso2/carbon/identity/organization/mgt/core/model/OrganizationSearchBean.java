@@ -54,6 +54,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_BY_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NTH_ATTR_KEY_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NTH_ATTR_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_DISPLAY_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_NAME_COLUMN;
@@ -128,10 +130,10 @@ public class OrganizationSearchBean implements SearchBean {
                 dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_LAST_MODIFIED_BY_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY:
-                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_ATTR_KEY_COLUMN);
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_NTH_ATTR_KEY_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE:
-                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_ATTR_VALUE_COLUMN);
+                dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_NTH_ATTR_VALUE_COLUMN);
                 break;
             case ORGANIZATION_SEARCH_BEAN_FIELD_USER_STORE_CONFIG_KEY:
                 dbQualifiedFieldName = String.format(COLUMN_LOWER_WRAPPER, VIEW_CONFIG_KEY_COLUMN);

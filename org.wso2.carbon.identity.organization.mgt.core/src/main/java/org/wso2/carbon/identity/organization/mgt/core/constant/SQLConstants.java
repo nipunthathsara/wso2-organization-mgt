@@ -87,7 +87,9 @@ public class SQLConstants {
     public static final String VIEW_PARENT_DISPLAY_NAME_COLUMN = "PARENT_DISPLAY_NAME";
     public static final String VIEW_ATTR_ID_COLUMN = "ATTR_ID";
     public static final String VIEW_ATTR_KEY_COLUMN = "ATTR_KEY";
+    public static final String VIEW_NTH_ATTR_KEY_COLUMN = "{N}.ATTR_KEY";
     public static final String VIEW_ATTR_VALUE_COLUMN = "ATTR_VALUE";
+    public static final String VIEW_NTH_ATTR_VALUE_COLUMN = "{N}.ATTR_VALUE";
     public static final String VIEW_CONFIG_ID_COLUMN = "CONFIG_ID";
     public static final String VIEW_CONFIG_KEY_COLUMN = "CONFIG_KEY";
     public static final String VIEW_CONFIG_VALUE_COLUMN = "CONFIG_VALUE";
@@ -192,10 +194,15 @@ public class SQLConstants {
     // ORDER BY with DISTINCT requires to have the columns in the SELECT clause.
     public static final String GET_ALL_ORGANIZATION_IDS =
             "SELECT\n" +
-            "    DISTINCT ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, " +
-            "    LAST_MODIFIED_BY, STATUS, PARENT_NAME, PARENT_DISPLAY_NAME\n" +
+            "    DISTINCT V.ID, V.NAME, V.DISPLAY_NAME, V.DESCRIPTION, V.CREATED_TIME, V.LAST_MODIFIED, V.CREATED_BY," +
+                 " V.LAST_MODIFIED_BY, V.STATUS, V.PARENT_NAME, V.PARENT_DISPLAY_NAME\n" +
             "FROM\n" +
-            "    ORG_MGT_VIEW\n" +
+            "    ORG_MGT_VIEW V\n";
+    public static final String GET_ALL_ORGANIZATION_IDS_MULTI_ATTR_SEARCH_CLAUSE =
+            "INNER JOIN\n" +
+            "     ORG_MGT_VIEW {N} " +
+            "ON (V.ID = {N}.ID AND {attrKey} AND {attrValue})\n";
+    public static final String GET_ALL_ORGANIZATION_IDS_WHERE_CLAUSE =
             "WHERE\n" +
             "    TENANT_ID = ?";
     public static final String GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION =

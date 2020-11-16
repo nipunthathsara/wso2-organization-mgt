@@ -24,6 +24,11 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditi
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS_MULTI_ATTR_SEARCH_CLAUSE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_KEY_COLUMN;
+
 /**
  * This class represent a complex condition with a {@link ConditionType}. A complex condition can contain a list of
  * another complex conditions or a primitive condition. Ex: A sample complex condition with two complex conditions
@@ -33,6 +38,7 @@ public class ComplexCondition implements Condition {
 
     private List<Condition> conditions;
     private ConditionType.ComplexOperator operator;
+    private int attrSearchConditionNumber = 0;
 
     public ComplexCondition(ConditionType.ComplexOperator operator, List<Condition> conditions) {
 
@@ -51,10 +57,61 @@ public class ComplexCondition implements Condition {
         PlaceholderSQL placeholderSQL = new PlaceholderSQL();
         ArrayList<Object> data = new ArrayList<>();
         ArrayList<ConditionType.PrimitiveOperator> operators = new ArrayList<>();
+        ArrayList<String> attrSearchJoins = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
+
+        // Identify attribute search conditions (attributeKey eq 'Type' and attributeValue eq 'partner')
+        boolean isAttrSearch = false;
+        for (Condition condition : conditions) {
+            isAttrSearch = false;
+            if (condition instanceof PrimitiveCondition) {
+                isAttrSearch = true;
+                PrimitiveCondition pCondition = (PrimitiveCondition) condition;
+                if (!ConditionType.ComplexOperator.AND.equals(operator) &&
+                        !(ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY.equals(pCondition.getProperty())
+                        || ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE.equals(pCondition.getProperty()))) {
+                    // Not an attribute search condition
+                    isAttrSearch = false;
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        System.out.println("*************************************" + isAttrSearch);
+        // Build join statement for this attribute search complex condition. (Includes both attrKey and attrValue)
+        if (isAttrSearch) {
+            ++attrSearchConditionNumber;
+            String attrSearchJoin = GET_ALL_ORGANIZATION_IDS_MULTI_ATTR_SEARCH_CLAUSE;
+            attrSearchJoins.add(attrSearchJoin);
+        }
 
         boolean first = true;
         for (Condition condition : conditions) {
+
+            if (isAttrSearch) {
+                // Build SQLs for primitive conditions - lower(V1.ATTR_KEY) = lower(?), lower(V1.ATTR_VALUE) = lower(?)
+                PlaceholderSQL eachPlaceholderSQL = condition.buildQuery(primitiveConditionValidator);
+                // Replace place holders
+                String join = attrSearchJoins.get(attrSearchJoins.size() - 1);
+                String query = eachPlaceholderSQL.getQuery();
+                if (eachPlaceholderSQL.getQuery().contains(VIEW_ATTR_KEY_COLUMN)) {
+                    attrSearchJoins.set(
+                            attrSearchJoins.size() - 1,
+                            join.replace("{attrKey}", query)
+                                    .replaceAll("\\{N}", "V" + attrSearchConditionNumber)
+                    );
+                } else {
+                    attrSearchJoins.set(
+                            attrSearchJoins.size() - 1,
+                            join.replace("{attrValue}", query)
+                                    .replaceAll("\\{N}", "V" + attrSearchConditionNumber)
+                    );
+                }
+                data.addAll(eachPlaceholderSQL.getData());
+                continue;
+            }
+
             if (!first) {
                 sb.append(" ").append(operator.toSQL()).append(" ");
             } else {
@@ -65,9 +122,11 @@ public class ComplexCondition implements Condition {
             sb.append(eachPlaceholderSQL.getQuery());
             data.addAll(eachPlaceholderSQL.getData());
             operators.addAll(eachPlaceholderSQL.getOperators());
+            attrSearchJoins.addAll(eachPlaceholderSQL.getAttrSearchJoins());
             sb.append(")");
         }
 
+        placeholderSQL.setAttrSearchJoins(attrSearchJoins);
         placeholderSQL.setQuery(sb.toString());
         placeholderSQL.setData(data);
         placeholderSQL.setOperator(operators);
