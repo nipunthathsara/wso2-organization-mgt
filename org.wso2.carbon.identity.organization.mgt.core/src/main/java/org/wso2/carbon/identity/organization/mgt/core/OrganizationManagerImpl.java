@@ -74,6 +74,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_DELETE_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RESOURCE_NOT_FOUND;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNAUTHORIZED_ACTION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ADMIN_PERMISSION;
@@ -207,7 +208,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             organization = organizationMgtDao.getOrganization(getTenantId(), organizationId.trim(), null);
         }
         if (organization == null) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST,
+            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
                     "Organization id " + organizationId + " doesn't exist in this tenant : " + getTenantId());
         }
         // Set derivable attributes
@@ -271,7 +272,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organizationName = organizationName.trim();
         String organizationId = organizationMgtDao.getOrganizationIdByName(getTenantId(), organizationName);
         if (organizationId == null) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST,
+            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
                     "Organization name " + organizationName + " doesn't exist in this tenant " + getTenantId());
         }
         return organizationId;
@@ -289,7 +290,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
                     "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
         validateOrganizationPatchOperations(operations, organizationId);
@@ -315,7 +316,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     "Provided organization ID is empty");
         }
         if (!isOrganizationExistById(organizationId.trim())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
+            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
                     "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
         Organization organization = organizationMgtDao.getOrganization(getTenantId(), organizationId, null);
@@ -384,7 +385,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             fireEvent(POST_GET_USER_STORE_CONFIGS, organizationId, userStoreConfigs, Status.SUCCESS);
             return userStoreConfigs;
         } else {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST,
+            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
                     "Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
     }
@@ -406,7 +407,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             fireEvent(POST_GET_CHILD_ORGANIZATIONS, organizationId, childOrganizationIds, Status.SUCCESS);
             return childOrganizationIds;
         } else {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST,
+            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
                     " Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
     }
@@ -423,7 +424,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST,
+            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
                     "Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
         validateUserStoreConfigPatchOperations(operations, organizationId);
