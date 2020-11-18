@@ -29,8 +29,16 @@
             <ResourceId>/permission/admin/manage/identity/userrolemgt</ResourceId>
         </ManagementPermission>
         <ManagementPermission>
+            <DisplayName>Create</DisplayName>
+            <ResourceId>/permission/admin/manage/identity/userrolemgt/create</ResourceId>
+        </ManagementPermission>
+        <ManagementPermission>
             <DisplayName>View</DisplayName>
             <ResourceId>/permission/admin/manage/identity/userrolemgt/view</ResourceId>
+        </ManagementPermission>
+        <ManagementPermission>
+            <DisplayName>Delete</DisplayName>
+            <ResourceId>/permission/admin/manage/identity/userrolemgt/delete</ResourceId>
         </ManagementPermission>
     </ManagementPermissions>
 </component>
