@@ -33,6 +33,8 @@ public class SQLConstants {
     public static final String AND = " AND ";
     public static final String OR = " OR ";
     public static final String ORG_ID_ADDING = "ORG_ID = ?";
+    public static final String ASSIGNED_AT_ADDING = "ASSIGNED_AT = ?";
+    public static final String INHERIT_ADDING = "INHERIT = ?";
 
     public static final String INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING =
             "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID, ASSIGNED_AT, INHERIT) " +

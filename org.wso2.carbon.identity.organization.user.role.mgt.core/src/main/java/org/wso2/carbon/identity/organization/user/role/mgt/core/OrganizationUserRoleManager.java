@@ -39,7 +39,7 @@ public interface OrganizationUserRoleManager {
                                              List<String> requestedAttributes, String filter)
             throws OrganizationUserRoleMgtException;
 
-    void deleteOrganizationsUserRoleMapping(String organizationId, String userId, String roleId)
+    void deleteOrganizationsUserRoleMapping(String organizationId, String userId, String roleId, String assignedLevel, boolean includeSubOrg, boolean checkInheritance)
             throws OrganizationUserRoleMgtException, OrganizationManagementException;
 
     void deleteOrganizationsUserRoleMappings(String userId) throws OrganizationUserRoleMgtException;
@@ -47,6 +47,6 @@ public interface OrganizationUserRoleManager {
     List<Role> getRolesByOrganizationAndUser(String organizationId, String userId)
             throws OrganizationUserRoleMgtException;
 
-    boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId)
+    boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId, String assignedLevel, boolean includeSubOrg, boolean checkInheritance)
             throws OrganizationUserRoleMgtException;
 }

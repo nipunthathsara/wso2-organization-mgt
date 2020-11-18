@@ -50,7 +50,7 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ROLES_PER_ORG_USER_RETRIEVING_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.AND;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.COUNT_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.ASSIGNED_AT_ADDING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_USER_ROLE_MAPPINGS_ASSIGNED_AT_ORG_LEVEL;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_DIRECTLY_ASSIGNED_ORGANIZATION_USER_ROLE_MAPPING_INHERITANCE;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ALL_ORGANIZATION_USER_ROLE_MAPPINGS_BY_USERID;
@@ -59,6 +59,7 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_ROLES_BY_ORG_AND_USER;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_ROLE_ID_BY_SCIM_GROUP_NAME;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_USERS_BY_ORG_AND_ROLE;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.INHERIT_ADDING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.INSERT_ALL;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.OR;
@@ -85,8 +86,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
-    public void addOrganizationUserRoleMappings(String assignedOrganizationId,
-                                                List<OrganizationUserRoleMapping> organizationUserRoleMappings,
+    public void addOrganizationUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings,
                                                 int tenantID)
             throws OrganizationUserRoleMgtServerException {
 
@@ -104,7 +104,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                             preparedStatement.setInt(++parameterIndex, tenantID);
                             preparedStatement
                                     .setString(++parameterIndex, organizationUserRoleMapping.getOrganizationId());
-                            preparedStatement.setString(++parameterIndex, assignedOrganizationId);
+                            preparedStatement.setString(++parameterIndex, organizationUserRoleMapping.getAssignedLevelOrganizationId());
                             preparedStatement
                                     .setInt(++parameterIndex, organizationUserRoleMapping.isCascadedRole() ? 1 : 0);
                         }
@@ -271,22 +271,30 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
 
     @Override
     public boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId,
-                                                          int tenantId)
+                                                       String assignedLevel, boolean includeSubOrg,
+                                                       boolean checkInheritance, int tenantId)
             throws OrganizationUserRoleMgtException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         int mappingsCount = 0;
         try {
-            mappingsCount = jdbcTemplate.fetchSingleRecord(GET_ORGANIZATION_USER_ROLE_MAPPING,
-                    (resultSet, rowNumber) ->
-                            resultSet.getInt(VIEW_INHERIT_COLUMN),
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setString(++parameterIndex, userId);
-                        preparedStatement.setString(++parameterIndex, roleId);
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    });
+            mappingsCount = jdbcTemplate
+                    .fetchSingleRecord(buildIsRoleMappingExistsQuery(assignedLevel, checkInheritance),
+                            (resultSet, rowNumber) ->
+                                    resultSet.getInt(VIEW_INHERIT_COLUMN),
+                            preparedStatement -> {
+                                int parameterIndex = 0;
+                                preparedStatement.setString(++parameterIndex, userId);
+                                preparedStatement.setString(++parameterIndex, roleId);
+                                preparedStatement.setInt(++parameterIndex, tenantId);
+                                preparedStatement.setString(++parameterIndex, organizationId);
+                                if (StringUtils.isNotEmpty(assignedLevel)) {
+                                    preparedStatement.setString(++parameterIndex, assignedLevel);
+                                }
+                                if (checkInheritance) {
+                                    preparedStatement.setInt(++parameterIndex, includeSubOrg ? 1 : 0);
+                                }
+                            });
         } catch (DataAccessException e) {
             String message =
                     String.format(String.valueOf(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_RETRIEVING_ERROR), roleId,
@@ -306,7 +314,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         List<Boolean> includeSubOrgOfDirectlyAssignedRoleMappings;
         try {
             includeSubOrgOfDirectlyAssignedRoleMappings = jdbcTemplate.executeQuery(GET_DIRECTLY_ASSIGNED_ORGANIZATION_USER_ROLE_MAPPING_INHERITANCE,
-                    (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN_NAME) == 1,
+                    (resultSet, rowNumber) -> resultSet.getInt(VIEW_INHERIT_COLUMN) == 1,
                     preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setString(++parameterIndex, userId);
@@ -388,4 +396,18 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         sb.append(")");
         return sb.toString();
     }
+
+    private String buildIsRoleMappingExistsQuery(String assignedLevel, boolean checkInheritance) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(GET_ORGANIZATION_USER_ROLE_MAPPING);
+        if (StringUtils.isNotEmpty(assignedLevel)) {
+            sb.append(AND).append(ASSIGNED_AT_ADDING);
+        }
+        if (checkInheritance) {
+            sb.append(AND).append(INHERIT_ADDING);
+        }
+        return sb.toString();
+    }
+
 }

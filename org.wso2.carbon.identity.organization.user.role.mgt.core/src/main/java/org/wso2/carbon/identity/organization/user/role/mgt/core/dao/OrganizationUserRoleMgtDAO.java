@@ -31,8 +31,7 @@ import java.util.List;
  */
 public interface OrganizationUserRoleMgtDAO {
 
-    void addOrganizationUserRoleMappings(String assignedOrganizationId,
-                                         List<OrganizationUserRoleMapping> organizationUserRoleMappings, int tenantID)
+    void addOrganizationUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings, int tenantID)
             throws OrganizationUserRoleMgtException;
 
     List<User> getUserIdsByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
@@ -47,8 +46,7 @@ public interface OrganizationUserRoleMgtDAO {
     List<Role> getRolesByOrganizationAndUser(String organizationID, String userId, int tenantID)
             throws OrganizationUserRoleMgtServerException;
 
-    boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId,
-                                                   int tenantId)
+    boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId, String assignedLevel, boolean includeSubOrg, boolean checkInheritance, int tenantId)
             throws OrganizationUserRoleMgtException;
 
     List<Boolean> getDirectlyAssignedOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId, int tenantId)
