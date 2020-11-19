@@ -147,7 +147,7 @@ public class OrganizationMgtConstants {
         ERROR_CODE_INVALID_DATE_FORMAT("ORGMGT_00015", "Invalid search criteria : %s"),
         ERROR_CODE_CONFLICTING_REQUEST("ORGMGT_00016", "Conflict : %s"),
         ERROR_CODE_RESOURCE_NOT_FOUND("ORGMGT_00017", "Resource not found : %s"),
-        ERROR_CODE_UNCLASSIFIED_ERROR("ORGMGT_00020", "Error while processing : %s"),
+        ERROR_CODE_UNCLASSIFIED_ERROR("ORGMGT_00019", "Error while processing : %s"),
 
         // Server errors (ORGMGT_00020-ORGMGT_00040)
         ERROR_CODE_ORGANIZATION_ADD_ERROR("ORGMGT_00020", "Error while creating the organization : %s"),
