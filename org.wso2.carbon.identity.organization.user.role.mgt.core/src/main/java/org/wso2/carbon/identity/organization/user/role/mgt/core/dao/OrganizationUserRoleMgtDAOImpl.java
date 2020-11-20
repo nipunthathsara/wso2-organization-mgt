@@ -29,7 +29,7 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.Organi
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleMember;
 import org.wso2.carbon.identity.scim2.common.impl.IdentitySCIMManager;
 import org.wso2.charon3.core.exceptions.CharonException;
 import org.wso2.charon3.core.extensions.UserManager;
@@ -64,7 +64,6 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.OR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.ORG_ID_ADDING;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.PAGINATION;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.SELECT_DUMMY_RECORD;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UM_USER_ROLE_ORG_DATA;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UNION_ALL;
@@ -93,7 +92,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             // Will be added only if the particular mapping is not existing.
-            jdbcTemplate.executeInsert(buildQueryForMultipleInserts(organizationUserRoleMappings.size()),
+            jdbcTemplate.executeInsert(buildQueryForMultipleUpsert(organizationUserRoleMappings.size()),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         for (OrganizationUserRoleMapping organizationUserRoleMapping : organizationUserRoleMappings) {
@@ -116,14 +115,14 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
 
     @SuppressFBWarnings({"SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING", "SIC_INNER_SHOULD_BE_STATIC_ANON"})
     @Override
-    public List<User> getUserIdsByOrganizationAndRole(String organizationId, String roleId, int offset, int limit,
-                                                          List<String> requestedAttributes, int tenantID, String filter)
+    public List<RoleMember> getUserIdsByOrganizationAndRole(String organizationId, String roleId, int offset, int limit,
+                                                            List<String> requestedAttributes, int tenantID, String filter)
             throws OrganizationUserRoleMgtServerException {
 
         boolean paginationReq = offset > -1 || limit > 0;
         JdbcTemplate jdbcTemplate = getNewTemplate();
         List<String> userIds;
-        List<User> users = new ArrayList<>();
+        List<RoleMember> roleMembers = new ArrayList<>();
 
         // Build query.
         StringBuilder sb = new StringBuilder();
@@ -169,7 +168,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                 attributes.containsKey("Resources") && ((ArrayList) attributes.get("Resources")).size() > 0) {
                     Map<String, Object> userAttributes =
                             (Map<String, Object>) ((ArrayList) attributes.get("Resources")).get(0);
-                    users.add(new User(userAttributes));
+                    roleMembers.add(new RoleMember(userAttributes));
                 }
             }
 
@@ -182,15 +181,15 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
             throw new OrganizationUserRoleMgtServerException(message,
                     ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR.getCode(), e);
         }
-        return users;
+        return roleMembers;
     }
 
-    private List<User> getPaginatedResult(List<User> users, int offset, int limit) {
+    private List<RoleMember> getPaginatedResult(List<RoleMember> roleMembers, int offset, int limit) {
 
         if (offset < 0) {
             offset = 0;
         }
-        return users.subList(offset, Math.min(offset + limit, users.size()));
+        return roleMembers.subList(offset, Math.min(offset + limit, users.size()));
     }
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
@@ -306,15 +305,15 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
     }
 
     @Override
-    public List<Boolean> getDirectlyAssignedOrganizationUserRoleMappingExists(String organizationId, String userId,
+    public int getDirectlyAssignedOrganizationUserRoleMappingInheritance(String organizationId, String userId,
                                                                        String roleId, int tenantId)
             throws OrganizationUserRoleMgtException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
-        List<Boolean> includeSubOrgOfDirectlyAssignedRoleMappings;
+        int directlyAssignedRoleMappingInheritance = -1;
         try {
-            includeSubOrgOfDirectlyAssignedRoleMappings = jdbcTemplate.executeQuery(GET_DIRECTLY_ASSIGNED_ORGANIZATION_USER_ROLE_MAPPING_INHERITANCE,
-                    (resultSet, rowNumber) -> resultSet.getInt(VIEW_INHERIT_COLUMN) == 1,
+            directlyAssignedRoleMappingInheritance = jdbcTemplate.fetchSingleRecord(GET_DIRECTLY_ASSIGNED_ORGANIZATION_USER_ROLE_MAPPING_INHERITANCE,
+                    (resultSet, rowNumber) -> resultSet.getInt(VIEW_INHERIT_COLUMN),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setString(++parameterIndex, userId);
@@ -330,7 +329,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
             throw new OrganizationUserRoleMgtServerException(message,
                     ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_RETRIEVING_ERROR.getCode(), e);
         }
-        return includeSubOrgOfDirectlyAssignedRoleMappings;
+        return directlyAssignedRoleMappingInheritance;
     }
 
     @Override

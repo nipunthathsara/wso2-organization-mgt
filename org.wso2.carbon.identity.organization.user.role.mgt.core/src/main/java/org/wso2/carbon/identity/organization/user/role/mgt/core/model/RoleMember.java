@@ -21,14 +21,24 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
 import java.util.Map;
 
 /**
- * User representation
+ * User representation.
  */
-public class User {
+public class RoleMember {
 
     private Map<String, Object> userAttributes;
+    private boolean includeSubOrg;
+    private String assignedOrgLevelId;
 
-    public User(Map<String, Object> attributes) {
+    public RoleMember(Map<String, Object> attributes) {
+
         this.userAttributes = attributes;
+    }
+
+    public RoleMember(Map<String, Object> attributes, boolean includeSubOrg, String assignedOrgLevelId) {
+
+        this.userAttributes = attributes;
+        this.includeSubOrg = includeSubOrg;
+        this.assignedOrgLevelId = assignedOrgLevelId;
     }
 
     public Map<String, Object> getUserAttributes() {
@@ -36,8 +46,28 @@ public class User {
         return userAttributes;
     }
 
+    public boolean isIncludeSubOrg() {
+
+        return includeSubOrg;
+    }
+
+    public String getAssignedOrgLevelId() {
+
+        return assignedOrgLevelId;
+    }
+
     public void setUserAttributes(Map<String, Object> userAttributes) {
 
         this.userAttributes = userAttributes;
+    }
+
+    public void setAssignedOrgLevelId(String assignedOrgLevelId) {
+
+        this.assignedOrgLevelId = assignedOrgLevelId;
+    }
+
+    public void setIncludeSubOrg(boolean includeSubOrg) {
+
+        this.includeSubOrg = includeSubOrg;
     }
 }

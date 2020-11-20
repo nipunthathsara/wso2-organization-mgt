@@ -45,19 +45,6 @@ public interface OrganizationAuthorizationDao {
             throws OrganizationManagementException;
 
     /**
-     * Add an entry to the 'UM_USER_ROLE_ORG' table.
-     *
-     * @param userId
-     * @param roleId
-     * @param hybridRoleId
-     * @param tenantId
-     * @param organizationId
-     * @throws OrganizationManagementException
-     */
-    void addOrganizationAndUserRoleMapping(String userId, String roleId, int hybridRoleId, int tenantId,
-                                           String organizationId) throws OrganizationManagementException;
-
-    /**
      * Add multiple entries to the 'UM_USER_ROLE_ORG' table.
      *
      * @param organizationUserRoleMappings A list of organizationUserRole mappings.

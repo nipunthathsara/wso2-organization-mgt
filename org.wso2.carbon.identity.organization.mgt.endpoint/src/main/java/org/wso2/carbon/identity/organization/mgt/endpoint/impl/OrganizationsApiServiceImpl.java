@@ -35,7 +35,7 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserR
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleMember;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMappingUser;
 
@@ -234,10 +234,10 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             offset = (offset == null) ? Integer.valueOf(-1) : offset;
             List<String> requestedAttributes = attributes == null ? new ArrayList<>() :
                     Arrays.stream(attributes.split(",")).map(String::trim).collect(Collectors.toList());
-            List<User> users = getOrganizationUserRoleManager()
+            List<RoleMember> roleMembers = getOrganizationUserRoleManager()
                     .getUsersByOrganizationAndRole(organizationId, roleId, offset, limit, requestedAttributes, filter);
-            return Response.ok().entity(users.stream().map(
-                    User::getUserAttributes).collect(Collectors.toList())).build();
+            return Response.ok().entity(roleMembers.stream().map(
+                    RoleMember::getUserAttributes).collect(Collectors.toList())).build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
         } catch (OrganizationUserRoleMgtException e) {
@@ -253,7 +253,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
         try {
             getOrganizationUserRoleManager()
-                    .deleteOrganizationsUserRoleMapping(organizationId, userId, roleId);
+                    .deleteOrganizationsUserRoleMapping(organizationId, userId, roleId, null, false, false);
             return Response.noContent().build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);

@@ -115,28 +115,6 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         }
     }
 
-    @Override
-    public void addOrganizationAndUserRoleMapping(String userId, String roleId, int hybridRoleId, int tenantId,
-                                                  String organizationId) throws OrganizationManagementException {
-
-        JdbcTemplate jdbcTemplate = getNewTemplate();
-        try {
-            jdbcTemplate.executeInsert(ADD_USER_ROLE_ORG_MAPPING, preparedStatement -> {
-                int parameterIndex = 0;
-                preparedStatement.setString(++parameterIndex, generateUniqueID());
-                preparedStatement.setString(++parameterIndex, userId);
-                preparedStatement.setString(++parameterIndex, roleId);
-                preparedStatement.setInt(++parameterIndex, hybridRoleId);
-                preparedStatement.setInt(++parameterIndex, tenantId);
-                preparedStatement.setString(++parameterIndex, organizationId);
-            }, new OrganizationUserRoleMapping(), false);
-        } catch (DataAccessException e) {
-            throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
-                    "Error while adding org-authorization mapping entry. Organization : " + organizationId
-                            + ", userId : " + userId + ", roleId : " + roleId + ", hybridRoleId : " + hybridRoleId, e);
-        }
-    }
-
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings,
@@ -155,6 +133,10 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                             preparedStatement.setInt(++parameterIndex, tenantID);
                             preparedStatement
                                     .setString(++parameterIndex, organizationUserRoleMapping.getOrganizationId());
+                            preparedStatement.setString(++parameterIndex,
+                                    organizationUserRoleMapping.getAssignedOrganizationLevel());
+                            preparedStatement
+                                    .setInt(++parameterIndex, organizationUserRoleMapping.isCascadedRole() ? 1 : 0);
                         }
                     }, organizationUserRoleMappings, false);
         } catch (DataAccessException e) {

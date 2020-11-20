@@ -40,7 +40,7 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.Organi
 import org.wso2.carbon.identity.organization.user.role.mgt.core.internal.OrganizationUserRoleMgtDataHolder;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleMember;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMappingUser;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils;
@@ -138,6 +138,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                 }
             }
             try {
+                // Silent deletion of directly assigned role mappings with the opposite inheritance.
                 deleteOrganizationsUserRoleMapping(organizationId, user.getUserId(), roleId, organizationId,
                         !user.isCascadedRole(), true);
             } catch (OrganizationUserRoleMgtClientException e) {
@@ -187,8 +188,8 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
     }
 
     @Override
-    public List<User> getUsersByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
-                                                    List<String> requestedAttributes, String filter)
+    public List<RoleMember> getUsersByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
+                                                          List<String> requestedAttributes, String filter)
             throws OrganizationUserRoleMgtException {
 
         OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
@@ -220,32 +221,30 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
          Check whether the role mapping is directly assigned to the particular organization or inherited from the
          parent level.
          */
-        List<Boolean> directlyAssignedRoleMappings = new ArrayList<>();
-        if(assignedLevel == null || !checkInheritance) {
-            directlyAssignedRoleMappings = organizationUserRoleMgtDAO
-                    .getDirectlyAssignedOrganizationUserRoleMappingExists(organizationId, userId, roleId, getTenantId());
-            if (CollectionUtils.isEmpty(directlyAssignedRoleMappings)) {
-                throw new OrganizationUserRoleMgtClientException(
-                        String.format(ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND.getMessage(), organizationId, roleId,
-                                userId, organizationId), ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND.getCode());
-            }
+        int directlyAssignedRoleMappingsInheritance = organizationUserRoleMgtDAO
+                .getDirectlyAssignedOrganizationUserRoleMappingInheritance(organizationId, userId, roleId, getTenantId());
+        if (directlyAssignedRoleMappingsInheritance == -1) {
+            throw new OrganizationUserRoleMgtClientException(
+                    String.format(ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND.getMessage(), organizationId, roleId,
+                            userId, organizationId), ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND.getCode());
         }
 
         /*
-        directlyAssignedRoleMappings can be have at most two entries. One should be true and other should be false.
-        If only false is there, no need to check for role mapping in child organization. It is a directly assigned role
+        directlyAssignedRoleMappingsInheritance should be 1(inherit = true) or 0(inherit = false) or
+        -1(no directly assigned role mapping).
+        If returns 0, no need to check for role mapping in child organization. It is a directly assigned role
         mapping with include sub-org = false.
          */
         List<String> organizationListToBeDeleted = new ArrayList<>();
         organizationListToBeDeleted.add(organizationId);
-        if (directlyAssignedRoleMappings.contains("true")) {
+        if (directlyAssignedRoleMappingsInheritance == 1) {
             OrganizationMgtDao organizationMgtDao = new OrganizationMgtDaoImpl();
             CacheBackedOrganizationMgtDAO cacheBackedOrganizationMgtDAO =
                     new CacheBackedOrganizationMgtDAO(organizationMgtDao);
-        /*
-        Traverse the sub organizations and added as the organizations to be checked for deleting the
-        mentioned role mapping.
-         */
+            /*
+            Traverse the sub organizations and added as the organizations to be checked for deleting the
+            mentioned role mapping.
+             */
             Queue<String> organizationsList = new LinkedList<>();
             // Add starting organization.
             organizationsList.add(organizationId);
