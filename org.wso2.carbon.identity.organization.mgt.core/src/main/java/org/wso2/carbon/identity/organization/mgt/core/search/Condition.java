@@ -31,8 +31,9 @@ public interface Condition {
      * data should be inserted in to the prepared statement.
      *
      * @param primitiveConditionValidator Validator for primitive conditions.
+     * @param isAttrSearch if the search is in the form of (attrKey eq 'Type' and attrValue eq 'Partner')
      * @return A {@link PlaceholderSQL} object with a placeholder sql and the ordered data array.
      */
-    PlaceholderSQL buildQuery(PrimitiveConditionValidator primitiveConditionValidator)
+    PlaceholderSQL buildQuery(PrimitiveConditionValidator primitiveConditionValidator, boolean isAttrSearch)
             throws PrimitiveConditionValidationException;
 }

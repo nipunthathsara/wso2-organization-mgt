@@ -76,7 +76,7 @@ public class PrimitiveCondition implements Condition {
         this.value = value;
     }
 
-    public PlaceholderSQL buildQuery(PrimitiveConditionValidator primitiveConditionValidator)
+    public PlaceholderSQL buildQuery(PrimitiveConditionValidator primitiveConditionValidator, boolean isAttrSearch)
             throws PrimitiveConditionValidationException {
 
         PlaceholderSQL placeholderSQL = new PlaceholderSQL();
@@ -87,8 +87,8 @@ public class PrimitiveCondition implements Condition {
                 " ?" :
                 VALUE_LOWER_WRAPPER;
         String base = GET_ALL_ORGANIZATION_IDS;
-        if (dbQualifiedPrimitiveCondition.getProperty().contains(VIEW_ATTR_KEY_COLUMN)
-                || dbQualifiedPrimitiveCondition.getProperty().contains(VIEW_ATTR_VALUE_COLUMN)) {
+        if (isAttrSearch && (dbQualifiedPrimitiveCondition.getProperty().contains(VIEW_ATTR_KEY_COLUMN)
+                || dbQualifiedPrimitiveCondition.getProperty().contains(VIEW_ATTR_VALUE_COLUMN))) {
             base = "";
         }
         placeholderSQL.setQuery(

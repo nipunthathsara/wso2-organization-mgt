@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.search;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType;
 import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditionValidationException;
 
@@ -49,7 +50,8 @@ public class ComplexCondition implements Condition {
         return conditions;
     }
 
-    public PlaceholderSQL buildQuery(PrimitiveConditionValidator primitiveConditionValidator)
+    @SuppressFBWarnings("IP_PARAMETER_IS_DEAD_BUT_OVERWRITTEN")
+    public PlaceholderSQL buildQuery(PrimitiveConditionValidator primitiveConditionValidator, boolean isAttrSearch)
             throws PrimitiveConditionValidationException {
 
         PlaceholderSQL placeholderSQL = new PlaceholderSQL();
@@ -58,13 +60,13 @@ public class ComplexCondition implements Condition {
         StringBuilder sb = new StringBuilder();
 
         // Identify complex conditions with attribute search (attributeKey eq 'Type' and attributeValue eq 'partner')
-        boolean isAttrSearch = false;
+        isAttrSearch = false;
         for (Condition condition : conditions) {
             isAttrSearch = false;
             if (condition instanceof PrimitiveCondition) {
                 isAttrSearch = true;
                 PrimitiveCondition pCondition = (PrimitiveCondition) condition;
-                if (!ConditionType.ComplexOperator.AND.equals(operator) &&
+                if (!ConditionType.ComplexOperator.AND.equals(operator) ||
                         !(ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY.equals(pCondition.getProperty())
                                 || ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE.equals(pCondition.getProperty()))) {
                     isAttrSearch = false;
@@ -79,7 +81,7 @@ public class ComplexCondition implements Condition {
         for (Condition condition : conditions) {
 
             if (isAttrSearch) {
-                PlaceholderSQL eachPlaceholderSQL = condition.buildQuery(primitiveConditionValidator);
+                PlaceholderSQL eachPlaceholderSQL = condition.buildQuery(primitiveConditionValidator, true);
                 if (first) {
                     sb.append(GET_ALL_ORGANIZATION_IDS);
                     sb.append(eachPlaceholderSQL.getQuery());
@@ -99,7 +101,7 @@ public class ComplexCondition implements Condition {
             } else {
                 first = false;
             }
-            PlaceholderSQL eachPlaceholderSQL = condition.buildQuery(primitiveConditionValidator);
+            PlaceholderSQL eachPlaceholderSQL = condition.buildQuery(primitiveConditionValidator, false);
             sb.append(eachPlaceholderSQL.getQuery());
             data.addAll(eachPlaceholderSQL.getData());
             operators.addAll(eachPlaceholderSQL.getOperators());

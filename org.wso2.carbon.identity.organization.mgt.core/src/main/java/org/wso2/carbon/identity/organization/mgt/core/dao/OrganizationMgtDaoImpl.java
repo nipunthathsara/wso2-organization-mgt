@@ -858,7 +858,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         PlaceholderSQL placeholderSQL;
         try {
             placeholderSQL = searchReq ?
-                    condition.buildQuery(new PrimitiveConditionValidator(new OrganizationSearchBean())) :
+                    condition.buildQuery(new PrimitiveConditionValidator(new OrganizationSearchBean()), false) :
                     new PlaceholderSQL();
         } catch (PrimitiveConditionValidationException e) {
             if (log.isDebugEnabled()) {

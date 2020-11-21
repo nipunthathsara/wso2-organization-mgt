@@ -201,7 +201,6 @@ public class SQLConstants {
     public static final String DEFAULT_CONDITION =
             "TENANT_ID = ?";
     public static final String INTERSECT = "INTERSECT";
-    public static final String UNION = "UNION";
     public static final String GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION =
             "UM_USER_ID = ? AND UM_ROLE_ID IN (#)";
     public static final String ORDER_BY =
