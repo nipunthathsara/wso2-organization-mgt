@@ -23,7 +23,10 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditi
 
 import java.util.ArrayList;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VALUE_LOWER_WRAPPER;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_KEY_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_COLUMN;
 
@@ -83,9 +86,18 @@ public class PrimitiveCondition implements Condition {
                 || VIEW_LAST_MODIFIED_COLUMN.equals(dbQualifiedPrimitiveCondition.getProperty())) ?
                 " ?" :
                 VALUE_LOWER_WRAPPER;
+        String base = GET_ALL_ORGANIZATION_IDS;
+        if (dbQualifiedPrimitiveCondition.getProperty().contains(VIEW_ATTR_KEY_COLUMN)
+                || dbQualifiedPrimitiveCondition.getProperty().contains(VIEW_ATTR_VALUE_COLUMN)) {
+            base = "";
+        }
         placeholderSQL.setQuery(
-                dbQualifiedPrimitiveCondition.getProperty() + " " + dbQualifiedPrimitiveCondition.getOperator().toSQL()
-                        + valuePlaceHolder);
+                base +
+                dbQualifiedPrimitiveCondition.getProperty() +
+                " " +
+                dbQualifiedPrimitiveCondition.getOperator().toSQL() +
+                valuePlaceHolder
+        );
         ArrayList<Object> data = new ArrayList<>();
         data.add(dbQualifiedPrimitiveCondition.getValue());
         placeholderSQL.setData(data);
