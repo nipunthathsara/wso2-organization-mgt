@@ -192,12 +192,16 @@ public class SQLConstants {
     // ORDER BY with DISTINCT requires to have the columns in the SELECT clause.
     public static final String GET_ALL_ORGANIZATION_IDS =
             "SELECT\n" +
-            "    DISTINCT ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, " +
-            "    LAST_MODIFIED_BY, STATUS, PARENT_NAME, PARENT_DISPLAY_NAME\n" +
+            "    DISTINCT ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY," +
+            " LAST_MODIFIED_BY, STATUS, PARENT_NAME, PARENT_DISPLAY_NAME\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
-            "    TENANT_ID = ?";
+            "    ";
+    public static final String DEFAULT_CONDITION =
+            "TENANT_ID = ?";
+    public static final String INTERSECT = "INTERSECT";
+    public static final String UNION = "UNION";
     public static final String GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION =
             "UM_USER_ID = ? AND UM_ROLE_ID IN (#)";
     public static final String ORDER_BY =

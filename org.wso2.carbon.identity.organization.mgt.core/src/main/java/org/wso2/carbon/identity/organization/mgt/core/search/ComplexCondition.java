@@ -24,6 +24,10 @@ import org.wso2.carbon.identity.organization.mgt.core.exception.PrimitiveConditi
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS;
+
 /**
  * This class represent a complex condition with a {@link ConditionType}. A complex condition can contain a list of
  * another complex conditions or a primitive condition. Ex: A sample complex condition with two complex conditions
@@ -53,19 +57,52 @@ public class ComplexCondition implements Condition {
         ArrayList<ConditionType.PrimitiveOperator> operators = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
 
+        // Identify complex conditions with attribute search (attributeKey eq 'Type' and attributeValue eq 'partner')
+        boolean isAttrSearch = false;
+        for (Condition condition : conditions) {
+            isAttrSearch = false;
+            if (condition instanceof PrimitiveCondition) {
+                isAttrSearch = true;
+                PrimitiveCondition pCondition = (PrimitiveCondition) condition;
+                if (!ConditionType.ComplexOperator.AND.equals(operator) &&
+                        !(ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_KEY.equals(pCondition.getProperty())
+                                || ORGANIZATION_SEARCH_BEAN_FIELD_ATTRIBUTE_VALUE.equals(pCondition.getProperty()))) {
+                    isAttrSearch = false;
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
         boolean first = true;
         for (Condition condition : conditions) {
+
+            if (isAttrSearch) {
+                PlaceholderSQL eachPlaceholderSQL = condition.buildQuery(primitiveConditionValidator);
+                if (first) {
+                    sb.append(GET_ALL_ORGANIZATION_IDS);
+                    sb.append(eachPlaceholderSQL.getQuery());
+                    first = false;
+                } else {
+                    sb.append(" AND ");
+                    sb.append(eachPlaceholderSQL.getQuery());
+                }
+                data.addAll(eachPlaceholderSQL.getData());
+                operators.addAll(eachPlaceholderSQL.getOperators());
+                continue;
+            }
+
+            // For non-attribute search scenarios
             if (!first) {
-                sb.append(" ").append(operator.toSQL()).append(" ");
+                sb.append("\n").append(operator.toSQL()).append("\n");
             } else {
                 first = false;
             }
-            sb.append("(");
             PlaceholderSQL eachPlaceholderSQL = condition.buildQuery(primitiveConditionValidator);
             sb.append(eachPlaceholderSQL.getQuery());
             data.addAll(eachPlaceholderSQL.getData());
             operators.addAll(eachPlaceholderSQL.getOperators());
-            sb.append(")");
         }
 
         placeholderSQL.setQuery(sb.toString());

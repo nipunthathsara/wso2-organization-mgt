@@ -27,7 +27,7 @@ public class ConditionType {
      * Complex operators.
      */
     public enum ComplexOperator {
-        OR, AND, NOT;
+        OR("UNION"), AND("INTERSECT"), NOT("NOT");
 
         public String toSQL() {
 
@@ -36,10 +36,22 @@ public class ConditionType {
             case OR:
             case AND:
             case NOT:
-                op = this.toString();
+                op = this.getSql();
                 break;
             }
             return op;
+        }
+
+        private String sql;
+
+        ComplexOperator(String sql) {
+
+            this.sql = sql;
+        }
+
+        public String getSql() {
+
+            return sql;
         }
     }
 

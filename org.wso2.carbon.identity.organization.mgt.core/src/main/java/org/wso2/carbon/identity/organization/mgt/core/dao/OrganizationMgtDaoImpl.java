@@ -94,6 +94,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORG_HAS_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_RDN_AVAILABILITY;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DEFAULT_CONDITION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_AUTHORIZED_CHILD_ORG_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
@@ -110,6 +111,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_ATTRIBUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_USER_STORE_CONFIG;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INTERSECT;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.LIKE_SYMBOL;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORDER_BY;
@@ -866,15 +868,17 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
 
         StringBuilder sb = new StringBuilder();
-        // Base query
-        sb.append(GET_ALL_ORGANIZATION_IDS);
+        // Base query with tenant id search condition
+        sb.append(GET_ALL_ORGANIZATION_IDS)
+                .append(DEFAULT_CONDITION);
         // Check organization permissions for non admin users
         if (!listAsAdmin) {
             sb.append(" AND ").append(GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION);
         }
         // Append generated search conditions
         if (searchReq) {
-            sb.append(" AND ").append(placeholderSQL.getQuery());
+            sb.append("\n").append(INTERSECT).append("\n");
+            sb.append(placeholderSQL.getQuery());
         }
         // Append sorting condition
         sb.append(String.format(ORDER_BY, sortBy, sortOrder));
