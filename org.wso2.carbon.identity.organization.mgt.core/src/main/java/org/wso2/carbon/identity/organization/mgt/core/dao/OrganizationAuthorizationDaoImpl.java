@@ -48,6 +48,10 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_LIST_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_VIEW_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_CREATE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_DELETE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ADD_USER_ROLE_ORG_MAPPING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
@@ -246,6 +250,9 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                 if (!permissionsList.contains(USER_MGT_LIST_PERMISSION)) {
                     permissionsList.add(USER_MGT_LIST_PERMISSION);
                 }
+                if (!permissionsList.contains(USER_MGT_VIEW_PERMISSION)) {
+                    permissionsList.add(USER_MGT_VIEW_PERMISSION);
+                }
                 if (!permissionsList.contains(ROLE_MGT_CREATE_PERMISSION)) {
                     permissionsList.add(ROLE_MGT_CREATE_PERMISSION);
                 }
@@ -254,6 +261,15 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                 }
                 if (!permissionsList.contains(ORGANIZATION_ADMIN_PERMISSION)) {
                     permissionsList.add(ORGANIZATION_ADMIN_PERMISSION);
+                }
+                if (!permissionsList.contains(USER_ROLE_MGT_VIEW_PERMISSION)) {
+                    permissionsList.add(USER_ROLE_MGT_VIEW_PERMISSION);
+                }
+                if (!permissionsList.contains(USER_ROLE_MGT_CREATE_PERMISSION)) {
+                    permissionsList.add(USER_ROLE_MGT_CREATE_PERMISSION);
+                }
+                if (!permissionsList.contains(USER_ROLE_MGT_DELETE_PERMISSION)) {
+                    permissionsList.add(USER_ROLE_MGT_DELETE_PERMISSION);
                 }
             });
         }
