@@ -66,6 +66,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleSe
 public class OrganizationMgtSecondaryServiceComponent {
 
     private static final Log log = LogFactory.getLog(OrganizationMgtSecondaryServiceComponent.class);
+    public static final String ORG_USER_STORE_MANAGER_CLASS =
+            "org.wso2.carbon.identity.organization.userstore.OrganizationUserStoreManager";
 
     @Reference(name = "org.wso2.carbon.identity.organization.userstore.manager",
                service = UserStoreManager.class,
@@ -77,12 +79,14 @@ public class OrganizationMgtSecondaryServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("Setting the user store manager service");
         }
-        if (userStoreManager instanceof AbstractOrganizationMgtUserStoreManager) {
-            try {
+        try {
+            if (Class.forName(ORG_USER_STORE_MANAGER_CLASS).isAssignableFrom(userStoreManager.getClass())) {
                 createRootIfNotExist();
-            } catch (Throwable e) {
-                log.error("Error while creating the ROOT organization", e);
             }
+        } catch (ClassNotFoundException e) {
+            log.error("Error while checking for the organization user store manage", e);
+        } catch (Throwable e) {
+            log.error("Error while creating the ROOT organization", e);
         }
     }
 
