@@ -78,6 +78,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_LIST_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_BASE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_CREATE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_DELETE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
@@ -413,6 +415,8 @@ public class Utils {
             leafPermissions.add(ROLE_MGT_EDIT_PERMISSION);
             leafPermissions.add(ROLE_MGT_DELETE_PERMISSION);
             leafPermissions.add(USER_ROLE_MGT_VIEW_PERMISSION);
+            leafPermissions.add(USER_ROLE_MGT_CREATE_PERMISSION);
+            leafPermissions.add(USER_ROLE_MGT_DELETE_PERMISSION);
             break;
         case ORGANIZATION_BASE_PERMISSION:
             leafPermissions.add(ORGANIZATION_CREATE_PERMISSION);
@@ -435,8 +439,18 @@ public class Utils {
             leafPermissions.add(ROLE_MGT_DELETE_PERMISSION);
             break;
         case USER_ROLE_MGT_BASE_PERMISSION:
+            leafPermissions.add(USER_ROLE_MGT_VIEW_PERMISSION);
+            leafPermissions.add(USER_ROLE_MGT_CREATE_PERMISSION);
+            leafPermissions.add(USER_ROLE_MGT_DELETE_PERMISSION);
+            break;
         case USER_ROLE_MGT_VIEW_PERMISSION:
             leafPermissions.add(USER_ROLE_MGT_VIEW_PERMISSION);
+            break;
+        case USER_ROLE_MGT_CREATE_PERMISSION:
+            leafPermissions.add(USER_ROLE_MGT_CREATE_PERMISSION);
+            break;
+        case USER_ROLE_MGT_DELETE_PERMISSION:
+            leafPermissions.add(USER_ROLE_MGT_DELETE_PERMISSION);
             break;
         case ORGANIZATION_CREATE_PERMISSION:
             leafPermissions.add(ORGANIZATION_CREATE_PERMISSION);

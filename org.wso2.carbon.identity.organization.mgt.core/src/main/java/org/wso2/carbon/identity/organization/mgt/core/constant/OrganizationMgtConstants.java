@@ -92,6 +92,9 @@ public class OrganizationMgtConstants {
     // User role management permissions
     public static final String USER_ROLE_MGT_BASE_PERMISSION = "/permission/admin/manage/identity/userrolemgt";
     public static final String USER_ROLE_MGT_VIEW_PERMISSION = "/permission/admin/manage/identity/userrolemgt/view";
+    public static final String USER_ROLE_MGT_CREATE_PERMISSION = "/permission/admin/manage/identity/userrolemgt/create";
+    public static final String USER_ROLE_MGT_DELETE_PERMISSION = "/permission/admin/manage/identity/userrolemgt/delete";
+
     public static final String UI_EXECUTE = "ui.execute";
 
     /**
