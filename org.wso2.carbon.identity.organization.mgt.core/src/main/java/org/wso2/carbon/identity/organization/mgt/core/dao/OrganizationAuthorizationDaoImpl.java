@@ -44,7 +44,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_BASE_PERMISSION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_LIST_PERMISSION;
@@ -252,9 +251,6 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                 }
                 if (!permissionsList.contains(USER_MGT_VIEW_PERMISSION)) {
                     permissionsList.add(USER_MGT_VIEW_PERMISSION);
-                }
-                if (!permissionsList.contains(ROLE_MGT_CREATE_PERMISSION)) {
-                    permissionsList.add(ROLE_MGT_CREATE_PERMISSION);
                 }
                 if (!permissionsList.contains(ROLE_MGT_VIEW_PERMISSION)) {
                     permissionsList.add(ROLE_MGT_VIEW_PERMISSION);
