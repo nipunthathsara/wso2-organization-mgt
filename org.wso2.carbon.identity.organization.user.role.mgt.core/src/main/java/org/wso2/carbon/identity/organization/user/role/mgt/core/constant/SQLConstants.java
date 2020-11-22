@@ -49,6 +49,12 @@ public class SQLConstants {
                     "    UM_USER_ROLE_ORG\n" +
                     "WHERE\n" +
                     "    UM_USER_ID = ? AND UM_ROLE_ID = ? AND UM_TENANT_ID = ?";
+    public static final String DELETE_ALL_ORGANIZATION_USER_ROLE_MAPPINGS_BY_USERID =
+            "DELETE\n" +
+                    "FROM\n" +
+                    "    UM_USER_ROLE_ORG\n" +
+                    "WHERE\n" +
+                    "    UM_USER_ID = ? AND UM_TENANT_ID = ?";
     public static final String GET_ORGANIZATION_USER_ROLE_MAPPING =
             "SELECT\n" +
                     "    COUNT(1)\n" +

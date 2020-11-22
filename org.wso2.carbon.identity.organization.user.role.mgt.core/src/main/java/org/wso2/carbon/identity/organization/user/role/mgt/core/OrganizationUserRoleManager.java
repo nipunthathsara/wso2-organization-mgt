@@ -42,6 +42,8 @@ public interface OrganizationUserRoleManager {
     void deleteOrganizationsUserRoleMapping(String organizationId, String userId, String roleId, boolean includeSubOrgs)
             throws OrganizationUserRoleMgtException, OrganizationManagementException;
 
+    void deleteOrganizationsUserRoleMappings(String userId) throws OrganizationUserRoleMgtException;
+
     List<Role> getRolesByOrganizationAndUser(String organizationId, String userId)
             throws OrganizationUserRoleMgtException;
 
