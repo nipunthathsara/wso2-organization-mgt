@@ -35,7 +35,6 @@ import org.wso2.carbon.identity.organization.mgt.core.model.MetaUser;
 import org.wso2.carbon.identity.organization.mgt.core.model.Metadata;
 import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
-import org.wso2.carbon.identity.organization.mgt.core.usermgt.AbstractOrganizationMgtUserStoreManager;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 
