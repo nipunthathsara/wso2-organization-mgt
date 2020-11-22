@@ -322,7 +322,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     @Override
-    public Organization getOrganization(int tenantId, String organizationId, String userId)
+    public Organization getOrganization(int tenantId, String organizationId, String userId, boolean getAsAdmin)
             throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -362,7 +362,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                                 jdbcTemplate,
                                 userId,
                                 Arrays.asList(organizationId),
-                                false
+                                getAsAdmin
                         ).get(organizationId);
             }
             return (organizationRowDataCollectors == null || organizationRowDataCollectors.size() == 0) ?

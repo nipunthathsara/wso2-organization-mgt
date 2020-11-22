@@ -201,11 +201,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         Organization organization;
         if (includePermissions) {
+            boolean getAsAdmin = isAuthorizedAsAdmin();
             // Response should include permissions of the authenticated user
             organization = organizationMgtDao.getOrganization(getTenantId(), organizationId.trim(),
-                    getAuthenticatedUserId());
+                    getAuthenticatedUserId(), getAsAdmin);
         } else {
-            organization = organizationMgtDao.getOrganization(getTenantId(), organizationId.trim(), null);
+            organization = organizationMgtDao.getOrganization(getTenantId(), organizationId.trim(), null, false);
         }
         if (organization == null) {
             throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
@@ -319,7 +320,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
                     "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
         }
-        Organization organization = organizationMgtDao.getOrganization(getTenantId(), organizationId, null);
+        Organization organization = organizationMgtDao.getOrganization(getTenantId(), organizationId, null, false);
         Map<String, UserStoreConfig> configs = organizationMgtDao.getUserStoreConfigsByOrgId(getTenantId(),
                 organizationId);
         String userStoreDomain = configs.get(USER_STORE_DOMAIN).getValue();
@@ -775,7 +776,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             }
             // Check if the RDN is available for this parent
             // Note, only the RDN can be patched
-            String parentId = organizationMgtDao.getOrganization(getTenantId(), organizationId, null)
+            String parentId = organizationMgtDao.getOrganization(getTenantId(), organizationId, null, false)
                     .getParent().getId();
             boolean isAvailable = organizationMgtDao.isRdnAvailable(operation.getValue(), parentId, getTenantId());
             if (!isAvailable) {

@@ -69,7 +69,7 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
     @Override
     public void deleteOrganization(int tenantId, String organizationId) throws OrganizationManagementException {
 
-        Organization orgToBeDeleted = organizationMgtDao.getOrganization(tenantId, organizationId, null);
+        Organization orgToBeDeleted = organizationMgtDao.getOrganization(tenantId, organizationId, null, false);
         if (orgToBeDeleted != null) {
             String parentId = orgToBeDeleted.getParent().getId();
             // Clear the children cache for this orgId.
@@ -105,10 +105,10 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
     }
 
     @Override
-    public Organization getOrganization(int tenantId, String organizationId, String userId)
+    public Organization getOrganization(int tenantId, String organizationId, String userId, boolean getAsAdmin)
             throws OrganizationManagementException {
 
-        return organizationMgtDao.getOrganization(tenantId, organizationId, userId);
+        return organizationMgtDao.getOrganization(tenantId, organizationId, userId, getAsAdmin);
     }
 
     @Override
@@ -185,7 +185,8 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
             }
             clearOrganizationCache(tenantId, newParentId);
 
-            Organization organizationToBePatched = organizationMgtDao.getOrganization(tenantId, organizationId, null);
+            Organization organizationToBePatched = organizationMgtDao.getOrganization(tenantId, organizationId, null,
+                    false);
             if (organizationToBePatched != null) {
                 String currentParentId = organizationToBePatched.getParent().getId();
                 // Clear the children cache for the currentParentId.
@@ -228,7 +229,7 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
     private void clearOrganizationCache(int tenantId, String organizationId) throws OrganizationManagementException {
 
         // TODO whether we have to check children list ??
-        Organization organization = this.getOrganization(tenantId, organizationId, null);
+        Organization organization = this.getOrganization(tenantId, organizationId, null, false);
         if (organization != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Removing entry for organization with id " + organizationId + " from cache.");

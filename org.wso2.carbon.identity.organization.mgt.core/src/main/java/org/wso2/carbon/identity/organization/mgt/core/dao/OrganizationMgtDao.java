@@ -77,10 +77,11 @@ public interface OrganizationMgtDao {
      * @param tenantId
      * @param organizationId
      * @param userId
+     * @param getAsAdmin
      * @return
      * @throws OrganizationManagementException
      */
-    Organization getOrganization(int tenantId, String organizationId, String userId)
+    Organization getOrganization(int tenantId, String organizationId, String userId, boolean getAsAdmin)
             throws OrganizationManagementException;
 
     /**
