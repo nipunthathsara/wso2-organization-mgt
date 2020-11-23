@@ -21,6 +21,7 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.dao;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
@@ -44,11 +45,13 @@ import java.util.stream.Collectors;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_HYBRID_ROLE_ID_RETRIEVING_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_ERROR;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_PER_USER_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_RETRIEVING_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ROLES_PER_ORG_USER_RETRIEVING_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.AND;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.COUNT_COLUMN_NAME;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ALL_ORGANIZATION_USER_ROLE_MAPPINGS_BY_USERID;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_USER_ROLE_MAPPING_WITHOUT_ORG;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_ROLES_BY_ORG_AND_USER;
@@ -159,7 +162,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                 }
             }
 
-            if (paginationReq) {
+            if (paginationReq && CollectionUtils.isNotEmpty(users)) {
                 return getPaginatedResult(users, offset, limit);
             }
         } catch (CharonException | IOException | DataAccessException e) {
@@ -176,7 +179,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         if (offset < 0) {
             offset = 0;
         }
-        return users.subList(offset, offset + limit);
+        return users.subList(offset, Math.min(offset + limit, users.size()));
     }
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
@@ -202,6 +205,27 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                             userId);
             throw new OrganizationUserRoleMgtServerException(message,
                     ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_ERROR.getCode(), e);
+        }
+    }
+
+    @Override
+    public void deleteOrganizationsUserRoleMappings(String userId, int tenantId)
+            throws OrganizationUserRoleMgtException {
+
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        try {
+            jdbcTemplate.executeUpdate(DELETE_ALL_ORGANIZATION_USER_ROLE_MAPPINGS_BY_USERID,
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex, userId);
+                        preparedStatement.setInt(++parameterIndex, tenantId);
+                    });
+        } catch (DataAccessException e) {
+            String message =
+                    String.format(String.valueOf(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_PER_USER_ERROR),
+                            userId);
+            throw new OrganizationUserRoleMgtServerException(message,
+                    ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_PER_USER_ERROR.getCode(), e);
         }
     }
 
