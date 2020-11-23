@@ -91,12 +91,9 @@ public class Utils {
     public static UserStoreManager getUserStoreManager(int tenantId)
             throws org.wso2.carbon.user.api.UserStoreException {
 
-        UserStoreManager userStoreManager = null;
         RealmService realmService = OrganizationUserRoleMgtDataHolder.getInstance().getRealmService();
-
         UserRealm tenantUserRealm = realmService.getTenantUserRealm(tenantId);
-        userStoreManager = (UserStoreManager) tenantUserRealm.getUserStoreManager();
-
+        UserStoreManager userStoreManager = (UserStoreManager) tenantUserRealm.getUserStoreManager();
         return userStoreManager;
     }
 

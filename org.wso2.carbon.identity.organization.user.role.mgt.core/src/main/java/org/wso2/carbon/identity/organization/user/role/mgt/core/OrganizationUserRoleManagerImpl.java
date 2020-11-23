@@ -44,6 +44,8 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMa
 import org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils;
 import org.wso2.carbon.identity.scim2.common.DAO.GroupDAO;
 import org.wso2.carbon.identity.scim2.common.exceptions.IdentitySCIMException;
+import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,6 +67,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_NAME;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ADD_NONE_INTERNAL_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ROLE_ERROR;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_NON_EXISTING_USERID_ERROR;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.getUserStoreManager;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.handleServerException;
 
@@ -110,12 +114,29 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
         }
         List<UserRoleMappingUser> usersGetPermissionsForSubOrgs = new ArrayList<>();
         List<UserRoleMappingUser> usersGetPermissionOnlyToOneOrg = new ArrayList<>();
-        for (UserRoleMappingUser user : userRoleMapping.getUsers()) {
-            if (user.isCascadedRole()) {
-                usersGetPermissionsForSubOrgs.add(user);
-            } else {
-                usersGetPermissionOnlyToOneOrg.add(user);
+        AbstractUserStoreManager userStoreManger = null;
+        try {
+            userStoreManger = (AbstractUserStoreManager) getUserStoreManager(getTenantId());
+            if (userStoreManger == null) {
+                throw handleServerException(
+                        OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
+                        " for tenant Id " + getTenantId());
             }
+            for (UserRoleMappingUser user : userRoleMapping.getUsers()) {
+                boolean userExists = userStoreManger.isExistingUserWithID(user.getUserId());
+                if (!userExists) {
+                    throw handleClientException(ERROR_CODE_NON_EXISTING_USERID_ERROR, user.getUserId());
+                }
+                if (user.isCascadedRole()) {
+                    usersGetPermissionsForSubOrgs.add(user);
+                } else {
+                    usersGetPermissionOnlyToOneOrg.add(user);
+                }
+            }
+        } catch (UserStoreException e) {
+            throw handleServerException(
+                    OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
+                    " for tenant Id " + getTenantId());
         }
 
         List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
@@ -201,6 +222,13 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                 new OrganizationUserRoleMappingForEvent(organizationId, roleId, userId, includeSubOrgs);
         fireEvent(POST_REVOKE_ORGANIZATION_USER_ROLE, organizationId, organizationUserRoleMappingForEvent,
                 OrganizationMgtEventConstants.Status.SUCCESS);
+    }
+
+    @Override
+    public void deleteOrganizationsUserRoleMappings(String userId) throws OrganizationUserRoleMgtException {
+
+        OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
+        organizationUserRoleMgtDAO.deleteOrganizationsUserRoleMappings(userId, getTenantId());
     }
 
     @Override
