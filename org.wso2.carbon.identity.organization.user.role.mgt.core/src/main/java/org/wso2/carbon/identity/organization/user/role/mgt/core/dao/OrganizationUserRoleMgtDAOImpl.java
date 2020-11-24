@@ -53,10 +53,9 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.AND;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.ASSIGNED_AT_ADDING;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ALL_ORGANIZATION_USER_ROLE_MAPPINGS_BY_USERID;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_USER_ROLE_MAPPINGS_ASSIGNED_AT_ORG_LEVEL;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_DIRECTLY_ASSIGNED_ORGANIZATION_USER_ROLE_MAPPING_INHERITANCE;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ALL_ORGANIZATION_USER_ROLE_MAPPINGS_BY_USERID;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_USER_ROLE_MAPPING_WITHOUT_ORG;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_ROLES_BY_ORG_AND_USER;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_ROLE_ID_BY_SCIM_GROUP_NAME;
@@ -184,8 +183,8 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                 }
             }
 
-            if (paginationReq && CollectionUtils.isNotEmpty(users)) {
-                return getPaginatedResult(users, offset, limit);
+            if (paginationReq && CollectionUtils.isNotEmpty(roleMembers)) {
+                return getPaginatedResult(roleMembers, offset, limit);
             }
         } catch (CharonException | IOException | DataAccessException e) {
             String message = String.format(String.valueOf(ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR), roleId,
@@ -201,7 +200,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         if (offset < 0) {
             offset = 0;
         }
-        return roleMembers.subList(offset, Math.min(offset + limit, users.size()));
+        return roleMembers.subList(offset, Math.min(offset + limit, roleMembers.size()));
     }
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")

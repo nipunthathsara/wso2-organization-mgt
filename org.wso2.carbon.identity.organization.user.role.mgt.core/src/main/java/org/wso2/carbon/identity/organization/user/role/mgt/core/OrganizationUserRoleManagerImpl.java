@@ -69,9 +69,9 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_NAME;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ADD_NONE_INTERNAL_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ROLE_ERROR;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_NON_EXISTING_USERID_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_NO_ROLE_MAPPING_FOUND;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_NON_EXISTING_USERID_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.getUserStoreManager;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.handleServerException;
@@ -118,7 +118,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
         }
         List<UserRoleMappingUser> usersGetPermissionsForSubOrgs = new ArrayList<>();
         List<UserRoleMappingUser> usersGetPermissionOnlyToOneOrg = new ArrayList<>();
-        AbstractUserStoreManager userStoreManger = null;
+        AbstractUserStoreManager userStoreManger;
         try {
             userStoreManger = (AbstractUserStoreManager) getUserStoreManager(getTenantId());
             if (userStoreManger == null) {
@@ -136,17 +136,16 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                 } else {
                     usersGetPermissionOnlyToOneOrg.add(user);
                 }
-            }
-            try {
-                // Silent deletion of directly assigned role mappings with the opposite inheritance.
-                deleteOrganizationsUserRoleMapping(organizationId, user.getUserId(), roleId, organizationId,
-                        !user.isCascadedRole(), true);
-            } catch (OrganizationUserRoleMgtClientException e) {
-                if (StringUtils.equals(ERROR_NO_ROLE_MAPPING_FOUND.getCode(), e.getErrorCode())) {
-                    continue;
+                try {
+                    // Silent deletion of directly assigned role mappings with the opposite inheritance.
+                    deleteOrganizationsUserRoleMapping(organizationId, user.getUserId(), roleId, organizationId,
+                            !user.isCascadedRole(), true);
+                } catch (OrganizationUserRoleMgtClientException e) {
+                    if (StringUtils.equals(ERROR_NO_ROLE_MAPPING_FOUND.getCode(), e.getErrorCode())) {
+                        continue;
+                    }
                 }
             }
-
         } catch (UserStoreException e) {
             throw handleServerException(
                     OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR,

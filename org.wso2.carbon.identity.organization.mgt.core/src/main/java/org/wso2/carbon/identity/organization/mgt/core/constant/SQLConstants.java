@@ -322,7 +322,8 @@ public class SQLConstants {
             "WHERE\n" +
             "    ORG_ID = ? AND UM_TENANT_ID = ? AND (INHERIT = 1 OR UM_USER_ID = ?)";
     public static final String INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING =
-            "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID, ASSIGNED_AT, INHERIT) " +
+            "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID," +
+                    " ASSIGNED_AT, INHERIT) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ";
     public static final String SELECT_DUMMY_RECORD = "SELECT 1 FROM DUAL";
     public static final String GET_USER_PERMISSIONS =

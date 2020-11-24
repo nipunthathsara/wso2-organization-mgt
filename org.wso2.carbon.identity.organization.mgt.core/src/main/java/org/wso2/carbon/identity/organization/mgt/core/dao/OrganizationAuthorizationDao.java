@@ -93,14 +93,15 @@ public interface OrganizationAuthorizationDao {
      * This will return all inherit = true role mappings for any user and any role mapping assigned to
      * new organization creator.
      *
-     * @param parentOrganizationId Organization id of the parent organization id.
+     * @param parentOrganizationId     Organization id of the parent organization id.
      * @param newOrganizationCreatorID User id of the new organization creator.
-     * @param tenantId       Tenant id.
+     * @param tenantId                 Tenant id.
      * @return A list of organization for the given organization.
      * @throws OrganizationManagementException
      */
     List<OrganizationUserRoleMapping> getDelegatingOrganizationUserRoleMappingsToNewOrg(String parentOrganizationId,
-                                                                                     String newOrganizationCreatorID, int tenantId)
+                                                                                        String newOrganizationCreatorID,
+                                                                                        int tenantId)
             throws OrganizationManagementException;
 
     /**

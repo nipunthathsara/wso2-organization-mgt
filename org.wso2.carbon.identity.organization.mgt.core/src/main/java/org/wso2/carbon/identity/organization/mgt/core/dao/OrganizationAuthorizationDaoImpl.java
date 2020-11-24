@@ -51,7 +51,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_DELETE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_VIEW_PERMISSION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ADD_USER_ROLE_ORG_MAPPING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_GROUP_ID_FROM_ROLE_NAME;
@@ -263,10 +262,11 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
-            return jdbcTemplate.executeQuery(GET_USER_ROLE_ORG_MAPPINGS_DELEGATE_TO_NEW_ORG, (resultSet, rowNumber) ->
-                            new OrganizationUserRoleMapping(parentOrganizationId, resultSet.getString(UM_UM_USER_ID_COLUMN),
-                                    resultSet.getString(UM_ROLE_ID_COLUMN), resultSet.getInt(UM_HYBRID_ROLE_ID_COLUMN),
-                                    resultSet.getInt(UM_INHERIT_COLUMN) == 1, resultSet.getString(UM_ASSIGNED_AT_COLUMN)),
+            return jdbcTemplate.executeQuery(GET_USER_ROLE_ORG_MAPPINGS_DELEGATE_TO_NEW_ORG,
+                    (resultSet, rowNumber) -> new OrganizationUserRoleMapping(parentOrganizationId,
+                            resultSet.getString(UM_UM_USER_ID_COLUMN), resultSet.getString(UM_ROLE_ID_COLUMN),
+                            resultSet.getInt(UM_HYBRID_ROLE_ID_COLUMN), resultSet.getInt(UM_INHERIT_COLUMN) == 1,
+                            resultSet.getString(UM_ASSIGNED_AT_COLUMN)),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setString(++parameterIndex, parentOrganizationId);
