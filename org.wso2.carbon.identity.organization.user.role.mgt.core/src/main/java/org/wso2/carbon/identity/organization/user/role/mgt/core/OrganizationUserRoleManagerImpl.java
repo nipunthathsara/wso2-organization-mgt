@@ -222,7 +222,8 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
          parent level.
          */
         int directlyAssignedRoleMappingsInheritance = organizationUserRoleMgtDAO
-                .getDirectlyAssignedOrganizationUserRoleMappingInheritance(organizationId, userId, roleId, getTenantId());
+                .getDirectlyAssignedOrganizationUserRoleMappingInheritance(organizationId, userId, roleId,
+                        getTenantId());
         if (directlyAssignedRoleMappingsInheritance == -1) {
             throw new OrganizationUserRoleMgtClientException(
                     String.format(ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND.getMessage(), organizationId, roleId,
@@ -300,7 +301,8 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
     }
 
     private List<OrganizationUserRoleMapping> populateOrganizationUserRoleMappings(String organizationId, String roleId,
-            int hybridRoleId, List<UserRoleMappingUser> usersList) {
+                                                                                   int hybridRoleId,
+                                                                                   List<UserRoleMappingUser> usersList) {
 
         List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
         for (UserRoleMappingUser user : usersList) {

@@ -45,6 +45,16 @@ public class OrganizationUserRoleMapping {
         this.cascadedRole = cascadedRole;
     }
 
+    public OrganizationUserRoleMapping(String organizationId, String userId, String roleId,
+                                       String assignedLevelOrganizationId, boolean cascadedRole) {
+
+        this.organizationId = organizationId;
+        this.userId = userId;
+        this.roleId = roleId;
+        this.assignedLevelOrganizationId = assignedLevelOrganizationId;
+        this.cascadedRole = cascadedRole;
+    }
+
     public void setOrganizationId(String organizationId) {
 
         this.organizationId = organizationId;

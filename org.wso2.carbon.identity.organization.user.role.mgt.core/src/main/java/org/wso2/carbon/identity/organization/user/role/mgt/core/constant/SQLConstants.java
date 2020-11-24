@@ -30,6 +30,7 @@ public class SQLConstants {
     public static final String VIEW_ROLE_ID_COLUMN = "UM_ROLE_ID";
     public static final String VIEW_ROLE_NAME_COLUMN = "UM_ROLE_NAME";
     public static final String VIEW_INHERIT_COLUMN = "INHERIT";
+    public static final String VIEW_ASSIGNED_AT_COLUMN = "ASSIGNED_AT";
     public static final String AND = " AND ";
     public static final String OR = " OR ";
     public static final String ORG_ID_ADDING = "ORG_ID = ?";
@@ -37,7 +38,8 @@ public class SQLConstants {
     public static final String INHERIT_ADDING = "INHERIT = ?";
 
     public static final String INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING =
-            "INTO UM_USER_ROLE_ORG (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID, ASSIGNED_AT, INHERIT) " +
+            "INTO UM_USER_ROLE_ORG " +
+                    "(UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID, ASSIGNED_AT, INHERIT) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ";
     public static final String SELECT_DUMMY_RECORD = "SELECT 1 FROM DUAL";
     public static final String INSERT_ORGANIZATION_USER_ROLE_MAPPING =
@@ -88,7 +90,7 @@ public class SQLConstants {
                     "    UM_ROLE_NAME = ? AND UM_TENANT_ID = ?";
     public static final String  GET_USERS_BY_ORG_AND_ROLE =
             "SELECT\n" +
-                    "    UM_USER_ID\n" +
+                    "    UM_USER_ID, ASSIGNED_AT, INHERIT \n" +
                     "FROM\n" +
                     "    UM_USER_ROLE_ORG\n" +
                     "WHERE\n" +
@@ -118,7 +120,10 @@ public class SQLConstants {
             "? UM_HYBRID_ROLE_ID, ? UM_TENANT_ID, ? ORG_ID, ? ASSIGNED_AT, ? INHERIT from dual";
     public static final String UPSERT_UM_USER_ROLE_ORG_END = " S ON \n" +
             "(T.UM_USER_ID = S.UM_USER_ID AND T.UM_HYBRID_ROLE_ID = S.UM_HYBRID_ROLE_ID AND " +
-            "T.UM_TENANT_ID = S.UM_TENANT_ID AND T.ORG_ID = S.ORG_ID AND T.ASSIGNED_AT = S.ASSIGNED_AT AND T.INHERIT = S.INHERIT)\n" +
-            "WHEN NOT MATCHED THEN INSERT (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID, ASSIGNED_AT, INHERIT)\n" +
-            "VALUES (S.UM_ID, S.UM_USER_ID, S.UM_ROLE_ID, S.UM_HYBRID_ROLE_ID, S.UM_TENANT_ID, S.ORG_ID, S.ASSIGNED_AT, S.INHERIT)";
+            "T.UM_TENANT_ID = S.UM_TENANT_ID AND T.ORG_ID = S.ORG_ID AND T.ASSIGNED_AT = S.ASSIGNED_AT AND " +
+            "T.INHERIT = S.INHERIT)\n" +
+            "WHEN NOT MATCHED THEN INSERT (UM_ID, UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, " +
+            "ORG_ID, ASSIGNED_AT, INHERIT)\n" +
+            "VALUES (S.UM_ID, S.UM_USER_ID, S.UM_ROLE_ID, S.UM_HYBRID_ROLE_ID, S.UM_TENANT_ID, S.ORG_ID, " +
+            "S.ASSIGNED_AT, S.INHERIT)";
 }

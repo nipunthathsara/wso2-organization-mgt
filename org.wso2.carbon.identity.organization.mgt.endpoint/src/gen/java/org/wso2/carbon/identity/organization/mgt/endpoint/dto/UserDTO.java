@@ -18,6 +18,7 @@ package org.wso2.carbon.identity.organization.mgt.endpoint.dto;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserAssignedMetaDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserEmailsDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserNameDTO;
 import io.swagger.annotations.*;
@@ -43,6 +44,9 @@ public class UserDTO {
 
     @Valid 
     private List<UserEmailsDTO> emails = new ArrayList<UserEmailsDTO>();
+
+    @Valid 
+    private List<UserAssignedMetaDTO> assignedMeta = new ArrayList<UserAssignedMetaDTO>();
 
     /**
     **/
@@ -88,6 +92,17 @@ public class UserDTO {
         this.emails = emails;
     }
 
+    /**
+    **/
+    @ApiModelProperty(value = "")
+    @JsonProperty("assignedMeta")
+    public List<UserAssignedMetaDTO> getAssignedMeta() {
+        return assignedMeta;
+    }
+    public void setAssignedMeta(List<UserAssignedMetaDTO> assignedMeta) {
+        this.assignedMeta = assignedMeta;
+    }
+
     @Override
     public String toString() {
 
@@ -98,6 +113,7 @@ public class UserDTO {
         sb.append("    id: ").append(id).append("\n");
         sb.append("    name: ").append(name).append("\n");
         sb.append("    emails: ").append(emails).append("\n");
+        sb.append("    assignedMeta: ").append(assignedMeta).append("\n");
         
         sb.append("}\n");
         return sb.toString();

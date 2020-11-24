@@ -38,7 +38,8 @@ public interface OrganizationUserRoleMgtDAO {
                                                      List<String> requestedAttributes, int tenantID, String filter)
             throws OrganizationUserRoleMgtServerException;
 
-    void deleteOrganizationsUserRoleMapping(String deleteInvokedOrgId, List<String> organizationIds, String userId, String roleId, int tenantId)
+    void deleteOrganizationsUserRoleMapping(String deleteInvokedOrgId, List<String> organizationIds, String userId,
+                                            String roleId, int tenantId)
             throws OrganizationUserRoleMgtException;
 
     void deleteOrganizationsUserRoleMappings(String userId, int tenantId) throws OrganizationUserRoleMgtException;
@@ -46,10 +47,13 @@ public interface OrganizationUserRoleMgtDAO {
     List<Role> getRolesByOrganizationAndUser(String organizationID, String userId, int tenantID)
             throws OrganizationUserRoleMgtServerException;
 
-    boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId, String assignedLevel, boolean includeSubOrg, boolean checkInheritance, int tenantId)
+    boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId,
+                                                String assignedLevel, boolean includeSubOrg, boolean checkInheritance,
+                                                int tenantId)
             throws OrganizationUserRoleMgtException;
 
-    int getDirectlyAssignedOrganizationUserRoleMappingInheritance(String organizationId, String userId, String roleId, int tenantId)
+    int getDirectlyAssignedOrganizationUserRoleMappingInheritance(String organizationId, String userId, String roleId,
+                                                                  int tenantId)
             throws OrganizationUserRoleMgtException;
 
     Integer getRoleIdBySCIMGroupName(String roleName, int tenantId) throws OrganizationUserRoleMgtServerException;

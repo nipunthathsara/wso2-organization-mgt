@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,34 +27,17 @@ import java.util.Map;
 public class RoleMember {
 
     private Map<String, Object> userAttributes;
-    private boolean includeSubOrg;
-    private String assignedOrgLevelId;
+    private List<RoleAssignment> assignedMeta;
 
     public RoleMember(Map<String, Object> attributes) {
 
         this.userAttributes = attributes;
     }
 
-    public RoleMember(Map<String, Object> attributes, boolean includeSubOrg, String assignedOrgLevelId) {
+    public RoleMember(Map<String, Object> attributes, List<RoleAssignment> assignedMeta) {
 
         this.userAttributes = attributes;
-        this.includeSubOrg = includeSubOrg;
-        this.assignedOrgLevelId = assignedOrgLevelId;
-    }
-
-    public Map<String, Object> getUserAttributes() {
-
-        return userAttributes;
-    }
-
-    public boolean isIncludeSubOrg() {
-
-        return includeSubOrg;
-    }
-
-    public String getAssignedOrgLevelId() {
-
-        return assignedOrgLevelId;
+        this.assignedMeta = assignedMeta;
     }
 
     public void setUserAttributes(Map<String, Object> userAttributes) {
@@ -61,13 +45,18 @@ public class RoleMember {
         this.userAttributes = userAttributes;
     }
 
-    public void setAssignedOrgLevelId(String assignedOrgLevelId) {
+    public void setAssignedMeta(List<RoleAssignment> assignedMeta) {
 
-        this.assignedOrgLevelId = assignedOrgLevelId;
+        this.assignedMeta = assignedMeta;
     }
 
-    public void setIncludeSubOrg(boolean includeSubOrg) {
+    public Map<String, Object> getUserAttributes() {
 
-        this.includeSubOrg = includeSubOrg;
+        return userAttributes;
+    }
+
+    public List<RoleAssignment> getAssignedMeta() {
+
+        return assignedMeta;
     }
 }

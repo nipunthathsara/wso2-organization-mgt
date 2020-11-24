@@ -18,6 +18,7 @@ package org.wso2.carbon.identity.organization.mgt.endpoint;
 
 import org.apache.cxf.jaxrs.ext.search.SearchContext;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleOperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.factories.OrganizationsApiServiceFactory;
 
 import io.swagger.annotations.ApiParam;
@@ -337,6 +338,30 @@ public class OrganizationsApi {
     @ApiParam(value = "ID of the user.",required=true ) @PathParam("user-id")  String userId) {
 
         return delegate.organizationsOrganizationIdRolesRoleIdUsersUserIdDelete(organizationId,roleId,userId);
+    }
+
+    @PATCH
+    @Path("/{organization-id}/roles/{role-id}/users/{user-id}")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json" })
+    @io.swagger.annotations.ApiOperation(value = "Update an organization user role mapping.\n",
+            notes = "This API is used to update a user role mappings for an organization. This will allow to change the cascadability of the role mapping.\n",
+            response = void.class)
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 204, message = "Ok"),
+        
+        @io.swagger.annotations.ApiResponse(code = 400, message = "Bad Request"),
+        
+        @io.swagger.annotations.ApiResponse(code = 401, message = "Unauthorized"),
+        
+        @io.swagger.annotations.ApiResponse(code = 500, message = "Server Error") })
+
+    public Response organizationsOrganizationIdRolesRoleIdUsersUserIdPatch(@ApiParam(value = "ID of the organization of which, the user role mappings will be updated.",required=true ) @PathParam("organization-id")  String organizationId,
+    @ApiParam(value = "ID of the role of which, the user will be updated.",required=true ) @PathParam("role-id")  String roleId,
+    @ApiParam(value = "ID of the user.",required=true ) @PathParam("user-id")  String userId,
+    @ApiParam(value = "This represents the patch operation." ,required=true )  List<UserRoleOperationDTO> operations) {
+
+        return delegate.organizationsOrganizationIdRolesRoleIdUsersUserIdPatch(organizationId,roleId,userId,operations);
     }
 
     @GET

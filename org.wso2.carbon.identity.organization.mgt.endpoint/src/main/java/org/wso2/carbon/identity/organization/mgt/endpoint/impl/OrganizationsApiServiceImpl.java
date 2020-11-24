@@ -31,6 +31,7 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.OrganizationsApiServic
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleMappingDTO;
+import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserRoleOperationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationUserRoleMgtEndpointUtil;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
@@ -262,6 +263,14 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
         } catch (Throwable throwable) {
             return OrganizationUserRoleMgtEndpointUtil.handleUnexpectedServerError(throwable, log);
         }
+    }
+
+    @Override
+    public Response organizationsOrganizationIdRolesRoleIdUsersUserIdPatch(String organizationId, String roleId,
+                                                                           String userId,
+                                                                           List<UserRoleOperationDTO> operations) {
+
+        return null;
     }
 
     @Override
