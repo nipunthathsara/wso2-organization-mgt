@@ -79,11 +79,9 @@ public class OrganizationMgtSecondaryServiceComponent {
             log.debug("Setting the user store manager service");
         }
         try {
-            if (Class.forName(ORG_USER_STORE_MANAGER_CLASS).isAssignableFrom(userStoreManager.getClass())) {
+            if (ORG_USER_STORE_MANAGER_CLASS.equals(userStoreManager.getClass().getName())) {
                 createRootIfNotExist();
             }
-        } catch (ClassNotFoundException e) {
-            log.error("Error while checking for the organization user store manage", e);
         } catch (Throwable e) {
             log.error("Error while creating the ROOT organization", e);
         }
