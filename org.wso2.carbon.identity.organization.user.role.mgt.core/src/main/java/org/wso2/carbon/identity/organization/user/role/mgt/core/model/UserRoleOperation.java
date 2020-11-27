@@ -19,48 +19,54 @@
 package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
 
 /**
- * Operation implementation.
+ * User Role Operation implementation.
  */
-public class Operation {
+public class UserRoleOperation {
 
     private String path;
-    private String value;
+    private boolean value;
     private String op;
 
-    public Operation(String op, String path, String value) {
+    public UserRoleOperation(String op, String path, boolean value) {
 
         this.op = op;
         this.path = path;
         this.value = value;
     }
 
-    public Operation(String op, String path) {
+    public UserRoleOperation(String op, String path) {
 
         this.op = op;
         this.path = path;
     }
 
     public String getOp() {
+
         return op;
     }
 
     public void setOp(String op) {
+
         this.op = op;
     }
 
     public String getPath() {
+
         return path;
     }
 
     public void setPath(String path) {
+
         this.path = path;
     }
 
-    public String getValue() {
+    public boolean getValue() {
+
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(boolean value) {
+
         this.value = value;
     }
 }

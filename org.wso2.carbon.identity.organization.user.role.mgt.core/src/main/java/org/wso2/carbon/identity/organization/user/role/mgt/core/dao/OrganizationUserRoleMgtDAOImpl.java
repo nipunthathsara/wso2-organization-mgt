@@ -53,6 +53,7 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.AND;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.ASSIGNED_AT_ADDING;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.COUNT_COLUMN_NAME;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ALL_ORGANIZATION_USER_ROLE_MAPPINGS_BY_USERID;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_USER_ROLE_MAPPINGS_ASSIGNED_AT_ORG_LEVEL;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.GET_DIRECTLY_ASSIGNED_ORGANIZATION_USER_ROLE_MAPPING_INHERITANCE;
@@ -146,7 +147,8 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
             organizationUserRoleMappings.stream().map(organizationUserRoleMapping -> userRoleAssignments
                     .computeIfAbsent(organizationUserRoleMapping.getUserId(), k -> new ArrayList<>())
                     .add(new RoleAssignment(organizationUserRoleMapping.isCascadedRole(),
-                            organizationUserRoleMapping.getAssignedLevelOrganizationId())));
+                            organizationUserRoleMapping.getAssignedLevelOrganizationId())))
+                    .collect(Collectors.toList());
 
             for (String userId : userRoleAssignments.keySet()) {
 
@@ -291,7 +293,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
             mappingsCount = jdbcTemplate
                     .fetchSingleRecord(buildIsRoleMappingExistsQuery(assignedLevel, checkInheritance),
                             (resultSet, rowNumber) ->
-                                    resultSet.getInt(VIEW_INHERIT_COLUMN),
+                                    resultSet.getInt(COUNT_COLUMN_NAME),
                             preparedStatement -> {
                                 int parameterIndex = 0;
                                 preparedStatement.setString(++parameterIndex, userId);
@@ -323,6 +325,23 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         JdbcTemplate jdbcTemplate = getNewTemplate();
         int directlyAssignedRoleMappingInheritance = -1;
         try {
+            boolean mappingExists = jdbcTemplate
+                    .fetchSingleRecord(buildIsRoleMappingExistsQuery(organizationId, false),
+                            (resultSet, rowNumber) ->
+                                    resultSet.getInt(COUNT_COLUMN_NAME) == 1,
+                            preparedStatement -> {
+                                int parameterIndex = 0;
+                                preparedStatement.setString(++parameterIndex, userId);
+                                preparedStatement.setString(++parameterIndex, roleId);
+                                preparedStatement.setInt(++parameterIndex, tenantId);
+                                preparedStatement.setString(++parameterIndex, organizationId);
+                                if (StringUtils.isNotEmpty(organizationId)) {
+                                    preparedStatement.setString(++parameterIndex, organizationId);
+                                }
+                            });
+            if (!mappingExists) {
+                return directlyAssignedRoleMappingInheritance;
+            }
             directlyAssignedRoleMappingInheritance =
                     jdbcTemplate.fetchSingleRecord(GET_DIRECTLY_ASSIGNED_ORGANIZATION_USER_ROLE_MAPPING_INHERITANCE,
                             (resultSet, rowNumber) -> resultSet.getInt(VIEW_INHERIT_COLUMN),

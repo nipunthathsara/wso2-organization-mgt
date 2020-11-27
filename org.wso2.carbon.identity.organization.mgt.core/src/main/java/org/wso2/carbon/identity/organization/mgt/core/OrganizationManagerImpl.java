@@ -923,7 +923,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                      */
                     organizationUserRoleMapping = new OrganizationUserRoleMapping(
                             organizationId, mapping.getUserId(), mapping.getRoleId(), mapping.getHybridRoleId(),
-                            mapping.isCascadedRole(), parentOrganizationId);
+                            mapping.isCascadedRole(), organizationId);
                 } else {
                     /*
                      Delegate the role mappings that users have  against the immediate parent with INHERIT = true.

@@ -36,7 +36,7 @@ public class UserRoleOperationDTO {
 
     @Valid 
     @NotNull(message = "Property value cannot be null.") 
-    private String value = null;
+    private Boolean value = null;
 
     /**
     **/
@@ -64,10 +64,10 @@ public class UserRoleOperationDTO {
     **/
     @ApiModelProperty(required = true, value = "")
     @JsonProperty("value")
-    public String getValue() {
+    public Boolean getValue() {
         return value;
     }
-    public void setValue(String value) {
+    public void setValue(Boolean value) {
         this.value = value;
     }
 

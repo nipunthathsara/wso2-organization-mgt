@@ -769,7 +769,8 @@ paths:
       summary: |
         Update an organization user role mapping.
       description: |
-        This API is used to update a user role mappings for an organization. This will allow to change the cascadability of the role mapping.
+        This API is used to update the inheritance of a user role assigned over an organization.
+        This will allow to change the includeSubOrgs property of the role mapping.
       parameters:
         - name: organization-id
           in: path
@@ -1310,8 +1311,8 @@ definitions:
         type: string
         example: '/includeSubOrgs'
       value:
-        type: string
-        example: 'false'
+        type: boolean
+        example: false
   #-----------------------------------------------------
   # Error Response  object
   #-----------------------------------------------------

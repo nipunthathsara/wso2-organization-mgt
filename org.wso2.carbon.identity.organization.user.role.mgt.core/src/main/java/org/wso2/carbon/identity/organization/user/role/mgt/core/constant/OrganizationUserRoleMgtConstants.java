@@ -23,6 +23,7 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.constant;
  */
 public class OrganizationUserRoleMgtConstants {
 
+    public static final String PATCH_OP_REPLACE = "replace";
     /**
      * Error messages.
      */
@@ -36,11 +37,15 @@ public class OrganizationUserRoleMgtConstants {
                 "Invalid users search/get request for an organization's role: %s"),
         ERROR_NO_ROLE_MAPPING_FOUND("ORGPERMMGT_00004",
                 "No organization user role mapping for an organization: %s, user: %s, role: %s"),
-        ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND("ORGPERMMGT_00005",
+        ERROR_CODE_NON_EXISTING_USERID_ERROR("ORGPERMMGT_00005", "No user exists with user id: %s"),
+        ERROR_CODE_INVALID_ROLE_ERROR("ORGPERMMGT_00006", "Invalid role id: %s"),
+        ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND("ORGPERMMGT_00007",
                 "No organization user role mapping for an organization: %s, user: %s, role: %s, " +
                         "directly assigned at organization: %s"),
-        ERROR_CODE_INVALID_ROLE_ERROR("ORGPERMMGT_00006", "Invalid role id: %s"),
-        ERROR_CODE_NON_EXISTING_USERID_ERROR("ORGPERMMGT_00007", "No user exists with user id: %s"),
+        ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_PATCH_REQUEST("ORGPERMMGT_00008",
+                "Invalid organization user role patch request : %s"),
+        ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_POST_REQUEST("ORGPERMMGT_00009",
+                "Invalid organization user role post request : %s"),
 
         // Server errors (ORGPERMMGT_00020-ORGPERMMGT_00040)
         ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR("ORGPERMMGT_00020",
