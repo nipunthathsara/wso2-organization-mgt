@@ -63,7 +63,9 @@ public class OrganizationUserRoleMgtConstants {
         ERROR_CODE_EVENTING_ERROR("ORGPERMMGT_00027", "Error while handling the event : %s"),
         ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGPERMMGT_00028", "Error accessing user store : %s"),
         ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_PER_USER_ERROR("ORGPERMMGT_00029",
-                "Error while deleting organization user role mappings for user : %s"),;
+                "Error while deleting organization user role mappings for user : %s"),
+        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_UPDATE_ERROR("ORGPERMMGT_00030",
+                "Error while updating includeSubOrgs property of organization: %s , user: %s, role: %s mapping"),;
 
         private final String code;
         private final String message;

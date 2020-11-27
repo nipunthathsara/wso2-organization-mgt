@@ -67,6 +67,13 @@ public class SQLConstants {
                     "    UM_USER_ROLE_ORG\n" +
                     "WHERE\n" +
                     "    UM_USER_ID = ? AND UM_ROLE_ID = ? AND UM_TENANT_ID = ? AND ORG_ID = ?";
+    public static final String UPDATE_ORGANIZATION_USER_ROLE_MAPPING_INHERIT_PROPERTY =
+            "UPDATE\n" +
+                    "    UM_USER_ROLE_ORG\n" +
+                    "SET\n" +
+                    "    INHERIT = ?\n" +
+                    "WHERE\n" +
+                    "    UM_USER_ID = ? AND UM_ROLE_ID = ? AND ORG_ID = ? AND ASSIGNED_AT = ? AND UM_TENANT_ID = ?";
     public static final String GET_DIRECTLY_ASSIGNED_ORGANIZATION_USER_ROLE_MAPPING_INHERITANCE =
             "SELECT\n" +
                     "    INHERIT\n" +

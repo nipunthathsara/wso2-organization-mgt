@@ -25,6 +25,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
+import org.wso2.carbon.database.utils.jdbc.exceptions.TransactionException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
@@ -69,6 +70,7 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.SELECT_DUMMY_RECORD;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UM_USER_ROLE_ORG_DATA;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UNION_ALL;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UPDATE_ORGANIZATION_USER_ROLE_MAPPING_INHERIT_PROPERTY;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UPSERT_UM_USER_ROLE_ORG_BASE;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UPSERT_UM_USER_ROLE_ORG_END;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ASSIGNED_AT_COLUMN;
@@ -95,7 +97,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             // Will be added only if the particular mapping is not existing.
-            jdbcTemplate.executeInsert(buildQueryForMultipleUpsert(organizationUserRoleMappings.size()),
+            jdbcTemplate.executeInsert(buildQueryForMultipleInserts(organizationUserRoleMappings.size()),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         for (OrganizationUserRoleMapping organizationUserRoleMapping : organizationUserRoleMappings) {
@@ -279,6 +281,77 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         }
 
         return roles;
+    }
+
+    @Override
+    public void updateIncludeSubOrgProperty(String organizationID, String roleId, String userId, boolean includeSubOrg,
+                                            List<OrganizationUserRoleMapping> organizationUserRoleMappingsToAdd,
+                                            List<String> childOrganizationIdsToDeleteRecords, int tenantId)
+            throws OrganizationUserRoleMgtServerException {
+
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        try {
+            jdbcTemplate.withTransaction(template -> {
+                // Update the directly updated record
+                jdbcTemplate
+                        .executeUpdate(UPDATE_ORGANIZATION_USER_ROLE_MAPPING_INHERIT_PROPERTY, preparedStatement -> {
+                            int parameterIndex = 0;
+                            preparedStatement.setInt(++parameterIndex, includeSubOrg ? 1 : 0);
+                            preparedStatement.setString(++parameterIndex, userId);
+                            preparedStatement.setString(++parameterIndex, roleId);
+                            preparedStatement.setString(++parameterIndex, organizationID);
+                            preparedStatement.setString(++parameterIndex, organizationID);
+                            preparedStatement.setInt(++parameterIndex, tenantId);
+                        });
+                // If 'includeSubOrg' is true, more entries should be added if child orgs exists.
+                if (includeSubOrg && CollectionUtils.isNotEmpty(organizationUserRoleMappingsToAdd)) {
+                    jdbcTemplate.executeInsert(buildQueryForMultipleInserts(organizationUserRoleMappingsToAdd.size()),
+                            preparedStatement -> {
+                                int parameterIndex = 0;
+                                for (OrganizationUserRoleMapping organizationUserRoleMapping : organizationUserRoleMappingsToAdd) {
+                                    preparedStatement.setString(++parameterIndex, generateUniqueID());
+                                    preparedStatement
+                                            .setString(++parameterIndex, organizationUserRoleMapping.getUserId());
+                                    preparedStatement
+                                            .setString(++parameterIndex, organizationUserRoleMapping.getRoleId());
+                                    preparedStatement
+                                            .setInt(++parameterIndex, organizationUserRoleMapping.getHybridRoleId());
+                                    preparedStatement.setInt(++parameterIndex, tenantId);
+                                    preparedStatement
+                                            .setString(++parameterIndex,
+                                                    organizationUserRoleMapping.getOrganizationId());
+                                    preparedStatement.setString(++parameterIndex,
+                                            organizationUserRoleMapping.getAssignedLevelOrganizationId());
+                                    preparedStatement
+                                            .setInt(++parameterIndex,
+                                                    organizationUserRoleMapping.isCascadedRole() ? 1 : 0);
+                                }
+                            }, organizationUserRoleMappingsToAdd, false);
+                } else if (!includeSubOrg && CollectionUtils.isNotEmpty(childOrganizationIdsToDeleteRecords)) {
+                    // If 'includeSubOrg' is false, some entries should be deleted if child orgs exists.
+                    jdbcTemplate.executeUpdate(
+                            buildQueryForMultipleRoleMappingDeletion(childOrganizationIdsToDeleteRecords.size()),
+                            preparedStatement -> {
+                                int parameterIndex = 0;
+                                preparedStatement.setString(++parameterIndex, userId);
+                                preparedStatement.setString(++parameterIndex, roleId);
+                                preparedStatement.setInt(++parameterIndex, tenantId);
+                                preparedStatement.setString(++parameterIndex, organizationID);
+                                for (String organizationId : childOrganizationIdsToDeleteRecords) {
+                                    preparedStatement.setString(++parameterIndex, organizationId);
+                                }
+                            });
+                }
+                return null;
+            });
+        } catch (TransactionException e) {
+            String message =
+                    String.format(String.valueOf(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_PER_USER_ERROR),
+                            organizationID,
+                            userId, roleId);
+            throw new OrganizationUserRoleMgtServerException(message,
+                    ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_PER_USER_ERROR.getCode(), e);
+        }
     }
 
     @Override
