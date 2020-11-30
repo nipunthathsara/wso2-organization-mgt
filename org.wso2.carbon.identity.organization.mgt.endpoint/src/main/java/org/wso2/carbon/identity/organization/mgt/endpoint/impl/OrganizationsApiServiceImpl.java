@@ -238,7 +238,9 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
                     Arrays.stream(attributes.split(",")).map(String::trim).collect(Collectors.toList());
             List<RoleMember> roleMembers = getOrganizationUserRoleManager()
                     .getUsersByOrganizationAndRole(organizationId, roleId, offset, limit, requestedAttributes, filter);
-            return Response.ok().entity(roleMembers).build();
+            return Response.ok()
+                    .entity(roleMembers.stream().map(RoleMember::getUserAttributes).collect(Collectors.toList()))
+                    .build();
         } catch (OrganizationUserRoleMgtClientException e) {
             return OrganizationUserRoleMgtEndpointUtil.handleBadRequestResponse(e, log);
         } catch (OrganizationUserRoleMgtException e) {

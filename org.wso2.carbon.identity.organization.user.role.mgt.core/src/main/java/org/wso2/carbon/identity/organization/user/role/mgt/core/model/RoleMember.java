@@ -27,17 +27,10 @@ import java.util.Map;
 public class RoleMember {
 
     private Map<String, Object> userAttributes;
-    private List<RoleAssignment> assignedMeta;
 
     public RoleMember(Map<String, Object> attributes) {
 
         this.userAttributes = attributes;
-    }
-
-    public RoleMember(Map<String, Object> attributes, List<RoleAssignment> assignedMeta) {
-
-        this.userAttributes = attributes;
-        this.assignedMeta = assignedMeta;
     }
 
     public void setUserAttributes(Map<String, Object> userAttributes) {
@@ -45,18 +38,8 @@ public class RoleMember {
         this.userAttributes = userAttributes;
     }
 
-    public void setAssignedMeta(List<RoleAssignment> assignedMeta) {
-
-        this.assignedMeta = assignedMeta;
-    }
-
     public Map<String, Object> getUserAttributes() {
 
         return userAttributes;
-    }
-
-    public List<RoleAssignment> getAssignedMeta() {
-
-        return assignedMeta;
     }
 }

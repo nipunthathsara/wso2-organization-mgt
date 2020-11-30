@@ -203,4 +203,22 @@ UM_USER_ROLE_ORG
 +-------------------+-----------+-------------+----------+-----------------+
 | ORG_ID            | VARCHAR2  | 255         | N        | NO              |
 +-------------------+-----------+-------------+----------+-----------------+
+| ASSIGNED_AT       | VARCHAR2  | 255         | N        | NO              |
++-------------------+-----------+-------------+----------+-----------------+
+| INHERIT           | NUMBER    | 38          | Y        | NO              |
++-------------------+-----------+-------------+----------+-----------------+
+```
+
+Migration script to support include sub organization feature
+```
+ALTER TABLE UM_USER_ROLE_ORG ADD ASSIGNED_AT VARCHAR2(255);
+ALTER TABLE UM_USER_ROLE_ORG ADD INHERIT INTEGER DEFAULT 0;
+
+UPDATE UM_USER_ROLE_ORG SET ASSIGNED_AT = ORG_ID;
+UPDATE UM_USER_ROLE_ORG SET INHERIT = 0;
+
+ALTER TABLE UM_USER_ROLE_ORG DROP CONSTRAINT UM_USER_ROLE_ORG_CONSTRAINT;
+ALTER TABLE UM_USER_ROLE_ORG MODIFY ASSIGNED_AT VARCHAR2(255) NOT NULL;
+ALTER TABLE UM_USER_ROLE_ORG ADD CONSTRAINT UM_USER_ROLE_ORG_CONSTRAINT UNIQUE(UM_USER_ID, UM_HYBRID_ROLE_ID, UM_TENANT_ID, ORG_ID, ASSIGNED_AT);
+ALTER TABLE UM_USER_ROLE_ORG ADD CONSTRAINT FK_UM_USER_ROLE_ORG_ASSIGNED_AT FOREIGN KEY (ASSIGNED_AT) REFERENCES UM_ORG(ID) ON DELETE CASCADE;
 ```

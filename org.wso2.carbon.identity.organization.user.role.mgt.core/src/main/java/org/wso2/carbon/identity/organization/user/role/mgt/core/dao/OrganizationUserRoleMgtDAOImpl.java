@@ -181,8 +181,8 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         attributes.containsKey("Resources") && ((ArrayList) attributes.get("Resources")).size() > 0) {
                     Map<String, Object> userAttributes =
                             (Map<String, Object>) ((ArrayList) attributes.get("Resources")).get(0);
+                    userAttributes.put("assignedMeta", userRoleAssignments.get(userId));
                     RoleMember roleMember = new RoleMember(userAttributes);
-                    roleMember.setAssignedMeta(userRoleAssignments.get(userId));
                     roleMembers.add(roleMember);
                 }
             }
@@ -293,8 +293,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         try {
             jdbcTemplate.withTransaction(template -> {
                 // Update the directly updated record
-                jdbcTemplate
-                        .executeUpdate(UPDATE_ORGANIZATION_USER_ROLE_MAPPING_INHERIT_PROPERTY, preparedStatement -> {
+                template.executeUpdate(UPDATE_ORGANIZATION_USER_ROLE_MAPPING_INHERIT_PROPERTY, preparedStatement -> {
                             int parameterIndex = 0;
                             preparedStatement.setInt(++parameterIndex, includeSubOrg ? 1 : 0);
                             preparedStatement.setString(++parameterIndex, userId);
@@ -305,7 +304,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         });
                 // If 'includeSubOrg' is true, more entries should be added if child orgs exists.
                 if (includeSubOrg && CollectionUtils.isNotEmpty(organizationUserRoleMappingsToAdd)) {
-                    jdbcTemplate.executeInsert(buildQueryForMultipleInserts(organizationUserRoleMappingsToAdd.size()),
+                    template.executeInsert(buildQueryForMultipleInserts(organizationUserRoleMappingsToAdd.size()),
                             preparedStatement -> {
                                 int parameterIndex = 0;
                                 for (OrganizationUserRoleMapping organizationUserRoleMapping : organizationUserRoleMappingsToAdd) {
@@ -329,7 +328,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                             }, organizationUserRoleMappingsToAdd, false);
                 } else if (!includeSubOrg && CollectionUtils.isNotEmpty(childOrganizationIdsToDeleteRecords)) {
                     // If 'includeSubOrg' is false, some entries should be deleted if child orgs exists.
-                    jdbcTemplate.executeUpdate(
+                    template.executeUpdate(
                             buildQueryForMultipleRoleMappingDeletion(childOrganizationIdsToDeleteRecords.size()),
                             preparedStatement -> {
                                 int parameterIndex = 0;
