@@ -153,6 +153,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throws OrganizationManagementException {
 
         logOrganizationAddObject(organizationAdd);
+        // 'DN' can only be accepted in /import requests or by a pre-handler
+        if (organizationAdd.getUserStoreConfigs().contains(DN) && !isImport) {
+            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST, "DN is acceptable only in "
+                    + "/import operations");
+        }
         // Fire pre-event
         String event = isImport ? PRE_IMPORT_ORGANIZATION : PRE_CREATE_ORGANIZATION;
         fireEvent(event, null, organizationAdd, Status.FAILURE);
@@ -487,12 +492,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
             if (config.getKey().equals(USER_STORE_DOMAIN)) {
                 config.setValue(config.getValue().toUpperCase(Locale.ENGLISH));
             }
-            // User store configs may only contain RDN and USER_STORE_DOMAIN. (DN to be derived and added later)
-            if (!(config.getKey().equals(RDN) || config.getKey().equals(USER_STORE_DOMAIN))) {
+            // User store configs may only contain RDN, DN and USER_STORE_DOMAIN. (DN to be derived and added later
+            // when not defined in the request)
+            if (!(config.getKey().equals(RDN) || config.getKey().equals(USER_STORE_DOMAIN)
+                    || config.getKey().equals(DN))) {
                 userStoreConfigs.remove(i);
                 if (log.isDebugEnabled()) {
-                    log.debug("Dropping additional user store configs. "
-                            + "Only 'USER_STORE_DOMAIN' and 'RDN' are allowed." + config.getKey());
+                    log.debug("Dropping additional user store config : " + config.getKey()
+                            + " Only 'USER_STORE_DOMAIN', 'RDN' and 'DN' are allowed.");
                 }
             }
         }
@@ -572,19 +579,22 @@ public class OrganizationManagerImpl implements OrganizationManager {
         if (organization.getUserStoreConfigs().get(RDN) == null) {
             organization.getUserStoreConfigs().put(RDN, new UserStoreConfig(RDN, organization.getId()));
         }
-        // Check if the RDN is already taken
-        boolean isAvailable = organizationMgtDao.isRdnAvailable(organization.getUserStoreConfigs().get(RDN).getValue(),
-                organization.getParent().getId(), getTenantId());
-        if (!isAvailable) {
-            throw handleClientException(ERROR_CODE_CONFLICTING_REQUEST,
-                    "RDN : " + organization.getUserStoreConfigs().get(RDN) + ", is not available for the parent : "
-                            + organization.getParent().getId());
+        String dn = organization.getUserStoreConfigs().get(DN) != null ?
+                organization.getUserStoreConfigs().get(DN).getValue() : null;
+        // If 'DN' is provided, no validation needed for RDN or DN. As it may be unrelated to parent
+        if (dn != null) {
+            // Check if the RDN is already taken
+            boolean isAvailable =
+                    organizationMgtDao.isRdnAvailable(organization.getUserStoreConfigs().get(RDN).getValue(),
+                            organization.getParent().getId(), getTenantId());
+            if (!isAvailable) {
+                throw handleClientException(ERROR_CODE_CONFLICTING_REQUEST,
+                        "RDN : " + organization.getUserStoreConfigs().get(RDN) + ", is not available for the parent : "
+                                + organization.getParent().getId());
+            }
+            // Construct and set DN using RDN, User store domain and the parent ID
+            dn = "ou=".concat(organization.getUserStoreConfigs().get(RDN).getValue()).concat(",").concat(parentConfigs.get(DN).getValue());
         }
-        // Construct and set DN using RDN, User store domain and the parent ID
-        String dn = "ou="
-                .concat(organization.getUserStoreConfigs().get(RDN).getValue())
-                .concat(",")
-                .concat(parentConfigs.get(DN).getValue());
         organization.getUserStoreConfigs().put(DN, new UserStoreConfig(DN, dn));
     }
 
