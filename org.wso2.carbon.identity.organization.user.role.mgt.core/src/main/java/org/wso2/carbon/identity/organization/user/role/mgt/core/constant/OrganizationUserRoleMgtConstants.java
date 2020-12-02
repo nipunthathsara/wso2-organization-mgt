@@ -86,4 +86,27 @@ public class OrganizationUserRoleMgtConstants {
             return message;
         }
     }
+
+    /**
+     * Forbidden Error Messages.
+     */
+    public enum ForbiddenErrorMessages {
+
+    }
+
+    /**
+     * Not Found Error Messages.
+     */
+    public enum NotFoundErrorMessages {
+
+        ORGPERMMGT_00004, ORGPERMMGT_00005, ORGPERMMGT_00007, ;
+    }
+
+    /**
+     * Conflict Error Messages.
+     */
+    public enum ConflictErrorMessages {
+
+        ORGPERMMGT_00009;
+    }
 }

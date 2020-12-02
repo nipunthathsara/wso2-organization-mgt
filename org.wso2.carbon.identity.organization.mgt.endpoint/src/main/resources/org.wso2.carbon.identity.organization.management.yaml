@@ -700,6 +700,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/Error'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
         '500':
           description: Server Error
           schema:
