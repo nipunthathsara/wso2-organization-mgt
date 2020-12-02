@@ -593,8 +593,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
                             organization.getParent().getId(), getTenantId());
             if (!isAvailable) {
                 throw handleClientException(ERROR_CODE_CONFLICTING_REQUEST,
-                        "RDN : " + organization.getUserStoreConfigs().get(RDN) + ", is not available for the parent : "
-                                + organization.getParent().getId());
+                        "Directory : " + organization.getUserStoreConfigs().get(RDN) + ", is not available for this "
+                                + "parent organization");
             }
             // Construct and set DN using RDN, User store domain and the parent ID
             dn = "ou="
