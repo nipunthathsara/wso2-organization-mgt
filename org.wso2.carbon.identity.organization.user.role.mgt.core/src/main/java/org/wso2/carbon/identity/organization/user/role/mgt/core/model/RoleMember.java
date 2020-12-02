@@ -18,26 +18,28 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
 
+import java.util.List;
 import java.util.Map;
 
 /**
- * User representation
+ * User representation.
  */
-public class User {
+public class RoleMember {
 
     private Map<String, Object> userAttributes;
 
-    public User(Map<String, Object> attributes) {
+    public RoleMember(Map<String, Object> attributes) {
+
         this.userAttributes = attributes;
-    }
-
-    public Map<String, Object> getUserAttributes() {
-
-        return userAttributes;
     }
 
     public void setUserAttributes(Map<String, Object> userAttributes) {
 
         this.userAttributes = userAttributes;
+    }
+
+    public Map<String, Object> getUserAttributes() {
+
+        return userAttributes;
     }
 }

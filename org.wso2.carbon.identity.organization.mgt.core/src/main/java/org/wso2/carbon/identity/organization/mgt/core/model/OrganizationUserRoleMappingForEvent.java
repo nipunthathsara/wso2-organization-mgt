@@ -29,19 +29,16 @@ public class OrganizationUserRoleMappingForEvent {
     private String roleId;
     private String userId;
     private List<UserRoleInheritance> usersRoleInheritance;
-    private boolean includeSubOrgs;
 
     public OrganizationUserRoleMappingForEvent() {
 
     }
 
-    public OrganizationUserRoleMappingForEvent(String organizationId, String roleId, String userId,
-                                               boolean includeSubOrgs) {
+    public OrganizationUserRoleMappingForEvent(String organizationId, String roleId, String userId) {
 
         this.organizationId = organizationId;
         this.userId = userId;
         this.roleId = roleId;
-        this.includeSubOrgs = includeSubOrgs;
     }
 
     public OrganizationUserRoleMappingForEvent(String organizationId, String roleId,
@@ -73,11 +70,6 @@ public class OrganizationUserRoleMappingForEvent {
         this.usersRoleInheritance = usersRoleInheritance;
     }
 
-    public void setIncludeSubOrgs(boolean includeSubOrgs) {
-
-        this.includeSubOrgs = includeSubOrgs;
-    }
-
     public String getOrganizationId() {
 
         return organizationId;
@@ -96,10 +88,5 @@ public class OrganizationUserRoleMappingForEvent {
     public List<UserRoleInheritance> getUsersRoleInheritance() {
 
         return usersRoleInheritance;
-    }
-
-    public boolean isIncludeSubOrgs() {
-
-        return includeSubOrgs;
     }
 }

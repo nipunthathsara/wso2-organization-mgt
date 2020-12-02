@@ -188,7 +188,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             }
         }
         cacheBackedOrganizationMgtDAO.addOrganization(getTenantId(), organization);
-        grantImmediateParentPermissions(organization.getId(), organization.getParent().getId(), false);
+        grantImmediateParentPermissions(organization.getId(), organization.getParent().getId(),
+                getAuthenticatedUserId());
         // Fire post-event
         event = isImport ? POST_IMPORT_ORGANIZATION : POST_CREATE_ORGANIZATION;
         fireEvent(event, null, organization, Status.SUCCESS);
@@ -914,21 +915,37 @@ public class OrganizationManagerImpl implements OrganizationManager {
     }
 
     private void grantImmediateParentPermissions(String organizationId, String parentOrganizationId,
-                                                 boolean propagatePermissionsOfAllUsers)
+                                                 String newOrgCreatorId)
             throws OrganizationManagementException {
 
-        // If parent's permissions will be inherited, propagate them to new organization.
+        /*
+        Immediate parent's all 'inherit = true' role mappings and,
+        all role mappings assigned to the new organization creator will be delegated to the new organization.
+         */
         if (StringUtils.isNotEmpty(parentOrganizationId)) {
             List<OrganizationUserRoleMapping> organizationUserRoleMappingsOfParent = authorizationDao
-                    .getOrganizationUserRoleMappingsForOrganization(parentOrganizationId, getTenantId());
+                    .getDelegatingOrganizationUserRoleMappingsToNewOrg(parentOrganizationId, newOrgCreatorId,
+                            getTenantId());
             List<OrganizationUserRoleMapping> organizationUserRoleMappingsForNewOrganization = new ArrayList<>();
             for (OrganizationUserRoleMapping mapping : organizationUserRoleMappingsOfParent) {
-                // Either inherit permission for all users, or inherit permissions for the creator only
-                if (propagatePermissionsOfAllUsers || mapping.getUserId().equals(getAuthenticatedUserId())) {
-                    OrganizationUserRoleMapping organizationUserRoleMapping = new OrganizationUserRoleMapping(
-                            organizationId, mapping.getUserId(), mapping.getRoleId(), mapping.getHybridRoleId());
-                    organizationUserRoleMappingsForNewOrganization.add(organizationUserRoleMapping);
+                OrganizationUserRoleMapping organizationUserRoleMapping;
+                if (!mapping.isCascadedRole() && StringUtils.equals(newOrgCreatorId, mapping.getUserId())) {
+                    /*
+                     Delegate the role mappings that user creator has only against the immediate parent.
+                     It will be added against new org, ASSIGNED_AT = new org id and INHERIT = false.
+                     */
+                    organizationUserRoleMapping = new OrganizationUserRoleMapping(
+                            organizationId, mapping.getUserId(), mapping.getRoleId(), mapping.getHybridRoleId(),
+                            mapping.isCascadedRole(), organizationId);
+                } else {
+                    /*
+                     Delegate the role mappings that users have  against the immediate parent with INHERIT = true.
+                     */
+                    organizationUserRoleMapping = new OrganizationUserRoleMapping(
+                            organizationId, mapping.getUserId(), mapping.getRoleId(), mapping.getHybridRoleId(),
+                            mapping.isCascadedRole(), mapping.getAssignedOrganizationLevel());
                 }
+                organizationUserRoleMappingsForNewOrganization.add(organizationUserRoleMapping);
             }
             authorizationDao
                     .addOrganizationAndUserRoleMappings(organizationUserRoleMappingsForNewOrganization, getTenantId());

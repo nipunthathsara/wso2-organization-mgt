@@ -45,19 +45,6 @@ public interface OrganizationAuthorizationDao {
             throws OrganizationManagementException;
 
     /**
-     * Add an entry to the 'UM_USER_ROLE_ORG' table.
-     *
-     * @param userId
-     * @param roleId
-     * @param hybridRoleId
-     * @param tenantId
-     * @param organizationId
-     * @throws OrganizationManagementException
-     */
-    void addOrganizationAndUserRoleMapping(String userId, String roleId, int hybridRoleId, int tenantId,
-                                           String organizationId) throws OrganizationManagementException;
-
-    /**
      * Add multiple entries to the 'UM_USER_ROLE_ORG' table.
      *
      * @param organizationUserRoleMappings A list of organizationUserRole mappings.
@@ -102,15 +89,19 @@ public interface OrganizationAuthorizationDao {
             throws OrganizationManagementException;
 
     /**
-     * Get the organization user role mapping for a given organization.
+     * Get the organization user role mappings need to de delegated to a newly created organization.
+     * This will return all inherit = true role mappings for any user and any role mapping assigned to
+     * new organization creator.
      *
-     * @param organizationId Organization id.
-     * @param tenantId       Tenant id.
+     * @param parentOrganizationId     Organization id of the parent organization id.
+     * @param newOrganizationCreatorID User id of the new organization creator.
+     * @param tenantId                 Tenant id.
      * @return A list of organization for the given organization.
      * @throws OrganizationManagementException
      */
-    List<OrganizationUserRoleMapping> getOrganizationUserRoleMappingsForOrganization(String organizationId,
-                                                                                     int tenantId)
+    List<OrganizationUserRoleMapping> getDelegatingOrganizationUserRoleMappingsToNewOrg(String parentOrganizationId,
+                                                                                        String newOrganizationCreatorID,
+                                                                                        int tenantId)
             throws OrganizationManagementException;
 
     /**
