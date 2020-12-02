@@ -319,14 +319,14 @@ public class OrganizationMgtEndpointUtil {
     public static ConflictRequestException buildConflictRequestException(String description, String code, Log log,
             Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
+        ErrorDTO errorDTO = getErrorDTO(Response.Status.CONFLICT.toString(), description, code);
         logDebug(log, e);
         return new ConflictRequestException(errorDTO);
     }
 
     public static ForbiddenException buildForbiddenException(String description, String code, Log log, Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
+        ErrorDTO errorDTO = getErrorDTO(Response.Status.FORBIDDEN.toString(), description, code);
         logDebug(log, e);
         return new ForbiddenException(errorDTO);
     }
