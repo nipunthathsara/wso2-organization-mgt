@@ -22,7 +22,7 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.Organi
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleMember;
 
 import java.util.List;
 
@@ -34,11 +34,12 @@ public interface OrganizationUserRoleMgtDAO {
     void addOrganizationUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings, int tenantID)
             throws OrganizationUserRoleMgtException;
 
-    List<User> getUserIdsByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
-                                               List<String> requestedAttributes, int tenantID, String filter)
+    List<RoleMember> getUserIdsByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
+                                                     List<String> requestedAttributes, int tenantID, String filter)
             throws OrganizationUserRoleMgtServerException;
 
-    void deleteOrganizationsUserRoleMapping(List<String> organizationIds, String userId, String roleId, int tenantId)
+    void deleteOrganizationsUserRoleMapping(String deleteInvokedOrgId, List<String> organizationIds, String userId,
+                                            String roleId, int tenantId)
             throws OrganizationUserRoleMgtException;
 
     void deleteOrganizationsUserRoleMappings(String userId, int tenantId) throws OrganizationUserRoleMgtException;
@@ -46,8 +47,18 @@ public interface OrganizationUserRoleMgtDAO {
     List<Role> getRolesByOrganizationAndUser(String organizationID, String userId, int tenantID)
             throws OrganizationUserRoleMgtServerException;
 
+    void updateIncludeSubOrgProperty(String organizationID, String roleId, String userId, boolean includeSubOrg,
+                                     List<OrganizationUserRoleMapping> organizationUserRoleMappingsToAdd,
+                                     List<String> childOrganizationIdsToDeleteRecords, int tenantID)
+            throws OrganizationUserRoleMgtServerException;
+
     boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId,
-                                                   int tenantId)
+                                                String assignedLevel, boolean includeSubOrg, boolean checkInheritance,
+                                                int tenantId)
+            throws OrganizationUserRoleMgtException;
+
+    int getDirectlyAssignedOrganizationUserRoleMappingInheritance(String organizationId, String userId, String roleId,
+                                                                  int tenantId)
             throws OrganizationUserRoleMgtException;
 
     Integer getRoleIdBySCIMGroupName(String roleName, int tenantId) throws OrganizationUserRoleMgtServerException;

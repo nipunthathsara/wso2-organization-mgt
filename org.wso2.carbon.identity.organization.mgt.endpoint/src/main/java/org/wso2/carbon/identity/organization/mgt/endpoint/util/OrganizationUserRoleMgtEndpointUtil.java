@@ -25,6 +25,7 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ConflictReq
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ForbiddenException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.InternalServerErrorException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.NotFoundException;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 
@@ -65,19 +66,34 @@ public class OrganizationUserRoleMgtEndpointUtil {
 
     private static boolean isNotFoundError(OrganizationUserRoleMgtClientException e) {
 
-        //TODO implement once error codes are finalized
+        for (OrganizationUserRoleMgtConstants.NotFoundErrorMessages notFoundError :
+                OrganizationUserRoleMgtConstants.NotFoundErrorMessages.values()) {
+            if (notFoundError.toString().equals(e.getErrorCode())) {
+                return true;
+            }
+        }
         return false;
     }
 
     private static boolean isConflictError(OrganizationUserRoleMgtClientException e) {
 
-        //TODO implement once error codes are finalized
+        for (OrganizationUserRoleMgtConstants.ConflictErrorMessages conflictError :
+                OrganizationUserRoleMgtConstants.ConflictErrorMessages.values()) {
+            if (conflictError.toString().equals(e.getErrorCode())) {
+                return true;
+            }
+        }
         return false;
     }
 
     private static boolean isForbiddenError(OrganizationUserRoleMgtClientException e) {
 
-        //TODO implement once error codes are finalized
+        for (OrganizationUserRoleMgtConstants.ForbiddenErrorMessages forbiddenError :
+                OrganizationUserRoleMgtConstants.ForbiddenErrorMessages.values()) {
+            if (forbiddenError.toString().equals(e.getErrorCode())) {
+                return true;
+            }
+        }
         return false;
     }
 

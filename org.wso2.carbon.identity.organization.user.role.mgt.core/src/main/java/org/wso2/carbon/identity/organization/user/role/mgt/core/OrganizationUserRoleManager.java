@@ -21,11 +21,11 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.User;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleMember;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMapping;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleOperation;
 
 import java.util.List;
-
 
 /**
  * Organization and user role manager service interface.
@@ -35,11 +35,16 @@ public interface OrganizationUserRoleManager {
     void addOrganizationUserRoleMappings(String organizationId, UserRoleMapping userRoleMappings)
             throws OrganizationUserRoleMgtException, OrganizationManagementException;
 
-    List<User> getUsersByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
-                                             List<String> requestedAttributes, String filter)
+    List<RoleMember> getUsersByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
+                                                   List<String> requestedAttributes, String filter)
             throws OrganizationUserRoleMgtException;
 
-    void deleteOrganizationsUserRoleMapping(String organizationId, String userId, String roleId, boolean includeSubOrgs)
+    void patchOrganizationsUserRoleMapping(String organizationId, String roleId,
+                                           String userId, List<UserRoleOperation> userRoleOperation)
+            throws OrganizationUserRoleMgtException, OrganizationManagementException;
+
+    void deleteOrganizationsUserRoleMapping(String organizationId, String userId, String roleId, String assignedLevel,
+                                            boolean includeSubOrg, boolean checkInheritance)
             throws OrganizationUserRoleMgtException, OrganizationManagementException;
 
     void deleteOrganizationsUserRoleMappings(String userId) throws OrganizationUserRoleMgtException;
@@ -47,6 +52,7 @@ public interface OrganizationUserRoleManager {
     List<Role> getRolesByOrganizationAndUser(String organizationId, String userId)
             throws OrganizationUserRoleMgtException;
 
-    boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId)
+    boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId,
+                                                String assignedLevel, boolean includeSubOrg, boolean checkInheritance)
             throws OrganizationUserRoleMgtException;
 }

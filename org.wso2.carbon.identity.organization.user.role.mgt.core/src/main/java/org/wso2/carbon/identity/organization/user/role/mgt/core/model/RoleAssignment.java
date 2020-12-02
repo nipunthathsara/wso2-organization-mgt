@@ -19,48 +19,40 @@
 package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
 
 /**
- * Operation implementation.
+ * Role inheritance and assigned level details.
  */
-public class Operation {
+public class RoleAssignment {
 
-    private String path;
-    private String value;
-    private String op;
+    private boolean includeSubOrgs;
+    private String assignedAt;
 
-    public Operation(String op, String path, String value) {
+    public RoleAssignment() {
 
-        this.op = op;
-        this.path = path;
-        this.value = value;
     }
 
-    public Operation(String op, String path) {
+    public RoleAssignment(boolean includeSubOrgs, String assignedAt) {
 
-        this.op = op;
-        this.path = path;
+        this.includeSubOrgs = includeSubOrgs;
+        this.assignedAt = assignedAt;
     }
 
-    public String getOp() {
-        return op;
+    public void setIncludeSubOrgs(boolean includeSubOrgs) {
+
+        this.includeSubOrgs = includeSubOrgs;
     }
 
-    public void setOp(String op) {
-        this.op = op;
+    public boolean isIncludeSubOrgs() {
+
+        return includeSubOrgs;
     }
 
-    public String getPath() {
-        return path;
+    public void setAssignedAt(String assignedAt) {
+
+        this.assignedAt = assignedAt;
     }
 
-    public void setPath(String path) {
-        this.path = path;
-    }
+    public String getAssignedAt() {
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
+        return assignedAt;
     }
 }

@@ -700,6 +700,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/Error'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
         '500':
           description: Server Error
           schema:
@@ -765,6 +769,53 @@ paths:
       tags:
         - Organization User Roles
   '/organizations/{organization-id}/roles/{role-id}/users/{user-id}':
+    patch:
+      summary: |
+        Update an organization user role mapping.
+      description: |
+        This API is used to update the inheritance of a user role assigned over an organization.
+        This will allow to change the includeSubOrgs property of the role mapping.
+      parameters:
+        - name: organization-id
+          in: path
+          description: 'ID of the organization of which, the user role mappings will be updated.'
+          required: true
+          type: string
+        - name: role-id
+          in: path
+          description: 'ID of the role of which, the user will be updated.'
+          required: true
+          type: string
+        - name: user-id
+          in: path
+          description: 'ID of the user.'
+          required: true
+          type: string
+        - name: Operations
+          in: body
+          description:  This represents the patch operation.
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserRoleOperation'
+      responses:
+        204:
+          description: Ok
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Server Error
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Organization User Roles
     delete:
       summary: |
         Delte an organization user role mapping.
@@ -786,10 +837,6 @@ paths:
           description: 'ID of the user.'
           required: true
           type: string
-        - name: includeSubOrgs
-          in: query
-          type: boolean
-          description: Filter the role mappings to delete. Check whether sub organization's role mappings will be deleted or not.
       responses:
         '204':
           description: No Content
@@ -1207,6 +1254,20 @@ definitions:
             primary:
               type: boolean
               example: true
+      assignedMeta:
+        type: array
+        items:
+          type: object
+          properties:
+            includeSubOrgs:
+              type: boolean
+            assignedAt:
+              type: string
+        example:
+          - includeSubOrgs: true
+            assignedAt: 'b4526d91-a8bf-43d2-8b14-c548cf73065b'
+          - includeSubOrgs: false
+            assignedAt: 'c4526761-a8bf-43d2-8b14-c548cf7306fc'
   #-----------------------------------------------------
   # Role with roleId and RoleName
   #-----------------------------------------------------
@@ -1237,6 +1298,25 @@ definitions:
         type: string
       value:
         type: string
+  #-----------------------------------------------------
+  # Organization User Role Patch Operation Object
+  #-----------------------------------------------------
+  UserRoleOperation:
+    type: object
+    required:
+      - op
+      - path
+      - value
+    properties:
+      op:
+        type: string
+        example: 'replace'
+      path:
+        type: string
+        example: '/includeSubOrgs'
+      value:
+        type: boolean
+        example: false
   #-----------------------------------------------------
   # Error Response  object
   #-----------------------------------------------------

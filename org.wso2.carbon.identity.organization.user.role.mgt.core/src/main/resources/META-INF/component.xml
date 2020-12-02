@@ -37,6 +37,10 @@
             <ResourceId>/permission/admin/manage/identity/userrolemgt/view</ResourceId>
         </ManagementPermission>
         <ManagementPermission>
+            <DisplayName>Update</DisplayName>
+            <ResourceId>/permission/admin/manage/identity/userrolemgt/update</ResourceId>
+        </ManagementPermission>
+        <ManagementPermission>
             <DisplayName>Delete</DisplayName>
             <ResourceId>/permission/admin/manage/identity/userrolemgt/delete</ResourceId>
         </ManagementPermission>
