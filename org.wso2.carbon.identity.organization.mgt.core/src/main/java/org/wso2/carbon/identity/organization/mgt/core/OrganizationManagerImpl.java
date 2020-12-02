@@ -594,7 +594,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
                                 + organization.getParent().getId());
             }
             // Construct and set DN using RDN, User store domain and the parent ID
-            dn = "ou=".concat(organization.getUserStoreConfigs().get(RDN).getValue()).concat(",").concat(parentConfigs.get(DN).getValue());
+            dn = "ou="
+                    .concat(organization.getUserStoreConfigs().get(RDN).getValue())
+                    .concat(",").concat(parentConfigs.get(DN).getValue());
         }
         organization.getUserStoreConfigs().put(DN, new UserStoreConfig(DN, dn));
     }
