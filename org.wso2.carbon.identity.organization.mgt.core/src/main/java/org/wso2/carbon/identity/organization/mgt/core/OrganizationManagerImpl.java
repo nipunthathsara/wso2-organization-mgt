@@ -153,7 +153,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throws OrganizationManagementException {
 
         logOrganizationAddObject(organizationAdd);
-        // 'DN' can only be accepted in /import requests or by a pre-handler
+        // 'DN' will only be accepted via /import API or if appended by a pre-handler
+        sanitizeUserStoreConfigKeys(organizationAdd);
         if (organizationAdd.getUserStoreConfigs().contains(DN) && !isImport) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST, "DN is acceptable only in "
                     + "/import operations");
@@ -486,7 +487,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                         "User store config attribute keys or values cannot be empty.");
             }
             // Sanitize input
-            config.setKey(config.getKey().trim().toUpperCase(Locale.ENGLISH));
+//            config.setKey(config.getKey().trim().toUpperCase(Locale.ENGLISH));
             config.setValue(config.getValue().trim());
             // Set user store domain value to upper case
             if (config.getKey().equals(USER_STORE_DOMAIN)) {
@@ -581,8 +582,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         String dn = organization.getUserStoreConfigs().get(DN) != null ?
                 organization.getUserStoreConfigs().get(DN).getValue() : null;
-        // If 'DN' is provided, no validation needed for RDN or DN. As it may be unrelated to parent
-        if (dn != null) {
+        // If 'DN' is provided, no validation needed for RDN or DN. As it may or may not be related to the parent
+        if (StringUtils.isBlank(dn)) {
             // Check if the RDN is already taken
             boolean isAvailable =
                     organizationMgtDao.isRdnAvailable(organization.getUserStoreConfigs().get(RDN).getValue(),
@@ -972,6 +973,15 @@ public class OrganizationManagerImpl implements OrganizationManager {
         } catch (UserStoreException e) {
             throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
                     "Error while checking if an admin user", e);
+        }
+    }
+
+    private void sanitizeUserStoreConfigKeys(OrganizationAdd organizationAdd) {
+
+        List<UserStoreConfig> userStoreConfigs = organizationAdd.getUserStoreConfigs();
+        for (int i = 0; i < userStoreConfigs.size(); i++) {
+            UserStoreConfig config = userStoreConfigs.get(i);
+            config.setKey(config.getKey().trim().toUpperCase(Locale.ENGLISH));
         }
     }
 
