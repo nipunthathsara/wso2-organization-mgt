@@ -72,7 +72,7 @@ public class OrganizationMgtConstants {
     public static final String ORGANIZATION_CREATE_PERMISSION =
             "/permission/admin/manage/identity/organizationmgt/create";
     public static final String ORGANIZATION_VIEW_PERMISSION = "/permission/admin/manage/identity/organizationmgt/view";
-    public static final String ORGANIZATION_EDIT_PERMISSION =
+    public static final String ORGANIZATION_UPDATE_PERMISSION =
             "/permission/admin/manage/identity/organizationmgt/update";
     public static final String ORGANIZATION_DELETE_PERMISSION =
             "/permission/admin/manage/identity/organizationmgt/delete";
@@ -81,19 +81,20 @@ public class OrganizationMgtConstants {
     public static final String USER_MGT_CREATE_PERMISSION = "/permission/admin/manage/identity/usermgt/create";
     public static final String USER_MGT_VIEW_PERMISSION = "/permission/admin/manage/identity/usermgt/view";
     public static final String USER_MGT_LIST_PERMISSION = "/permission/admin/manage/identity/usermgt/list";
-    public static final String USER_MGT_EDIT_PERMISSION = "/permission/admin/manage/identity/usermgt/update";
+    public static final String USER_MGT_UPDATE_PERMISSION = "/permission/admin/manage/identity/usermgt/update";
     public static final String USER_MGT_DELETE_PERMISSION = "/permission/admin/manage/identity/usermgt/delete";
     // Role permissions
     public static final String ROLE_MGT_BASE_PERMISSION = "/permission/admin/manage/identity/rolemgt";
     public static final String ROLE_MGT_CREATE_PERMISSION = "/permission/admin/manage/identity/rolemgt/create";
     public static final String ROLE_MGT_VIEW_PERMISSION = "/permission/admin/manage/identity/rolemgt/view";
-    public static final String ROLE_MGT_EDIT_PERMISSION = "/permission/admin/manage/identity/rolemgt/update";
+    public static final String ROLE_MGT_UPDATE_PERMISSION = "/permission/admin/manage/identity/rolemgt/update";
     public static final String ROLE_MGT_DELETE_PERMISSION = "/permission/admin/manage/identity/rolemgt/delete";
     // User role management permissions
     public static final String USER_ROLE_MGT_BASE_PERMISSION = "/permission/admin/manage/identity/userrolemgt";
     public static final String USER_ROLE_MGT_VIEW_PERMISSION = "/permission/admin/manage/identity/userrolemgt/view";
     public static final String USER_ROLE_MGT_CREATE_PERMISSION = "/permission/admin/manage/identity/userrolemgt/create";
     public static final String USER_ROLE_MGT_DELETE_PERMISSION = "/permission/admin/manage/identity/userrolemgt/delete";
+    public static final String USER_ROLE_MGT_UPDATE_PERMISSION = "/permission/admin/manage/identity/userrolemgt/update";
 
     public static final String UI_EXECUTE = "ui.execute";
 

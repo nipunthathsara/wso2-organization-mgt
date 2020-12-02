@@ -50,6 +50,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_DELETE_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_UPDATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_VALUE_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
@@ -249,6 +250,9 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                 }
                 if (!permissionsList.contains(USER_ROLE_MGT_DELETE_PERMISSION)) {
                     permissionsList.add(USER_ROLE_MGT_DELETE_PERMISSION);
+                }
+                if (!permissionsList.contains(USER_ROLE_MGT_UPDATE_PERMISSION)) {
+                    permissionsList.add(USER_ROLE_MGT_UPDATE_PERMISSION);
                 }
             });
         }
