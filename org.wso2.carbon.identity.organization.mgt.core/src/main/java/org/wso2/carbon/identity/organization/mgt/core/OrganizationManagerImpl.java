@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.identity.organization.mgt.core;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -149,6 +150,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             OrganizationMgtDataHolder.getInstance().getCacheBackedOrganizationMgtDAO();
 
     @Override
+    @SuppressFBWarnings("GC_UNRELATED_TYPES")
     public Organization addOrganization(OrganizationAdd organizationAdd, boolean isImport)
             throws OrganizationManagementException {
 

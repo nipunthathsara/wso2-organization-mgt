@@ -93,7 +93,6 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
         // Fire pre-event.
         fireEvent(PRE_ASSIGN_ORGANIZATION_USER_ROLE, organizationId, null,
                 OrganizationMgtEventConstants.Status.FAILURE);
-        GroupDAO groupDAO = new GroupDAO();
         OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
         OrganizationMgtDao organizationMgtDao = new OrganizationMgtDaoImpl();
         CacheBackedOrganizationMgtDAO cacheBackedOrganizationMgtDAO =
@@ -332,8 +331,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
     }
 
     private List<OrganizationUserRoleMapping> populateOrganizationUserRoleMappings(String organizationId, String roleId,
-                                                                                   int hybridRoleId, String assignedAt,
-                                                                                   List<UserRoleMappingUser> usersList) {
+            int hybridRoleId, String assignedAt, List<UserRoleMappingUser> usersList) {
 
         List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
         for (UserRoleMappingUser user : usersList) {

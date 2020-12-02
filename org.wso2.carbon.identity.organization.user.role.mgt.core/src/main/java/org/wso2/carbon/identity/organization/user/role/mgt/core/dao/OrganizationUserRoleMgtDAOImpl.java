@@ -69,11 +69,7 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.OR;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.ORG_ID_ADDING;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.SELECT_DUMMY_RECORD;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UM_USER_ROLE_ORG_DATA;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UNION_ALL;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UPDATE_ORGANIZATION_USER_ROLE_MAPPING_INHERIT_PROPERTY;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UPSERT_UM_USER_ROLE_ORG_BASE;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UPSERT_UM_USER_ROLE_ORG_END;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ASSIGNED_AT_COLUMN;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_INHERIT_COLUMN;
@@ -153,8 +149,9 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                             organizationUserRoleMapping.getAssignedLevelOrganizationId())))
                     .collect(Collectors.toList());
 
-            for (String userId : userRoleAssignments.keySet()) {
+            for (Map.Entry<String, List<RoleAssignment>> entry : userRoleAssignments.entrySet()) {
 
+                String userId = entry.getKey();
                 // Obtain the user store manager.
                 UserManager userManager = IdentitySCIMManager.getInstance().getUserManager();
                 // Create charon-SCIM user endpoint and hand-over the request.
@@ -182,7 +179,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         attributes.containsKey("Resources") && ((ArrayList) attributes.get("Resources")).size() > 0) {
                     Map<String, Object> userAttributes =
                             (Map<String, Object>) ((ArrayList) attributes.get("Resources")).get(0);
-                    userAttributes.put("assignedMeta", userRoleAssignments.get(userId));
+                    userAttributes.put("assignedMeta", entry);
                     RoleMember roleMember = new RoleMember(userAttributes);
                     roleMembers.add(roleMember);
                 }
@@ -308,7 +305,8 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                     template.executeInsert(buildQueryForMultipleInserts(organizationUserRoleMappingsToAdd.size()),
                             preparedStatement -> {
                                 int parameterIndex = 0;
-                                for (OrganizationUserRoleMapping organizationUserRoleMapping : organizationUserRoleMappingsToAdd) {
+                                for (OrganizationUserRoleMapping organizationUserRoleMapping
+                                        : organizationUserRoleMappingsToAdd) {
                                     preparedStatement.setString(++parameterIndex, generateUniqueID());
                                     preparedStatement
                                             .setString(++parameterIndex, organizationUserRoleMapping.getUserId());
@@ -354,6 +352,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
     }
 
     @Override
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     public boolean isOrganizationUserRoleMappingExists(String organizationId, String userId, String roleId,
                                                        String assignedLevel, boolean includeSubOrg,
                                                        boolean checkInheritance, int tenantId)
@@ -390,6 +389,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
     }
 
     @Override
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     public int getDirectlyAssignedOrganizationUserRoleMappingInheritance(String organizationId, String userId,
                                                                          String roleId, int tenantId)
             throws OrganizationUserRoleMgtException {
@@ -452,23 +452,6 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_HYBRID_ROLE_ID_RETRIEVING_ERROR, roleName);
         }
-    }
-
-    private String buildQueryForMultipleUpsert(int numberOfMapings) {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(UPSERT_UM_USER_ROLE_ORG_BASE);
-        sb.append("(");
-
-        for (int i = 0; i < numberOfMapings; i++) {
-            sb.append(UM_USER_ROLE_ORG_DATA);
-            if (i != numberOfMapings - 1) {
-                sb.append(UNION_ALL);
-            }
-        }
-        sb.append(")");
-        sb.append(UPSERT_UM_USER_ROLE_ORG_END);
-        return sb.toString();
     }
 
     private String buildQueryForMultipleInserts(Integer numberOfMapings) {

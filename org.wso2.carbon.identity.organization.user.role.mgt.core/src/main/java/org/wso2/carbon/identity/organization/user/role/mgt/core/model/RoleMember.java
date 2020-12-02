@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
 
-import java.util.List;
 import java.util.Map;
 
 /**
