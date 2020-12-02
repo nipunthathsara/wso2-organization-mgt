@@ -123,7 +123,7 @@ public class OrganizationMgtConstants {
      */
     public enum ErrorMessages {
 
-        // Client errors (ORGMGT_00001-ORGMGT_00019)
+        // Client errors (ORGMGT_00001-ORGMGT_00049)
         ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST("ORGMGT_00001", "Invalid organization add request : %s"),
         ERROR_CODE_INVALID_ORGANIZATION_IMPORT_REQUEST("ORGMGT_00002", "Invalid organization import request : %s"),
         ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST("ORGMGT_00003", "Invalid organization search/get request : %s"),
@@ -149,38 +149,38 @@ public class OrganizationMgtConstants {
         ERROR_CODE_RESOURCE_NOT_FOUND("ORGMGT_00017", "Resource not found : %s"),
         ERROR_CODE_UNCLASSIFIED_ERROR("ORGMGT_00019", "Error while processing : %s"),
 
-        // Server errors (ORGMGT_00020-ORGMGT_00040)
-        ERROR_CODE_ORGANIZATION_ADD_ERROR("ORGMGT_00020", "Error while creating the organization : %s"),
-        ERROR_CODE_ORGANIZATION_IMPORT_ERROR("ORGMGT_00021", "Error while importing the organization : %s"),
-        ERROR_CODE_ORGANIZATION_GET_ERROR("ORGMGT_00022", "Error while retrieving/searching the organizations : %s"),
-        ERROR_CODE_ORGANIZATION_GET_BY_ID_ERROR("ORGMGT_00023", "Error while retrieving the organization : %s"),
-        ERROR_CODE_ORGANIZATION_DELETE_ERROR("ORGMGT_00024", "Error while deleting the organization : %s"),
-        ERROR_CODE_ORGANIZATION_PATCH_ERROR("ORGMGT_00025", "Error while patching the organization : %s"),
-        ERROR_CODE_ORGANIZATION_GET_CHILDREN_ERROR("ORGMGT_00026",
+        // Server errors (ORGMGT_00050-ORGMGT_00100)
+        ERROR_CODE_ORGANIZATION_ADD_ERROR("ORGMGT_00050", "Error while creating the organization : %s"),
+        ERROR_CODE_ORGANIZATION_IMPORT_ERROR("ORGMGT_00051", "Error while importing the organization : %s"),
+        ERROR_CODE_ORGANIZATION_GET_ERROR("ORGMGT_00052", "Error while retrieving/searching the organizations : %s"),
+        ERROR_CODE_ORGANIZATION_GET_BY_ID_ERROR("ORGMGT_00053", "Error while retrieving the organization : %s"),
+        ERROR_CODE_ORGANIZATION_DELETE_ERROR("ORGMGT_00054", "Error while deleting the organization : %s"),
+        ERROR_CODE_ORGANIZATION_PATCH_ERROR("ORGMGT_00055", "Error while patching the organization : %s"),
+        ERROR_CODE_ORGANIZATION_GET_CHILDREN_ERROR("ORGMGT_00056",
                 "Error while retrieving the child organizations : %s"),
-        ERROR_CODE_ORGANIZATION_GET_CONFIGS_ERROR("ORGMGT_00027",
+        ERROR_CODE_ORGANIZATION_GET_CONFIGS_ERROR("ORGMGT_00057",
                 "Error while retrieving the organization configs : %s"),
-        ERROR_CODE_ORGANIZATION_PATCH_CONFIGS_ERROR("ORGMGT_00028",
+        ERROR_CODE_ORGANIZATION_PATCH_CONFIGS_ERROR("ORGMGT_00058",
                 "Error while patching the organization configs : %s"),
-        ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_ID_ERROR("ORGMGT_00029",
+        ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_ID_ERROR("ORGMGT_00059",
                 "Error while checking if the organization id exist : %s"),
-        ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_NAME_ERROR("ORGMGT_00030",
+        ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_NAME_ERROR("ORGMGT_00060",
                 "Error while checking if the organization name exist : %s"),
-        ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR("ORGMGT_00031", "User store configurations error : %s"),
-        ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORGMGT_00032", "Error while checking if the attribute exist : %s"),
-        ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR("ORGMGT_00033",
+        ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR("ORGMGT_00061", "User store configurations error : %s"),
+        ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORGMGT_00062", "Error while checking if the attribute exist : %s"),
+        ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR("ORGMGT_00063",
                 "Error while retrieving organization Id by name : %s"),
-        ERROR_CODE_EVENTING_ERROR("ORGMGT_00034", "Error while handling the event : %s"),
-        ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGMGT_00035", "Error accessing user store : %s"),
-        ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR("ORGMGT_00036", "Error checking RDN availability : %s"),
-        ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR("ORGMGT_00037", "Error while authorizing : %s"),
-        ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR("ORGMGT_00038",
+        ERROR_CODE_EVENTING_ERROR("ORGMGT_00064", "Error while handling the event : %s"),
+        ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGMGT_00065", "Error accessing user store : %s"),
+        ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR("ORGMGT_00066", "Error checking RDN availability : %s"),
+        ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR("ORGMGT_00067", "Error while authorizing : %s"),
+        ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR("ORGMGT_00068",
                 "Organization Management Server configuration error : %s"),
-        ERROR_CODE_RETRIEVING_AUTHORIZED_ORGANIZATION_LIST_ERROR("ORGMGT_00039",
+        ERROR_CODE_RETRIEVING_AUTHORIZED_ORGANIZATION_LIST_ERROR("ORGMGT_00069",
                 "Error while retrieving authorized organizations list : %s"),
-        ERROR_CODE_INITIALIZATION_ERROR("ORGMGT_00040", "Error while initializing the organization mgt component : %s"),
+        ERROR_CODE_INITIALIZATION_ERROR("ORGMGT_00070", "Error while initializing the organization mgt component : %s"),
 
-        ERROR_CODE_UNEXPECTED("ORGMGT_00050", "Unexpected Error");
+        ERROR_CODE_UNEXPECTED("ORGMGT_00101", "Unexpected Error");
 
         private final String code;
         private final String message;
