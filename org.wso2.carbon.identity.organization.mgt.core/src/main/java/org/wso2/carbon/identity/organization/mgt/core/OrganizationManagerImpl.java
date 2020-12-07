@@ -119,6 +119,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.TENANT_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COLUMN_LOWER_WRAPPER;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DISPLAY_NAME_COLUMN;
@@ -608,25 +609,25 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throws OrganizationManagementClientException {
 
         if (sortBy == null) {
-            return VIEW_NAME_COLUMN;
+            return String.format(COLUMN_LOWER_WRAPPER, VIEW_NAME_COLUMN);
         }
         switch (sortBy.trim().toLowerCase(Locale.ENGLISH)) {
             case "name":
-                return VIEW_NAME_COLUMN;
+                return String.format(COLUMN_LOWER_WRAPPER, VIEW_NAME_COLUMN);
             case "displayname":
-                return VIEW_DISPLAY_NAME_COLUMN;
+                return String.format(COLUMN_LOWER_WRAPPER, VIEW_DISPLAY_NAME_COLUMN);
             case "description":
-                return VIEW_DESCRIPTION_COLUMN;
+                return String.format(COLUMN_LOWER_WRAPPER, VIEW_DESCRIPTION_COLUMN);
             case "created":
-                return VIEW_CREATED_TIME_COLUMN;
+                return String.format(COLUMN_LOWER_WRAPPER, VIEW_CREATED_TIME_COLUMN);
             case "lastmodified":
-                return VIEW_LAST_MODIFIED_COLUMN;
+                return String.format(COLUMN_LOWER_WRAPPER, VIEW_LAST_MODIFIED_COLUMN);
             case "status":
-                return VIEW_STATUS_COLUMN;
+                return String.format(COLUMN_LOWER_WRAPPER, VIEW_STATUS_COLUMN);
             case "parentname":
-                return VIEW_PARENT_NAME_COLUMN;
+                return String.format(COLUMN_LOWER_WRAPPER, VIEW_PARENT_NAME_COLUMN);
             case "parentdisplayname":
-                return VIEW_PARENT_DISPLAY_NAME_COLUMN;
+                return String.format(COLUMN_LOWER_WRAPPER, VIEW_PARENT_DISPLAY_NAME_COLUMN);
             default:
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
                         "Invalid sort parameter. 'sortOrder' [ASC | DESC] and 'sortBy' [name | description |"
