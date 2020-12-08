@@ -31,6 +31,7 @@ public class SQLConstants {
     public static final String VIEW_ROLE_NAME_COLUMN = "UM_ROLE_NAME";
     public static final String VIEW_INHERIT_COLUMN = "INHERIT";
     public static final String VIEW_ASSIGNED_AT_COLUMN = "ASSIGNED_AT";
+    public static final String VIEW_ASSIGNED_AT_NAME_COLUMN = "NAME";
     public static final String AND = " AND ";
     public static final String OR = " OR ";
     public static final String ORG_ID_ADDING = "ORG_ID = ?";
@@ -97,11 +98,11 @@ public class SQLConstants {
                     "    UM_ROLE_NAME = ? AND UM_TENANT_ID = ?";
     public static final String  GET_USERS_BY_ORG_AND_ROLE =
             "SELECT\n" +
-                    "    UM_USER_ID, ASSIGNED_AT, INHERIT \n" +
+                    "    URO.UM_USER_ID, URO.INHERIT,  URO.ASSIGNED_AT, UO.NAME \n" +
                     "FROM\n" +
-                    "    UM_USER_ROLE_ORG\n" +
+                    "    UM_USER_ROLE_ORG URO LEFT JOIN UM_ORG UO ON URO.ASSIGNED_AT = UO.ID\n" +
                     "WHERE\n" +
-                    "    ORG_ID = ? AND UM_ROLE_ID = ? AND UM_TENANT_ID = ?";
+                    "    URO.ORG_ID = ? AND URO.UM_ROLE_ID = ? AND URO.UM_TENANT_ID = ?";
     public static final String GET_ROLES_BY_ORG_AND_USER =
             "SELECT\n" +
                     "    DISTINCT UM_ROLE_ID, UM_ROLE_NAME\n" +

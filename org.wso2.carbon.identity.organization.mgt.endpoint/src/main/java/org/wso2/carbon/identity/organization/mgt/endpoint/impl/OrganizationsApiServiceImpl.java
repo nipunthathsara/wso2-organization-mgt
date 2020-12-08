@@ -236,6 +236,9 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
             offset = (offset == null) ? Integer.valueOf(-1) : offset;
             List<String> requestedAttributes = attributes == null ? new ArrayList<>() :
                     Arrays.stream(attributes.split(",")).map(String::trim).collect(Collectors.toList());
+            if (!requestedAttributes.contains("userName")) {
+                requestedAttributes.add("userName");
+            }
             List<RoleMember> roleMembers = getOrganizationUserRoleManager()
                     .getUsersByOrganizationAndRole(organizationId, roleId, offset, limit, requestedAttributes, filter);
             return Response.ok()

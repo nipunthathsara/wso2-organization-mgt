@@ -16,7 +16,6 @@
 
 package org.wso2.carbon.identity.organization.mgt.endpoint.dto;
 
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.UserAssignedAtDTO;
 import io.swagger.annotations.*;
 import com.fasterxml.jackson.annotation.*;
 
@@ -25,44 +24,44 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 @ApiModel(description = "")
-public class UserAssignedMetaDTO {
+public class UserAssignedAtDTO {
 
     @Valid 
-    private UserAssignedAtDTO assignedAt = null;
+    private String orgName = null;
 
     @Valid 
-    private Boolean includeSubOrgs = null;
+    private String orgId = null;
 
     /**
     **/
     @ApiModelProperty(value = "")
-    @JsonProperty("assignedAt")
-    public UserAssignedAtDTO getAssignedAt() {
-        return assignedAt;
+    @JsonProperty("orgName")
+    public String getOrgName() {
+        return orgName;
     }
-    public void setAssignedAt(UserAssignedAtDTO assignedAt) {
-        this.assignedAt = assignedAt;
+    public void setOrgName(String orgName) {
+        this.orgName = orgName;
     }
 
     /**
     **/
     @ApiModelProperty(value = "")
-    @JsonProperty("includeSubOrgs")
-    public Boolean getIncludeSubOrgs() {
-        return includeSubOrgs;
+    @JsonProperty("orgId")
+    public String getOrgId() {
+        return orgId;
     }
-    public void setIncludeSubOrgs(Boolean includeSubOrgs) {
-        this.includeSubOrgs = includeSubOrgs;
+    public void setOrgId(String orgId) {
+        this.orgId = orgId;
     }
 
     @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("class UserAssignedMetaDTO {\n");
+        sb.append("class UserAssignedAtDTO {\n");
         
-        sb.append("    assignedAt: ").append(assignedAt).append("\n");
-        sb.append("    includeSubOrgs: ").append(includeSubOrgs).append("\n");
+        sb.append("    orgName: ").append(orgName).append("\n");
+        sb.append("    orgId: ").append(orgId).append("\n");
         
         sb.append("}\n");
         return sb.toString();
