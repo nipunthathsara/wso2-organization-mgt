@@ -881,7 +881,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             sb.append(placeholderSQL.getQuery());
         }
         // Append sorting condition
-        sb.append(String.format(ORDER_BY, sortBy, sortOrder));
+        sb = new StringBuilder(String.format(ORDER_BY, sb.toString(), sortBy, sortOrder));
+//        sb.append(String.format(ORDER_BY, sb.toString(), sortBy, sortOrder));
         // Append pagination condition
         if (paginationReq) {
             sb.append(String.format(PAGINATION, offset, limit));
