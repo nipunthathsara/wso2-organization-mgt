@@ -206,6 +206,11 @@ public class SQLConstants {
     public static final String GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION =
             "UM_USER_ID = ? AND UM_ROLE_ID IN (#)";
     public static final String ORDER_BY =
+            "SELECT" +
+            "%n    ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, " +
+                 "LAST_MODIFIED_BY, STATUS, PARENT_NAME, PARENT_DISPLAY_NAME" +
+            "%nFROM (" +
+            "%n%s)" +
             "%nORDER BY" +
             "%n   %s %s";
     public static final String PAGINATION =
