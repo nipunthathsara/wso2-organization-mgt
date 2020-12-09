@@ -1262,12 +1262,21 @@ definitions:
             includeSubOrgs:
               type: boolean
             assignedAt:
-              type: string
+              type: object
+              properties:
+                orgId:
+                  type: string
+                orgName:
+                  type: string
         example:
           - includeSubOrgs: true
-            assignedAt: 'b4526d91-a8bf-43d2-8b14-c548cf73065b'
+            assignedAt:
+              orgId: 'b4526d91-a8bf-43d2-8b14-c548cf73065b'
+              orgName: 'WSO2'
           - includeSubOrgs: false
-            assignedAt: 'c4526761-a8bf-43d2-8b14-c548cf7306fc'
+            assignedAt:
+              orgId: 'c4526761-a8bf-43d2-8b14-c548cf7306fc'
+              orgName: 'WSO2LK'
   #-----------------------------------------------------
   # Role with roleId and RoleName
   #-----------------------------------------------------

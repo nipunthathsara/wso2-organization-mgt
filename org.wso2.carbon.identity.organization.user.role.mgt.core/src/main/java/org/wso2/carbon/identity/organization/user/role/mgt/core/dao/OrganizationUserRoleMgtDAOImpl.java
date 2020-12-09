@@ -30,6 +30,7 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.Organi
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleAssignedLevel;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleAssignment;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleMember;
 import org.wso2.carbon.identity.scim2.common.impl.IdentitySCIMManager;
@@ -40,6 +41,7 @@ import org.wso2.charon3.core.protocol.endpoints.UserResourceManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +73,7 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.SELECT_DUMMY_RECORD;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.UPDATE_ORGANIZATION_USER_ROLE_MAPPING_INHERIT_PROPERTY;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ASSIGNED_AT_COLUMN;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ASSIGNED_AT_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_INHERIT_COLUMN;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants.VIEW_ROLE_ID_COLUMN;
@@ -135,6 +138,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                             new OrganizationUserRoleMapping(organizationId,
                                     resultSet.getString(VIEW_USER_ID_COLUMN), roleId,
                                     resultSet.getString(VIEW_ASSIGNED_AT_COLUMN),
+                                    resultSet.getString(VIEW_ASSIGNED_AT_NAME_COLUMN),
                                     resultSet.getInt(VIEW_INHERIT_COLUMN) == 1),
                     preparedStatement -> {
                         int parameterIndex = 0;
@@ -146,7 +150,8 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
             organizationUserRoleMappings.stream().map(organizationUserRoleMapping -> userRoleAssignments
                     .computeIfAbsent(organizationUserRoleMapping.getUserId(), k -> new ArrayList<>())
                     .add(new RoleAssignment(organizationUserRoleMapping.isCascadedRole(),
-                            organizationUserRoleMapping.getAssignedLevelOrganizationId())))
+                            new RoleAssignedLevel(organizationUserRoleMapping.getAssignedLevelOrganizationId(),
+                                    organizationUserRoleMapping.getAssignedLevelOrganizationName()))))
                     .collect(Collectors.toList());
 
             for (Map.Entry<String, List<RoleAssignment>> entry : userRoleAssignments.entrySet()) {
@@ -172,18 +177,21 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                 // Decode the received response.
                 Map<String, Object> attributes;
                 ObjectMapper mapper = new ObjectMapper();
-                attributes = mapper.readValue(scimResponse.getResponseMessage(),
-                        new TypeReference<Map<String, Object>>() {
+                attributes =
+                        mapper.readValue(scimResponse.getResponseMessage(), new TypeReference<Map<String, Object>>() {
                         });
                 if (attributes.containsKey("totalResults") && ((Integer) attributes.get("totalResults")) > 0 &&
                         attributes.containsKey("Resources") && ((ArrayList) attributes.get("Resources")).size() > 0) {
                     Map<String, Object> userAttributes =
                             (Map<String, Object>) ((ArrayList) attributes.get("Resources")).get(0);
-                    userAttributes.put("assignedMeta", entry);
+                    userAttributes.put("assignedMeta", entry.getValue());
                     RoleMember roleMember = new RoleMember(userAttributes);
                     roleMembers.add(roleMember);
                 }
             }
+            // Sort role member list.
+            Collections.sort(roleMembers, (m1, m2) -> ((String) m1.getUserAttributes().get("userName")).compareTo(
+                    String.valueOf(m2.getUserAttributes().get("userName"))));
 
             if (paginationReq && CollectionUtils.isNotEmpty(roleMembers)) {
                 return getPaginatedResult(roleMembers, offset, limit);

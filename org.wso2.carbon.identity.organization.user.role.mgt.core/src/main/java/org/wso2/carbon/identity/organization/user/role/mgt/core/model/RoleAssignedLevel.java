@@ -19,40 +19,40 @@
 package org.wso2.carbon.identity.organization.user.role.mgt.core.model;
 
 /**
- * Role inheritance and assigned level details.
+ * Role assigned level details;
  */
-public class RoleAssignment {
+public class RoleAssignedLevel {
 
-    private boolean includeSubOrgs;
-    private RoleAssignedLevel assignedAt;
+    private String orgId;
+    private String orgName;
 
-    public RoleAssignment() {
+    public RoleAssignedLevel() {
 
     }
 
-    public RoleAssignment(boolean includeSubOrgs, RoleAssignedLevel assignedAt) {
+    public RoleAssignedLevel(String orgId, String orgName) {
 
-        this.includeSubOrgs = includeSubOrgs;
-        this.assignedAt = assignedAt;
+        this.orgId = orgId;
+        this.orgName = orgName;
     }
 
-    public void setIncludeSubOrgs(boolean includeSubOrgs) {
+    public void setOrgId(String orgId) {
 
-        this.includeSubOrgs = includeSubOrgs;
+        this.orgId = orgId;
     }
 
-    public boolean isIncludeSubOrgs() {
+    public void setOrgName(String orgName) {
 
-        return includeSubOrgs;
+        this.orgName = orgName;
     }
 
-    public void setAssignedAt(RoleAssignedLevel assignedAt) {
+    public String getOrgId() {
 
-        this.assignedAt = assignedAt;
+        return orgId;
     }
 
-    public RoleAssignedLevel getAssignedAt() {
+    public String getOrgName() {
 
-        return assignedAt;
+        return orgName;
     }
 }

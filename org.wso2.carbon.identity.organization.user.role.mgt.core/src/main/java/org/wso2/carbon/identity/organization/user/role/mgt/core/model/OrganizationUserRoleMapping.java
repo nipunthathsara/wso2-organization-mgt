@@ -28,6 +28,7 @@ public class OrganizationUserRoleMapping {
     private int hybridRoleId;
     private String roleId;
     private String assignedLevelOrganizationId;
+    private String assignedLevelOrganizationName;
     private boolean cascadedRole;
 
     public OrganizationUserRoleMapping() {
@@ -46,12 +47,14 @@ public class OrganizationUserRoleMapping {
     }
 
     public OrganizationUserRoleMapping(String organizationId, String userId, String roleId,
-                                       String assignedLevelOrganizationId, boolean cascadedRole) {
+                                       String assignedLevelOrganizationId, String assignedLevelOrganizationName,
+                                       boolean cascadedRole) {
 
         this.organizationId = organizationId;
         this.userId = userId;
         this.roleId = roleId;
         this.assignedLevelOrganizationId = assignedLevelOrganizationId;
+        this.assignedLevelOrganizationName = assignedLevelOrganizationName;
         this.cascadedRole = cascadedRole;
     }
 
@@ -78,6 +81,11 @@ public class OrganizationUserRoleMapping {
     public void setAssignedLevelOrganizationId(String assignedLevelOrganizationId) {
 
         this.assignedLevelOrganizationId = assignedLevelOrganizationId;
+    }
+
+    public void setAssignedLevelOrganizationName(String assignedLevelOrganizationName) {
+
+        this.assignedLevelOrganizationName = assignedLevelOrganizationName;
     }
 
     public void setCascadedRole(boolean cascadedRole) {
@@ -108,6 +116,11 @@ public class OrganizationUserRoleMapping {
     public String getAssignedLevelOrganizationId() {
 
         return assignedLevelOrganizationId;
+    }
+
+    public String getAssignedLevelOrganizationName() {
+
+        return assignedLevelOrganizationName;
     }
 
     public boolean isCascadedRole() {
