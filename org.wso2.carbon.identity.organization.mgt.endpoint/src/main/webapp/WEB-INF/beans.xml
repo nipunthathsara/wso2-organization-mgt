@@ -31,6 +31,7 @@
         <jaxrs:providers>
             <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
             <bean class="org.apache.cxf.jaxrs.ext.search.SearchContextProvider"/>
+            <bean class="org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.mapper.CustomExceptionMapper"/>
         </jaxrs:providers>
     </jaxrs:server>
     <cxf:bus>
