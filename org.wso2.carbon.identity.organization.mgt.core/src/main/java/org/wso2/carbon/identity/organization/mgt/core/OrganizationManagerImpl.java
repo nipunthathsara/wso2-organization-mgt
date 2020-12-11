@@ -171,7 +171,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         boolean isAuthorized = isUserAuthorizedToCreateOrganization(organization.getParent().getId());
         if (!isAuthorized) {
             throw handleClientException(ERROR_CODE_UNAUTHORIZED_ACTION,
-                    "User not authorized to create organizations under : " + organization.getParent().getId());
+                    "User is not authorized to create organizations under this parent");
         }
         organization.setId(generateUniqueID());
         organization.setTenantId(getTenantId());
@@ -220,7 +220,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         if (organization == null) {
             throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Organization id " + organizationId + " doesn't exist in this tenant : " + getTenantId());
+                    "Organization doesn't exist in this tenant");
         }
         // Set derivable attributes
         if (!ROOT.equals(organization.getName())) {
@@ -284,7 +284,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         String organizationId = organizationMgtDao.getOrganizationIdByName(getTenantId(), organizationName);
         if (organizationId == null) {
             throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Organization name " + organizationName + " doesn't exist in this tenant " + getTenantId());
+                    "Organization doesn't exist in this tenant");
         }
         return organizationId;
     }
@@ -302,7 +302,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
             throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
+                    "Organization doesn't exist in this tenant");
         }
         validateOrganizationPatchOperations(operations, organizationId);
         for (Operation operation : operations) {
@@ -328,7 +328,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         if (!isOrganizationExistById(organizationId.trim())) {
             throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
+                    "Provided organization doesn't exist in this tenant.");
         }
         Organization organization = organizationMgtDao.getOrganization(getTenantId(), organizationId, null, false);
         Map<String, UserStoreConfig> configs = organizationMgtDao.getUserStoreConfigsByOrgId(getTenantId(),
@@ -351,18 +351,18 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Organization should be in the disabled status
         if (!Organization.OrgStatus.DISABLED.equals(organization.getStatus())) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
-                    "Organization " + organizationId + " is not in the disabled status.");
+                    "Organization is not in the disabled status.");
         }
         // Organization shouldn't have any child organizations.
         if (organizationMgtDao.getChildOrganizationIds(organizationId, null).size() != 0) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
-                    "Organization " + organizationId + " has one or more child organizations.");
+                    "Organization has one or more child organizations.");
         }
 
         // Organization shouldn't have any users.
         if (hasUsers(organizationId, getTenantId())) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
-                    "Organization " + organizationId + " has one or more users.");
+                    "Organization contains one or more users.");
         }
     }
 
@@ -397,7 +397,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             return userStoreConfigs;
         } else {
             throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
+                    "Provided organization doesn't exist in this tenant");
         }
     }
 
@@ -408,7 +408,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         fireEvent(PRE_GET_CHILD_ORGANIZATIONS, organizationId, null, Status.FAILURE);
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST,
-                    "Provided organization Id is empty");
+                    "Provided organization id is empty.");
         }
         organizationId = organizationId.trim();
         if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
@@ -419,7 +419,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             return childOrganizationIds;
         } else {
             throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    " Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
+                    "Provided organization id doesn't exist in this tenant.");
         }
     }
 
@@ -431,12 +431,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
         fireEvent(PRE_PATCH_USER_STORE_CONFIGS, organizationId, operations, Status.FAILURE);
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST,
-                    "Provided organization Id is empty");
+                    "Provided organization id is empty");
         }
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
             throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Provided organization Id " + organizationId + " doesn't exist in this tenant " + getTenantId());
+                    "Provided organization id doesn't exist in this tenant");
         }
         validateUserStoreConfigPatchOperations(operations, organizationId);
         for (Operation operation : operations) {
@@ -503,8 +503,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     || config.getKey().equals(DN))) {
                 userStoreConfigs.remove(i);
                 if (log.isDebugEnabled()) {
-                    log.debug("Dropping additional user store config : " + config.getKey()
-                            + " Only 'USER_STORE_DOMAIN', 'RDN' and 'DN' are allowed.");
+                    log.debug("Dropping additional user store config - " + config.getKey()
+                            + ". Only 'USER_STORE_DOMAIN', 'RDN' and 'DN' are allowed.");
                 }
             }
         }
@@ -517,7 +517,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         String parentId = organizationAdd.getParent().getId();
         if (StringUtils.isNotBlank(parentId) && !isOrganizationExistById(parentId.trim())) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
-                    "Defined parent organization doesn't exist in this tenant. " + parentId.trim());
+                    "Defined parent organization doesn't exist in this tenant.");
         }
         // If parent id is not specified, the organization comes under the ROOT organization
         parentId = StringUtils.isBlank(parentId) ?
@@ -533,7 +533,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Check if the parent organization is active
         if (parentOrg.getStatus() != Organization.OrgStatus.ACTIVE) {
             throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
-                    "Defined parent organization : " + parentId + " is not ACTIVE");
+                    "Defined parent organization is not ACTIVE");
         }
         // Check if the user store domain matches that of the parent
         String parentUserStoreDomain = getUserStoreConfigs(parentId).get(USER_STORE_DOMAIN).getValue();
@@ -594,8 +594,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
                             organization.getParent().getId(), getTenantId());
             if (!isAvailable) {
                 throw handleClientException(ERROR_CODE_CONFLICTING_REQUEST,
-                        "Directory : " + organization.getUserStoreConfigs().get(RDN) + ", is not available for this "
-                                + "parent organization");
+                        "Directory : " + organization.getUserStoreConfigs().get(RDN).getValue()
+                                + " is not available for this parent organization");
             }
             // Construct and set DN using RDN, User store domain and the parent ID
             dn = "ou="
@@ -712,15 +712,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
                                     "child organization/s.");
                 } else if (hasActiveUsers(organizationId, getTenantId())) {
                     throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                            "Can't disable organization: " + organizationId + " as it has one or more ACTIVE user/s.");
+                            "Can't disable organization as it has one or more ACTIVE user/s.");
                 }
             }
             // You can't activate an organization, whom parent organization is not in ACTIVE state.
             if (path.equals(PATCH_PATH_ORG_STATUS) && value.equals(Organization.OrgStatus.ACTIVE.toString())
                     && !canEnable(organizationId)) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Can't activate organization : " + organizationId
-                                + " as its parent organization is not ACTIVE.");
+                        "Can't activate organization as its parent organization is not ACTIVE.");
             }
             // Check if the new parent exist and ACTIVE before patching the /parent/id field
             if (path.equals(PATCH_PATH_ORG_PARENT_ID) && !(isOrganizationExistById(value)
@@ -798,7 +797,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             boolean isAvailable = organizationMgtDao.isRdnAvailable(operation.getValue(), parentId, getTenantId());
             if (!isAvailable) {
                 throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "RDN : " + operation.getValue() + ", is not available for the parent : " + parentId);
+                        "Directory " + operation.getValue() + " is not available for this parent");
             }
             operation.setOp(PATCH_OP_REPLACE);
             operation.setPath(path);
