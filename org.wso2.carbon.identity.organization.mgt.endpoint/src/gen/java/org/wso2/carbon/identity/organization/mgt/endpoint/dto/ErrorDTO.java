@@ -18,9 +18,8 @@
 
 package org.wso2.carbon.identity.organization.mgt.endpoint.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.*;
+import com.fasterxml.jackson.annotation.*;
 
 @ApiModel(description = "")
 public class ErrorDTO {
@@ -30,6 +29,8 @@ public class ErrorDTO {
     private String message = null;
 
     private String description = null;
+
+    private String traceID = null;
 
     /**
      *
@@ -70,6 +71,19 @@ public class ErrorDTO {
         this.description = description;
     }
 
+    /**
+     *
+     **/
+    @ApiModelProperty(value = "")
+    @JsonProperty("traceID")
+    public String getTraceID() {
+        return traceID;
+    }
+
+    public void setTraceID(String traceID) {
+        this.traceID = traceID;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -78,6 +92,7 @@ public class ErrorDTO {
         sb.append("  code: ").append(code).append("\n");
         sb.append("  message: ").append(message).append("\n");
         sb.append("  description: ").append(description).append("\n");
+        sb.append("  traceID: ").append(traceID).append("\n");
         sb.append("}\n");
         return sb.toString();
     }
