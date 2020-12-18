@@ -127,7 +127,110 @@ public class OrganizationMgtConstants {
      */
     public enum ErrorMessages {
 
-        // Client errors (ORGMGT_00001-ORGMGT_00049)
+        // Client errors (ORG_60001-ORG_60999)
+        ADD_REQUEST_UNEXPECTED_DN_PARAMETER("ORG_60001", "DN defined in the organization create request",
+                "DN is only acceptable in '/import' requests"),
+        ADD_REQUEST_REQUIRED_FIELDS_MISSING("ORG_60002", "Missing required fields", "%s"),
+        ADD_REQUEST_MISSING_ATTRIBUTE_KEY("ORG_60003", "Attribute key is missing", "%s"),
+        ADD_REQUEST_DUPLICATE_ATTRIBUTE_KEYS("ORG_60004", "Attribute keys are duplicated", "%s"),
+        ADD_REQUEST_MISSING_USER_STORE_CONFIG_KEY_OR_VALUE("ORG_60005", "Missing user store config key or value",
+                "%s"),
+        ADD_REQUEST_INVALID_PARENT_ORGANIZATION("ORG_60006", "Invalid parent organization", "%s"),
+        ADD_REQUEST_DISABLED_PARENT_ORGANIZATION("ORG_60007", "Parent organization is disabled", "%s"),
+        ADD_REQUEST_INCOMPATIBLE_USER_STORE_DOMAIN("ORG_60008", "Incompatible user store domains",
+                "Defined user store domain : %s, doesn't match that of the parent : %s"),
+        ADD_REQUEST_INVALID_ORGANIZATION("ORG_60010", "Incompatible user store manager",
+                "User store manager doesn't support creating LDAP directories. Domain : %s"),
+        IMPORT_REQUEST_EQUIRED_FIELDS_MISSING("ORG_60011", "Missing required fields",
+                "RDN parameter is mandatory to import an organization"),
+        LIST_REQUEST_INVALID_SORT_PARAMETER("ORG_60012", "Invalid sorting parameter",
+                "Allowed : %s, Provided : %s "),
+        LIST_REQUEST_INVALID_FILTER_PARAMETER("ORG_60013", "Invalid filter parameter",
+                "Error passing the filter condition"),
+        LIST_REQUEST_INVALID_PAGINATION_PARAMETER("ORG_60014", "Invalid pagination parameters",
+                "'limit' should be greater than 0 and 'offset' should be greater than -1"),
+        LIST_REQUEST_INVALID_DATE_FILTER("ORG_60015", "Invalid filter parameter",
+                "'created' and 'lastModified' search criteria should be of : %s format"),
+        GET_REQUEST_ORGANIZATION_ID_UNDEFINED("ORG_60016", "Empty organization ID",
+                "Provided organization ID is empty"),
+        PATCH_REQUEST_ORGANIZATION_ID_UNDEFINED("ORG_60017", "Empty organization ID",
+                "Provided organization ID is empty"),
+        PATCH_REQUEST_OPERATION_UNDEFINED("ORG_60018", "Missing patch operation",
+                "Patch operation is not defined"),
+        PATCH_REQUEST_INVALID_OPERATION("ORG_60019", "Invalid patch operation",
+                "Patch op must be one of ['add', 'replace', 'remove']. Provided : %s"),
+        PATCH_REQUEST_PATH_UNDEFINED("ORG_60020", "Empty patch path", "Patch path is not defined"),
+        PATCH_REQUEST_INVALID_PATH("ORG_60021", "Invalid patch path",
+                "Provided path : %s is invalid"),
+        PATCH_REQUEST_VALUE_UNDEFINED("ORG_60022", "Missing required value",
+                "Value is mandatory for 'add' and 'replace' operations"),
+        PATCH_REQUEST_INVALID_REMOVE_OPERATION("ORG_60023", "Cannot remove mandatory fields",
+                "Cannot remove mandatory field : %s"), // 2 usages
+        PATCH_REQUEST_INVALID_STATUS("ORG_60024", "Invalid organization status",
+                "STATUS field could only contain 'ACTIVE' and 'DISABLED'. Provided : %s"),
+        PATCH_REQUEST_CANNOT_DISABLE_WITH_ACTIVE_CHILD("ORG_60025", "cannot disable with active children",
+                "Has one or more active child organizations"),
+        PATCH_REQUEST_CANNOT_DISABLE_WITH_ACTIVE_USERS("ORG_60026", "Cannot disable with active users",
+                "Has one or more active user/s"),
+        PATCH_REQUEST_CANNOT_ACTIVATE_WITH_DISABLED_PARENT("ORG_60027", "Cannot activate under a disabled parent",
+                "Cannot activate the organization as its parent organization is not ACTIVE."),
+        PATCH_REQUEST_INVALID_PARENT("ORG_60028", "Invalid parent organizations",
+                "Provided parent ID doesn't represent an ACTIVE organization"),
+        PATCH_REQUEST_NAME_UNAVAILABLE("ORG_60029", "Organization name unavailable",
+                "Provided organization name already exists : %s"),
+        PATCH_REQUEST_ATTRIBUTE_KEY_UNDEFINED("ORG_60030", "Missing attribute key",
+                "Attribute key is not defined in the path : %s"),
+        PATCH_REQUEST_INVALID_ATTRIBUTE_KEY("ORG_60031", "Invalid attribute key",
+                "Can not remove non existing attribute key : %s"),
+        // Consider user store config patch operations as well
+        DELETE_REQUEST_ORGANIZATION_ID_UNDEFINED("ORG_60032", "Empty organization ID",
+                "Provided organization ID is empty"),
+        DELETE_REQUEST_ACTIVE_ORGANIZATION("ORG_60033", "Organization is active",
+                "Organization is not in the disabled status"),
+        DELETE_REQUEST_CANNOT_DELETE_WITH_ACTIVE_CHILD("ORG_60034", "Cannot delete with active children",
+                "Organization has one or more child organization/s"),
+        DELETE_REQUEST_CANNOT_DELETE_WITH_USERS("ORG_60035", "Cannot delete with users",
+                "Organization has one or more user/s"),
+        DELETE_REQUEST_UNSUPPORTED_USER_STORE_MANAGER("ORG_60036", "Unsupported user store manager",
+                "User store manager doesn't support deleting LDAP directories"),
+        GET_CHILDREN_REQUEST_ORGANIZATION_UNDEFINED("ORG_60037", "Empty organization ID",
+                "Provided organization ID is empty"),
+        GET_USER_STORE_CONFIGS_ORGANIZATION_UNDEFINED("ORG_60038", "Empty organization ID",
+                "Provided organization ID is empty"),
+        PATCH_USER_STORE_CONFIGS_SORT_PARAMETER("ORG_60039", "Empty organization ID",
+                "Provided organization ID is empty"),
+        INVALID_USER_STORE_DOMAIN("ORG_60040", "Invalid user store domain",
+                "Provided user store domain is not valid : %s"),
+        UNSUPPORTED_USER_STORE_DOMAIN("ORG_60041", "Unsupported user store domain",
+                "Provided user store domain does not support organization management : %s"),
+        LIST_REQUEST_FILTER_TOO_LONG("ORG_60042", "Filter too long",
+                "Max SQL query length : %s exceeded"),
+        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60043", "Missing required fields", "%s"),
+        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60044", "Missing required fields", "%s"),
+        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60045", "Missing required fields", "%s"),
+        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60046", "Missing required fields", "%s"),
+        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60047", "Missing required fields", "%s"),
+        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60048", "Missing required fields", "%s"),
+        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60049", "Missing required fields", "%s"),
+        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60050", "Missing required fields", "%s"),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST("ORGMGT_00001", "Invalid organization add request : %s"),
         ERROR_CODE_INVALID_ORGANIZATION_IMPORT_REQUEST("ORGMGT_00002", "Invalid organization import request : %s"),
         ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST("ORGMGT_00003", "Invalid organization search/get request : %s"),
@@ -188,11 +291,13 @@ public class OrganizationMgtConstants {
 
         private final String code;
         private final String message;
+        private final String description;
 
-        ErrorMessages(String code, String message) {
+        ErrorMessages(String code, String message, String description) {
 
             this.code = code;
             this.message = message;
+            this.description = description;
         }
 
         public String getCode() {
@@ -203,6 +308,11 @@ public class OrganizationMgtConstants {
         public String getMessage() {
 
             return message;
+        }
+
+        public String getDescription() {
+
+            return description;
         }
     }
 
