@@ -352,6 +352,17 @@ public class SQLConstants {
                     "OR UM_RESOURCE_ID = '/permission/admin/manage/identity' " +
                     "OR UM_RESOURCE_ID = ? " +
                     "OR UM_RESOURCE_ID = ?)";
-
-
+    public static final String GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES =
+            "SELECT\n" +
+            "    DISTINCT NAME\n" +
+            "FROM\n" +
+            "    ORG_AUTHZ_VIEW\n" +
+            "WHERE\n" +
+            "    UM_TENANT_ID = ? AND UM_USER_ID = ?\n" +
+            "    AND (" +
+                    "UM_RESOURCE_ID = '/permission/admin' " +
+                    "OR UM_RESOURCE_ID = '/permission/admin/manage' " +
+                    "OR UM_RESOURCE_ID = '/permission/admin/manage/identity' " +
+                    "OR UM_RESOURCE_ID = ? " +
+                    "OR UM_RESOURCE_ID = ?)";
 }

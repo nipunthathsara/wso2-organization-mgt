@@ -103,8 +103,9 @@ public class OrganizationMgtConstants {
      *
      *     <!--Organization management properties-->
      *     <OrganizationMgt>
-     *             <OrgNameClaimUri>{{organization.mgt.org_name_claim_uri}}</OrgNameClaimUri>
-     *             <OrgIdClaimUri>{{organization.mgt.org_id_claim_uri}}</OrgIdClaimUri>
+     *         <OrgNameClaimUri>{{organization.mgt.org_name_claim_uri}}</OrgNameClaimUri>
+     *         <OrgIdClaimUri>{{organization.mgt.org_id_claim_uri}}</OrgIdClaimUri>
+     *         <filterUsersByOrganizationName>{{organization.mgt.filter_by_org_name}}</filterUsersByOrganizationName>
      *     </OrganizationMgt>
      *
      *  <IS_HOME>>/repository/conf/deployment.toml
@@ -112,12 +113,14 @@ public class OrganizationMgtConstants {
      *      [organization.mgt]
      *      org_name_claim_uri = "http://wso2.org/claims/organizationName"
      *      org_id_claim_uri = "http://wso2.org/claims/organizationId"
+     *      filter_by_org_name = "false"
      */
     // Organization mgt claim details
     public static final String ORGANIZATION_ID_CLAIM_URI = "OrganizationMgt.OrgIdClaimUri";
     public static final String ORGANIZATION_ID_DEFAULT_CLAIM_URI = "http://wso2.org/claims/organizationId";
     public static final String ORGANIZATION_NAME_CLAIM_URI = "OrganizationMgt.OrgNameClaimUri";
     public static final String ORGANIZATION_NAME_DEFAULT_CLAIM_URI = "http://wso2.org/claims/organization";
+    public static final String FILTER_USERS_BY_ORG_NAME = "OrganizationMgt.filterUsersByOrganizationName";
 
     /**
      * Error Messages.

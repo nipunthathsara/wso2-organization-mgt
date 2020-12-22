@@ -57,6 +57,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_GROUP_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_HYBRID_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ORGANIZATIONS_PERMISSIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_PERMISSIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ROLE_ORG_MAPPINGS_DELEGATE_TO_NEW_ORG;
@@ -72,6 +73,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_RESOURCE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ROLE_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_UM_USER_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ORG_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.dissemblePermissionString;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
@@ -303,7 +305,9 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
     }
 
     @Override
-    public List<String> findAuthorizedOrganizationsList(String userId, int tenantId, String permission)
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
+    public List<String> findAuthorizedOrganizationsList(String userId, int tenantId, String permission,
+            boolean listByNames)
             throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -311,10 +315,13 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                 (permission.contains(ROLE_MGT_BASE_PERMISSION) ? ROLE_MGT_BASE_PERMISSION :
                         (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION :
                                 permission));
+        String query =
+                listByNames ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES : GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS;
+        String selectColumn = listByNames ? VIEW_NAME_COLUMN : VIEW_ORG_ID_COLUMN;
         try {
-            return jdbcTemplate.executeQuery(GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS,
+            return jdbcTemplate.executeQuery(query,
                     (resultSet, rowNumber) ->
-                            resultSet.getString(VIEW_ORG_ID_COLUMN),
+                            resultSet.getString(selectColumn),
                     preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);

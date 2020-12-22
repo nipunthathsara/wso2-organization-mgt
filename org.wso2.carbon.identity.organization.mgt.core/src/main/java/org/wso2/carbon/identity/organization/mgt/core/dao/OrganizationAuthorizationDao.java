@@ -116,14 +116,15 @@ public interface OrganizationAuthorizationDao {
             throws OrganizationManagementException;
 
     /**
-     * Get list of organization IDs, over which the provided user has the provided permission.
+     * Get list of organization IDs/Names, over which the provided user has the provided permission.
      *
      * @param userId        User id.
      * @param tenantId      Tenant id.
      * @param permission    Permission string
-     * @return              List of IDs of the authorized organizations.
+     * @param listByName    return list of authorized organization names(Defaults to organization list of IDs)
+     * @return              List of IDs/Names of the authorized organizations.
      * @throws OrganizationManagementException
      */
-    List<String> findAuthorizedOrganizationsList(String userId, int tenantId, String permission)
+    List<String> findAuthorizedOrganizationsList(String userId, int tenantId, String permission, boolean listByName)
             throws OrganizationManagementException;
 }
