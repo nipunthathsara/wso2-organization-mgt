@@ -204,30 +204,62 @@ public class OrganizationMgtConstants {
         UNSUPPORTED_USER_STORE_DOMAIN("ORG_60041", "Unsupported user store domain",
                 "Provided user store domain does not support organization management : %s"),
         LIST_REQUEST_FILTER_TOO_LONG("ORG_60042", "Filter too long",
-                "Max SQL query length : %s exceeded"),
-        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60043", "Missing required fields", "%s"),
-        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60044", "Missing required fields", "%s"),
-        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60045", "Missing required fields", "%s"),
-        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60046", "Missing required fields", "%s"),
-        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60047", "Missing required fields", "%s"),
-        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60048", "Missing required fields", "%s"),
-        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60049", "Missing required fields", "%s"),
-        DELETE_REQUEST_INVALID_SORT_PARAMETER("ORG_60050", "Missing required fields", "%s"),
+                "Max SQL query length : %s exceeded"), // Duplicate this everywhere. fix later
+        GET_ID_BY_NAME_REQUEST_ORGANIZATION_ID_UNDEFINED("ORG_60043", "Empty organization ID",
+                "Provided organization ID is empty"),
+        ATTRIBUTE_VALIDATION_INVALID_ATTRIBUTE("ORG_60044", "Invalid attribute",
+                "Invalid attribute. %s"),
+        ADD_REQUEST_UNAUTHORIZED_PARENT("ORG_60045", "Unauthorized parent organization",
+                "User is not authorized to create organizations under this parent"),
+        ADD_REQUEST_NAME_CONFLICT("ORG_60046", "Organization already exists",
+                "Provided organization name already exists under this tenant"),
+        ADD_REQUEST_RDN_CONFLICT("ORG_60047", "RDN is not available",
+                "Provided RDN is not available under this parent organization"),
+        GET_REQUEST_INVALID_ORGANIZATON("ORG_60048", "Invalid organization",
+                "Provided organization doesn't exist in this tenant"), // 404
+        GET_ORG_BY_NAME_REQUEST_INVALID_ORGANIZATION("ORG_60049", "Invalid organization",
+                "Provided organization doesn't exist in this tenant"), // 404
+        PATCH_REQUEST_INVALID_ORGANIZATION("ORG_60050", "Invalid organization",
+                "Provided organization doesn't exist in this tenant"), // 404
+        DELETE_REQUEST_INVALID_ORGANIZATION("ORG_60051", "Invalid organization",
+                "Provided organization doesn't exist in this tenant"), // 404
+        GET_USER_STORE_CONFIGS_REQUEST_INVALID_ORGANIZATION("ORG_60052", "Invalid organization",
+                "Provided organization doesn't exist in this tenant"), // 404
+        GET_CHILDREN_REQUEST_INVALID_ORGANIZATION("ORG_60053", "Invalid organization",
+                "Provided organization doesn't exist in this tenant"), // 404
+        PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_ORGANIZATION("ORG_60054", "Invalid organization",
+                "Provided organization doesn't exist in this tenant"), // 404
+        INVALID_REQUEST("ORG_60055", "Invalid request",
+                "Error while processing the request"), // Duplicate this 4 times
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        INVALID_ROLE_NOT_INTERNAL_ROLE("ORG_60200", "Invalid role",
+                "Provided role %s, is not an INTERNAL role"),
+        INVALID_ROLE_ID("ORG_60201", "Invalid role", "Invalid role ID: %s"), //Duplicate
+        INVALID_ORGANIZATION_ROLE_USERS_GET_REQUEST("ORG_60202", "Invalid users search/get request for an organization's role",
+                "Invalid pagination arguments. 'limit' should be greater than 0 and 'offset' should be greater than -1"),
+        DELETE_ORG_ROLE_USER_REQUEST_INVALID_MAPPING("ORG_60203", "Role mapping does not exist",
+                "No organization user role mapping found for organization: %s, user: %s, role: %s"),
+        ADD_ORG_ROLE_USER_REQUEST_INVALID_USER("ORG_60204", "Invalid user",
+                "No user exists with user ID: %s"),
+        DELETE_ORG_ROLE_USER_REQUEST_INVALID_DIRECT_MAPPING("ORG_60205", "Invalid direct role mapping",
+                "No directly assigned organization user role mapping found for organization: %s," +
+                          " user: %s, role: %s, directly assigned at organization: %s"),
+        PATCH_ORG_ROLE_USER_REQUEST_TOO_MANY_OPERATIONS("ORG_60206", "Too many operations",
+                "Only one patch operation is valid because only the includeSubOrg attribute can be changed."),
+        PATCH_ORG_ROLE_USER_REQUEST_INVALID_MAPPING("ORG_60207", "Invalid mapping",
+                "No matching role mapping to be updated."),
+        PATCH_ORG_ROLE_USER_REQUEST_OPERATION_UNDEFINED("ORG_60208", "Operation undefined",
+                "Patch operation is not defined"),
+        PATCH_ORG_ROLE_USER_REQUEST_INVALID_OPERATOIN("ORG_60209", "Invalid operation",
+                "Patch op must be 'replace'"),
+        PATCH_ORG_ROLE_USER_REQUEST_PATH_UNDEFINED("ORG_60210", "Path undefined",
+                "Patch operation path is not defined"),
+        PATCH_ORG_ROLE_USER_REQUEST_INVALID_PATH("ORG_60211", "Invalid path",
+                "Patch path must be '/includeSubOrgs'"),
+        PATCH_ORG_ROLE_USER_REQUEST_INVALID_VALUE("ORG_60212", "Invalid value",
+                "Patch operation value must be a boolean"),
+        ADD_ORG_ROLE_USER_REQUEST_("ORG_60213", "Mapping already exists",
+                "Directly assigned role %s to user: %s over the organization: %s is already exists"),
 
 
 
