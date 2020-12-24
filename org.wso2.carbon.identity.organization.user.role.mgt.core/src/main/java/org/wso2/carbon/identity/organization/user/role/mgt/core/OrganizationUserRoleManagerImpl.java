@@ -70,13 +70,19 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.TENANT_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.USER_NAME;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_ADD_NONE_INTERNAL_ERROR;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_PATCH_REQUEST;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_POST_REQUEST;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ROLE_ERROR;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_NON_EXISTING_USERID_ERROR;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_NO_ROLE_MAPPING_FOUND;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ADD_ORG_ROLE_USER_REQUEST_INVALID_USER;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ADD_ORG_ROLE_USER_REQUEST_MAPPING_EXISTS;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.DELETE_ORG_ROLE_USER_REQUEST_INVALID_DIRECT_MAPPING;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.DELETE_ORG_ROLE_USER_REQUEST_INVALID_MAPPING;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.INVALID_ROLE_ID;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.INVALID_ROLE_NON_INTERNAL_ROLE;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.PATCH_ORG_ROLE_USER_REQUEST_INVALID_MAPPING;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.PATCH_ORG_ROLE_USER_REQUEST_INVALID_OPERATION;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.PATCH_ORG_ROLE_USER_REQUEST_INVALID_PATH;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.PATCH_ORG_ROLE_USER_REQUEST_INVALID_VALUE;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.PATCH_ORG_ROLE_USER_REQUEST_OPERATION_UNDEFINED;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.PATCH_ORG_ROLE_USER_REQUEST_PATH_UNDEFINED;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.PATCH_ORG_ROLE_USER_REQUEST_TOO_MANY_OPERATIONS;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.getUserStoreManager;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils.handleServerException;
@@ -114,7 +120,8 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
             for (UserRoleMappingUser user : userRoleMapping.getUsers()) {
                 boolean userExists = userStoreManger.isExistingUserWithID(user.getUserId());
                 if (!userExists) {
-                    throw handleClientException(ERROR_CODE_NON_EXISTING_USERID_ERROR, user.getUserId());
+                    throw handleClientException(ADD_ORG_ROLE_USER_REQUEST_INVALID_USER,
+                            "No user exists with user ID: " + user.getUserId());
                 }
                 if (user.isCascadedRole()) {
                     usersGetPermissionsForSubOrgs.add(user);
@@ -181,8 +188,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
 
         boolean operationValue = userRoleOperations.get(0).getValue();
         if (userRoleOperations.size() != 1) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_PATCH_REQUEST,
-                    "Only one patch operation is valid because only the includeSubOrg attribute can be changed.");
+            throw handleClientException(PATCH_ORG_ROLE_USER_REQUEST_TOO_MANY_OPERATIONS, null);
         }
         validatePatchOperation(userRoleOperations.get(0));
         OrganizationUserRoleMgtDAO organizationUserRoleMgtDAO = new OrganizationUserRoleMgtDAOImpl();
@@ -191,8 +197,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                         getTenantId());
         // Check whether directly assigned role mapping exists, only if the update request is valid.
         if (directlyAssignedRoleMappingsInheritance == -1) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_PATCH_REQUEST,
-                    "No matching role mapping to be updated.");
+            throw handleClientException(PATCH_ORG_ROLE_USER_REQUEST_INVALID_MAPPING, null);
         }
         // No change required. includeSubOrgs value of existing role mapping is same as the requested change.
         if (directlyAssignedRoleMappingsInheritance == (operationValue ? 1 : 0)) {
@@ -242,9 +247,9 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                 .isOrganizationUserRoleMappingExists(organizationId, userId, roleId, assignedLevel, includeSubOrg,
                         checkInheritance, getTenantId());
         if (!roleMappingExists) {
-            throw new OrganizationUserRoleMgtClientException(
-                    String.format(ERROR_NO_ROLE_MAPPING_FOUND.getMessage(), organizationId, roleId, userId),
-                    ERROR_NO_ROLE_MAPPING_FOUND.getCode());
+            throw handleClientException(DELETE_ORG_ROLE_USER_REQUEST_INVALID_MAPPING,
+                    String.format("No organization user role mapping found for organization: %s, user: %s, role: %s",
+                            organizationId, roleId, userId));
         }
 
         /*
@@ -255,9 +260,10 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                 .getDirectlyAssignedOrganizationUserRoleMappingInheritance(organizationId, userId, roleId,
                         getTenantId());
         if (directlyAssignedRoleMappingsInheritance == -1) {
-            throw new OrganizationUserRoleMgtClientException(
-                    String.format(ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND.getMessage(), organizationId, roleId,
-                            userId, organizationId), ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND.getCode());
+            throw handleClientException(DELETE_ORG_ROLE_USER_REQUEST_INVALID_DIRECT_MAPPING,
+                    String.format("No directly assigned organization user role mapping found for organization: %s, " +
+                                    "user: %s, role: %s, directly assigned at organization: %s",
+                            organizationId, userId, roleId, organizationId));
         }
 
         /*
@@ -394,11 +400,9 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                     isOrganizationUserRoleMappingExists(organizationId, user.getUserId(), userRoleMapping.getRoleId(),
                             organizationId, user.isCascadedRole(), false);
             if (roleMappingExists) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_POST_REQUEST,
-                        String.format(
-                                "Directly assigned role %s to user: %s over the" +
-                                        " organization: %s is already exists",
-                                userRoleMapping.getRoleId(), user.isCascadedRole(), user.getUserId()));
+                throw handleClientException(ADD_ORG_ROLE_USER_REQUEST_MAPPING_EXISTS, String.format(
+                        "Directly assigned role %s to user: %s over the organization: %s is already exists",
+                        userRoleMapping.getRoleId(), user.getUserId(), organizationId));
             }
         }
     }
@@ -408,31 +412,26 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
 
         // Validate op.
         if (StringUtils.isBlank(userRoleOperation.getOp())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_PATCH_REQUEST,
-                    "Patch operation is not defined");
+            throw handleClientException(PATCH_ORG_ROLE_USER_REQUEST_OPERATION_UNDEFINED, null);
         }
         String op = userRoleOperation.getOp().trim().toLowerCase(Locale.ENGLISH);
         if (!PATCH_OP_REPLACE.equals(op)) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_PATCH_REQUEST,
-                    "Patch op must be 'replace'");
+            throw handleClientException(PATCH_ORG_ROLE_USER_REQUEST_INVALID_OPERATION, null);
         }
 
         // Validate path.
         if (StringUtils.isBlank(userRoleOperation.getPath())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_PATCH_REQUEST,
-                    "Patch operation path is not defined");
+            throw handleClientException(PATCH_ORG_ROLE_USER_REQUEST_PATH_UNDEFINED, null);
         }
         if (!StringUtils.equals("/includeSubOrgs", userRoleOperation.getPath())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_PATCH_REQUEST,
-                    "Patch operation path is not defined");
+            throw handleClientException(PATCH_ORG_ROLE_USER_REQUEST_INVALID_PATH, null);
         }
 
         // Validate value.
         if (!userRoleOperation.getValue() || userRoleOperation.getValue()) {
             return;
         }
-        throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_PATCH_REQUEST,
-                "Patch operation value is not a boolean");
+        throw handleClientException(PATCH_ORG_ROLE_USER_REQUEST_INVALID_VALUE, null);
     }
 
     private int getHybridRoleIdFromSCIMGroupId(String roleId) throws OrganizationUserRoleMgtException {
@@ -442,15 +441,16 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
         try {
             String groupName = groupDAO.getGroupNameById(getTenantId(), roleId);
             if (groupName == null) {
-                throw handleClientException(ERROR_CODE_INVALID_ROLE_ERROR, roleId);
+                throw handleClientException(INVALID_ROLE_ID, "Invalid role ID : " + roleId);
             }
             String[] groupNameParts = groupName.split("/");
             if (groupNameParts.length != 2) {
-                throw handleServerException(ERROR_CODE_INVALID_ROLE_ERROR, groupName);
+                throw handleServerException(INVALID_ROLE_ID, "Invalid role ID. Group name : " + groupName);
             }
             String domain = groupNameParts[0];
             if (!"INTERNAL".equalsIgnoreCase(domain)) {
-                throw handleClientException(ERROR_CODE_ADD_NONE_INTERNAL_ERROR, groupName);
+                throw handleClientException(INVALID_ROLE_NON_INTERNAL_ROLE,
+                        "Provided role : " + groupName + ", is not an INTERNAL role");
             }
             String roleName = groupNameParts[1];
             return organizationUserRoleMgtDAO.getRoleIdBySCIMGroupName(roleName, getTenantId());

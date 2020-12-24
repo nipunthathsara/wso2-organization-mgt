@@ -61,23 +61,62 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CONFLICTING_REQUEST;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_DISABLED_PARENT_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_DUPLICATE_ATTRIBUTE_KEYS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_INCOMPATIBLE_USER_STORE_DOMAIN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_INCOMPATIBLE_USER_STORE_MANAGER;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_INVALID_PARENT_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_MISSING_ATTRIBUTE_KEY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_MISSING_USER_STORE_CONFIG_KEY_OR_VALUE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_NAME_CONFLICT;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_RDN_CONFLICT;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_REQUIRED_FIELDS_MISSING;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_UNAUTHORIZED_PARENT;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_UNEXPECTED_DN_PARAMETER;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.DELETE_REQUEST_ACTIVE_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.DELETE_REQUEST_CANNOT_DELETE_WITH_ACTIVE_CHILD;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.DELETE_REQUEST_CANNOT_DELETE_WITH_USERS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.DELETE_REQUEST_INVALID_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.DELETE_REQUEST_ORGANIZATION_ID_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.DELETE_REQUEST_UNSUPPORTED_USER_STORE_MANAGER;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_EVENTING_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_IMPORT_REQUEST;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_DELETE_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RESOURCE_NOT_FOUND;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNAUTHORIZED_ACTION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.GET_CHILDREN_REQUEST_INVALID_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.GET_CHILDREN_REQUEST_ORGANIZATION_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.GET_ID_BY_NAME_REQUEST_ORGANIZATION_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.GET_ORG_BY_NAME_REQUEST_INVALID_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.GET_REQUEST_INVALID_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.GET_REQUEST_ORGANIZATION_ID_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.GET_USER_STORE_CONFIGS_ORGANIZATION_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.GET_USER_STORE_CONFIGS_REQUEST_INVALID_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.IMPORT_REQUEST_REQUIRED_FIELDS_MISSING;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.LIST_REQUEST_INVALID_SORT_PARAMETER;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_ATTRIBUTE_KEY_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_CANNOT_ACTIVATE_WITH_DISABLED_PARENT;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_CANNOT_DISABLE_WITH_ACTIVE_CHILD;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_CANNOT_DISABLE_WITH_ACTIVE_USERS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_INVALID_ATTRIBUTE_KEY;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_INVALID_OPERATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_INVALID_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_INVALID_PARENT;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_INVALID_PATH;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_INVALID_REMOVE_OPERATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_INVALID_STATUS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_NAME_UNAVAILABLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_OPERATION_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_ORGANIZATION_ID_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_PATH_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_REQUEST_VALUE_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_USER_STORE_CONFIGS_ORGANIZATION_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_OPERATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_ORGANIZATION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_PATH;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_USER_STORE_CONFIGS_REQUEST_OPERATION_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_USER_STORE_CONFIGS_REQUEST_PATH_UNDEFINED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_USER_STORE_CONFIGS_REQUEST_RDN_UNAVAILABLE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_USER_STORE_CONFIGS_REQUEST_VALUE_UNDEFINED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ADMIN_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_RESOURCE_BASE_PATH;
@@ -159,8 +198,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // 'DN' will only be accepted via /import API or if appended by a pre-handler
         sanitizeUserStoreConfigKeys(organizationAdd);
         if (organizationAdd.getUserStoreConfigs().contains(DN) && !isImport) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST, "DN is acceptable only in "
-                    + "/import operations");
+            throw handleClientException(ADD_REQUEST_UNEXPECTED_DN_PARAMETER, null);
         }
         // Fire pre-event
         String event = isImport ? PRE_IMPORT_ORGANIZATION : PRE_CREATE_ORGANIZATION;
@@ -170,8 +208,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // We can't perform this from the authorization valve. Hence, authorize from here
         boolean isAuthorized = isUserAuthorizedToCreateOrganization(organization.getParent().getId());
         if (!isAuthorized) {
-            throw handleClientException(ERROR_CODE_UNAUTHORIZED_ACTION,
-                    "User is not authorized to create organizations under this parent");
+            throw handleClientException(ADD_REQUEST_UNAUTHORIZED_PARENT, null);
         }
         organization.setId(generateUniqueID());
         organization.setTenantId(getTenantId());
@@ -206,8 +243,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Fire pre-event
         fireEvent(PRE_GET_ORGANIZATION, organizationId, null, Status.FAILURE);
         if (StringUtils.isBlank(organizationId)) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST,
-                    "Provided organization ID is empty");
+            throw handleClientException(GET_REQUEST_ORGANIZATION_ID_UNDEFINED, null);
         }
         Organization organization;
         if (includePermissions) {
@@ -219,8 +255,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             organization = organizationMgtDao.getOrganization(getTenantId(), organizationId.trim(), null, false);
         }
         if (organization == null) {
-            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Organization doesn't exist in this tenant");
+            throw handleClientException(GET_REQUEST_INVALID_ORGANIZATION, null);
         }
         // Set derivable attributes
         if (!ROOT.equals(organization.getName())) {
@@ -277,14 +312,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public String getOrganizationIdByName(String organizationName) throws OrganizationManagementException {
 
         if (StringUtils.isBlank(organizationName)) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST,
-                    "Provided organization name is empty.");
+            throw handleClientException(GET_ID_BY_NAME_REQUEST_ORGANIZATION_UNDEFINED, null);
         }
         organizationName = organizationName.trim();
         String organizationId = organizationMgtDao.getOrganizationIdByName(getTenantId(), organizationName);
         if (organizationId == null) {
-            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Organization doesn't exist in this tenant");
+            throw handleClientException(GET_ORG_BY_NAME_REQUEST_INVALID_ORGANIZATION, null);
         }
         return organizationId;
     }
@@ -296,13 +329,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Fire pre-event
         fireEvent(PRE_PATCH_ORGANIZATION, organizationId, operations, Status.FAILURE);
         if (StringUtils.isBlank(organizationId)) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+            throw handleClientException(PATCH_REQUEST_ORGANIZATION_ID_UNDEFINED,
                     "Provided organization ID is empty");
         }
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
-            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Organization doesn't exist in this tenant");
+            throw handleClientException(PATCH_REQUEST_INVALID_ORGANIZATION, null);
         }
         validateOrganizationPatchOperations(operations, organizationId);
         for (Operation operation : operations) {
@@ -323,12 +355,10 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Fire pre-event
         fireEvent(PRE_DELETE_ORGANIZATION, organizationId, null, Status.FAILURE);
         if (StringUtils.isBlank(organizationId)) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
-                    "Provided organization ID is empty");
+            throw handleClientException(DELETE_REQUEST_ORGANIZATION_ID_UNDEFINED, null);
         }
         if (!isOrganizationExistById(organizationId.trim())) {
-            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Provided organization doesn't exist in this tenant.");
+            throw handleClientException(DELETE_REQUEST_INVALID_ORGANIZATION, null);
         }
         Organization organization = organizationMgtDao.getOrganization(getTenantId(), organizationId, null, false);
         Map<String, UserStoreConfig> configs = organizationMgtDao.getUserStoreConfigsByOrgId(getTenantId(),
@@ -350,19 +380,16 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         // Organization should be in the disabled status
         if (!Organization.OrgStatus.DISABLED.equals(organization.getStatus())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
-                    "Organization is not in the disabled status.");
+            throw handleClientException(DELETE_REQUEST_ACTIVE_ORGANIZATION, null);
         }
         // Organization shouldn't have any child organizations.
         if (organizationMgtDao.getChildOrganizationIds(organizationId, null).size() != 0) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
-                    "Organization has one or more child organizations.");
+            throw handleClientException(DELETE_REQUEST_CANNOT_DELETE_WITH_ACTIVE_CHILD, null);
         }
 
         // Organization shouldn't have any users.
         if (hasUsers(organizationId, getTenantId())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
-                    "Organization contains one or more users.");
+            throw handleClientException(DELETE_REQUEST_CANNOT_DELETE_WITH_USERS, null);
         }
     }
 
@@ -385,8 +412,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Fire pre-event
         fireEvent(PRE_GET_USER_STORE_CONFIGS, organizationId, null, Status.FAILURE);
         if (StringUtils.isBlank(organizationId)) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST,
-                    "Provided organization Id is empty");
+            throw handleClientException(GET_USER_STORE_CONFIGS_ORGANIZATION_UNDEFINED, null);
         }
         organizationId = organizationId.trim();
         if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
@@ -396,8 +422,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             fireEvent(POST_GET_USER_STORE_CONFIGS, organizationId, userStoreConfigs, Status.SUCCESS);
             return userStoreConfigs;
         } else {
-            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Provided organization doesn't exist in this tenant");
+            throw handleClientException(GET_USER_STORE_CONFIGS_REQUEST_INVALID_ORGANIZATION, null);
         }
     }
 
@@ -407,8 +432,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Fire pre-event
         fireEvent(PRE_GET_CHILD_ORGANIZATIONS, organizationId, null, Status.FAILURE);
         if (StringUtils.isBlank(organizationId)) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST,
-                    "Provided organization id is empty.");
+            throw handleClientException(GET_CHILDREN_REQUEST_ORGANIZATION_UNDEFINED, null);
         }
         organizationId = organizationId.trim();
         if (organizationMgtDao.isOrganizationExistById(getTenantId(), organizationId)) {
@@ -418,8 +442,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             fireEvent(POST_GET_CHILD_ORGANIZATIONS, organizationId, childOrganizationIds, Status.SUCCESS);
             return childOrganizationIds;
         } else {
-            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Provided organization id doesn't exist in this tenant.");
+            throw handleClientException(GET_CHILDREN_REQUEST_INVALID_ORGANIZATION, null);
         }
     }
 
@@ -430,13 +453,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Fire pre-event
         fireEvent(PRE_PATCH_USER_STORE_CONFIGS, organizationId, operations, Status.FAILURE);
         if (StringUtils.isBlank(organizationId)) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST,
-                    "Provided organization id is empty");
+            throw handleClientException(PATCH_USER_STORE_CONFIGS_ORGANIZATION_UNDEFINED, null);
         }
         organizationId = organizationId.trim();
         if (!isOrganizationExistById(organizationId)) {
-            throw handleClientException(ERROR_CODE_RESOURCE_NOT_FOUND,
-                    "Provided organization id doesn't exist in this tenant");
+            throw handleClientException(PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_ORGANIZATION, null);
         }
         validateUserStoreConfigPatchOperations(operations, organizationId);
         for (Operation operation : operations) {
@@ -456,7 +477,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
 
         // Check required fields.
         if (StringUtils.isBlank(organizationAdd.getName())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST, "Required fields are empty");
+            throw handleClientException(ADD_REQUEST_REQUIRED_FIELDS_MISSING, "name");
         }
         organizationAdd.setName(organizationAdd.getName().trim());
         // Trim display name
@@ -468,8 +489,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         // Attribute keys cannot be empty
         for (Attribute attribute : organizationAdd.getAttributes()) {
             if (StringUtils.isBlank(attribute.getKey())) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
-                        "Attribute keys cannot be empty.");
+                throw handleClientException(ADD_REQUEST_MISSING_ATTRIBUTE_KEY, null);
             }
             // Sanitize input
             attribute.setKey(attribute.getKey().trim());
@@ -479,16 +499,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
         Set<String> tempSet = new HashSet<>(
                 organizationAdd.getAttributes().stream().map(Attribute::getKey).collect(Collectors.toList()));
         if (organizationAdd.getAttributes().size() > tempSet.size()) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
-                    "Duplicate attribute keys detected");
+            throw handleClientException(ADD_REQUEST_DUPLICATE_ATTRIBUTE_KEYS, null);
         }
         // User store config keys and values can't be empty
         List<UserStoreConfig> userStoreConfigs = organizationAdd.getUserStoreConfigs();
         for (int i = 0; i < userStoreConfigs.size(); i++) {
             UserStoreConfig config = userStoreConfigs.get(i);
             if (StringUtils.isBlank(config.getKey()) || StringUtils.isBlank(config.getValue())) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
-                        "User store config attribute keys or values cannot be empty.");
+                throw handleClientException(ADD_REQUEST_MISSING_USER_STORE_CONFIG_KEY_OR_VALUE, null);
             }
             // Sanitize input
 //            config.setKey(config.getKey().trim().toUpperCase(Locale.ENGLISH));
@@ -510,14 +528,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         // Check if the organization name already exists for the given tenant
         if (isOrganizationExistByName(organizationAdd.getName())) {
-            throw handleClientException(ERROR_CODE_CONFLICTING_REQUEST,
-                    "Organization name " + organizationAdd.getName() + " already exists in this tenant.");
+            throw handleClientException(ADD_REQUEST_NAME_CONFLICT, null);
         }
         // Check if the parent organization exists
         String parentId = organizationAdd.getParent().getId();
         if (StringUtils.isNotBlank(parentId) && !isOrganizationExistById(parentId.trim())) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
-                    "Defined parent organization doesn't exist in this tenant.");
+            throw handleClientException(ADD_REQUEST_INVALID_PARENT_ORGANIZATION, null);
         }
         // If parent id is not specified, the organization comes under the ROOT organization
         parentId = StringUtils.isBlank(parentId) ?
@@ -532,14 +548,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organizationAdd.getParent().setRef(String.format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), parentId));
         // Check if the parent organization is active
         if (parentOrg.getStatus() != Organization.OrgStatus.ACTIVE) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
-                    "Defined parent organization is not ACTIVE");
+            throw handleClientException(ADD_REQUEST_DISABLED_PARENT_ORGANIZATION, null);
         }
         // Check if the user store domain matches that of the parent
         String parentUserStoreDomain = getUserStoreConfigs(parentId).get(USER_STORE_DOMAIN).getValue();
         for (UserStoreConfig config : organizationAdd.getUserStoreConfigs()) {
             if (USER_STORE_DOMAIN.equals(config.getKey()) && !parentUserStoreDomain.equals(config.getValue())) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
+                throw handleClientException(ADD_REQUEST_INCOMPATIBLE_USER_STORE_DOMAIN,
                         "Defined user store domain : " + config.getValue() + ", doesn't match that of the parent : "
                                 + parentUserStoreDomain);
             }
@@ -577,8 +592,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         // Import organization requests must mention the RDN explicitly
         if (organization.getUserStoreConfigs().get(RDN) == null && isImport) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_IMPORT_REQUEST, "RDN is mandatory to import "
-                    + "an organization");
+            throw handleClientException(IMPORT_REQUEST_REQUIRED_FIELDS_MISSING, null);
         }
         // If RDN is not provided, defaults to organization ID
         if (organization.getUserStoreConfigs().get(RDN) == null) {
@@ -593,9 +607,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     organizationMgtDao.isRdnAvailable(organization.getUserStoreConfigs().get(RDN).getValue(),
                             organization.getParent().getId(), getTenantId());
             if (!isAvailable) {
-                throw handleClientException(ERROR_CODE_CONFLICTING_REQUEST,
-                        "Directory : " + organization.getUserStoreConfigs().get(RDN).getValue()
-                                + " is not available for this parent organization");
+                throw handleClientException(ADD_REQUEST_RDN_CONFLICT, null);
             }
             // Construct and set DN using RDN, User store domain and the parent ID
             dn = "ou="
@@ -629,9 +641,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
             case "parentdisplayname":
                 return String.format(COLUMN_LOWER_WRAPPER, VIEW_PARENT_DISPLAY_NAME_COLUMN);
             default:
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
-                        "Invalid sort parameter. 'sortOrder' [ASC | DESC] and 'sortBy' [name | description |"
-                                + " displayName | status | lastModified | created | parentName | parentDisplayName]");
+                throw handleClientException(LIST_REQUEST_INVALID_SORT_PARAMETER,
+                        "Allowed : [ASC | DESC] and 'sortBy' [name | description | displayName | status | "
+                                + "lastModified | created | parentName | parentDisplayName], Provided : " + sortBy);
         }
     }
 
@@ -641,19 +653,17 @@ public class OrganizationManagerImpl implements OrganizationManager {
         for (Operation operation : operations) {
             // Validate op
             if (StringUtils.isBlank(operation.getOp())) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Patch operation is not defined");
+                throw handleClientException(PATCH_REQUEST_OPERATION_UNDEFINED, null);
             }
             String op = operation.getOp().trim().toLowerCase(Locale.ENGLISH);
             if (!(PATCH_OP_ADD.equals(op) || PATCH_OP_REMOVE.equals(op) || PATCH_OP_REPLACE.equals(op))) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Patch op must be either ['add', 'replace', 'remove']");
+                throw handleClientException(PATCH_REQUEST_INVALID_OPERATION,
+                        "Patch op must be one of ['add', 'replace', 'remove']. Provided : " + op);
             }
 
             // Validate path
             if (StringUtils.isBlank(operation.getPath())) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Patch operation path is not defined");
+                throw handleClientException(PATCH_REQUEST_PATH_UNDEFINED, null);
             }
             String path = operation.getPath().trim();
             // Set path to lower case
@@ -669,16 +679,15 @@ public class OrganizationManagerImpl implements OrganizationManager {
             if (!(path.equals(PATCH_PATH_ORG_NAME) || path.equals(PATCH_PATH_ORG_DISPLAY_NAME) || path
                     .equals(PATCH_PATH_ORG_DESCRIPTION) || path.equals(PATCH_PATH_ORG_STATUS) || path
                     .equals(PATCH_PATH_ORG_PARENT_ID) || path.startsWith(PATCH_PATH_ORG_ATTRIBUTES))) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Invalid Patch operation path : " + path);
+                throw handleClientException(PATCH_REQUEST_INVALID_PATH,
+                        "Provided path : " + path + " is invalid");
             }
 
             // Validate value
             String value;
             // Value is mandatory for Add and Replace operations
             if (StringUtils.isBlank(operation.getValue()) && !PATCH_OP_REMOVE.equals(op)) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Patch operation value is not defined");
+                throw handleClientException(PATCH_REQUEST_VALUE_UNDEFINED, null);
             } else {
                 // Avoid NPEs down the road
                 value = operation.getValue() != null ? operation.getValue().trim() : "";
@@ -686,13 +695,13 @@ public class OrganizationManagerImpl implements OrganizationManager {
             // You can only remove attributes and non-mandatory fields (displayName, description) only
             if (PATCH_OP_REMOVE.equals(op) && !(path.startsWith(PATCH_PATH_ORG_ATTRIBUTES) || path
                     .equals(PATCH_PATH_ORG_DISPLAY_NAME) || path.equals(PATCH_PATH_ORG_DESCRIPTION))) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Can not remove mandatory field : " + path);
+                throw handleClientException(PATCH_REQUEST_INVALID_REMOVE_OPERATION,
+                        "Cannot remove mandatory field : " + path);
             }
             // Mandatory fields can only be 'Replaced'
             if (!op.equals(PATCH_OP_REPLACE) && !(path.startsWith(PATCH_PATH_ORG_ATTRIBUTES) || path
                     .equals(PATCH_PATH_ORG_DISPLAY_NAME) || path.equals(PATCH_PATH_ORG_DESCRIPTION))) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+                throw handleClientException(PATCH_REQUEST_INVALID_REMOVE_OPERATION,
                         "Mandatory organization fields can only be replaced. Provided op : " + op + ", Path : " + path);
             }
             // STATUS may only contain 'ACTIVE' and 'DISABLED' values
@@ -700,43 +709,37 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 try {
                     value = Organization.OrgStatus.valueOf(value.toUpperCase(Locale.ENGLISH)).toString();
                 } catch (IllegalArgumentException e) {
-                    throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                            "STATUS field could only contain 'ACTIVE' and 'DISABLED'. Provided : " + value);
+                    throw handleClientException(PATCH_REQUEST_INVALID_STATUS,
+                            "STATUS field could only contain 'ACTIVE' or 'DISABLED'. Provided : " + value);
                 }
             }
             // You can't deactivate an organization which is having any ACTIVE users or ACTIVE child organizations.
             if (path.equals(PATCH_PATH_ORG_STATUS) && value.equals(Organization.OrgStatus.DISABLED.toString())) {
                 if (hasActiveChildOrganizations(organizationId)) {
-                    throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                            "Can't disable organization: " + organizationId + " as it has one or more ACTIVE " +
-                                    "child organization/s.");
+                    throw handleClientException(PATCH_REQUEST_CANNOT_DISABLE_WITH_ACTIVE_CHILD, null);
                 } else if (hasActiveUsers(organizationId, getTenantId())) {
-                    throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                            "Can't disable organization as it has one or more ACTIVE user/s.");
+                    throw handleClientException(PATCH_REQUEST_CANNOT_DISABLE_WITH_ACTIVE_USERS, null);
                 }
             }
-            // You can't activate an organization, whom parent organization is not in ACTIVE state.
+            // You can't activate an organization, whom's parent organization is not in ACTIVE state.
             if (path.equals(PATCH_PATH_ORG_STATUS) && value.equals(Organization.OrgStatus.ACTIVE.toString())
                     && !canEnable(organizationId)) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Can't activate organization as its parent organization is not ACTIVE.");
+                throw handleClientException(PATCH_REQUEST_CANNOT_ACTIVATE_WITH_DISABLED_PARENT, null);
             }
-            // Check if the new parent exist and ACTIVE before patching the /parent/id field
+            // Check if the new parent exist and ACTIVE before patching the '/parent/id' field
             if (path.equals(PATCH_PATH_ORG_PARENT_ID) && !(isOrganizationExistById(value)
                     && Organization.OrgStatus.ACTIVE.equals(getOrganization(value, false).getStatus()))) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Provided parent id doesn't represent an ACTIVE organization : " + value);
+                throw handleClientException(PATCH_REQUEST_INVALID_PARENT, null);
             }
             // Check if the new organization name already exists
             if (path.equals(PATCH_PATH_ORG_NAME) && isOrganizationExistByName(value)) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Provided organization name already exists : " + value);
+                throw handleClientException(PATCH_REQUEST_NAME_UNAVAILABLE, null);
             }
             if (path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
                 String attributeKey = path.replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim();
                 // Attribute key can not be empty
                 if (StringUtils.isBlank(attributeKey)) {
-                    throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+                    throw handleClientException(PATCH_REQUEST_ATTRIBUTE_KEY_UNDEFINED,
                             "Attribute key is not defined in the path : " + path);
                 }
                 boolean attributeExist = organizationMgtDao
@@ -746,7 +749,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     op = PATCH_OP_REPLACE;
                 }
                 if (op.equals(PATCH_OP_REMOVE) && !attributeExist) {
-                    throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+                    throw handleClientException(PATCH_REQUEST_INVALID_ATTRIBUTE_KEY,
                             "Can not remove non existing attribute key : " + path);
                 }
             }
@@ -764,31 +767,27 @@ public class OrganizationManagerImpl implements OrganizationManager {
         for (Operation operation : operations) {
             // Validate op
             if (StringUtils.isBlank(operation.getOp())) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Patch operation is not defined");
+                throw handleClientException(PATCH_USER_STORE_CONFIGS_REQUEST_OPERATION_UNDEFINED, null);
             }
             String op = operation.getOp().trim().toLowerCase(Locale.ENGLISH);
             if (!PATCH_OP_REPLACE.equals(op)) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Configuration patch may only contain 'replace' operation");
+                throw handleClientException(PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_OPERATION, null);
             }
 
             // Validate path
             if (StringUtils.isBlank(operation.getPath())) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Patch operation path is not defined");
+                throw handleClientException(PATCH_USER_STORE_CONFIGS_REQUEST_PATH_UNDEFINED, null);
             }
             String path = operation.getPath().trim().toUpperCase(Locale.ENGLISH);
             // Only the RDN can be patched
             if (!RDN.equalsIgnoreCase(path)) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "UserStore configuration patch may only have 'RDN' as path. Provided:" + path);
+                throw handleClientException(PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_PATH,
+                        "UserStore configuration patch may only have 'RDN' as path. Provided : " + path);
             }
             // Validate value
             // Value is mandatory for user store config patch operations
             if (StringUtils.isBlank(operation.getValue())) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
-                        "Patch operation value is not defined");
+                throw handleClientException(PATCH_USER_STORE_CONFIGS_REQUEST_VALUE_UNDEFINED, null);
             }
             // Check if the RDN is available for this parent
             // Note, only the RDN can be patched
@@ -796,7 +795,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     .getParent().getId();
             boolean isAvailable = organizationMgtDao.isRdnAvailable(operation.getValue(), parentId, getTenantId());
             if (!isAvailable) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST,
+                throw handleClientException(PATCH_USER_STORE_CONFIGS_REQUEST_RDN_UNAVAILABLE,
                         "Directory " + operation.getValue() + " is not available for this parent");
             }
             operation.setOp(PATCH_OP_REPLACE);
@@ -864,8 +863,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     log.debug("Created subdirectory : " + dn + ", in the user store domain : " + userStoreDomain);
                 }
             } else {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST,
-                        "User store manager doesn't support adding LDAP directories. Tenant id : " + tenantId
+                throw handleClientException(ADD_REQUEST_INCOMPATIBLE_USER_STORE_MANAGER,
+                        "User store manager doesn't support creating new LDAP directories. Tenant id : " + tenantId
                                 + ", Domain : " + userStoreDomain);
             }
         } catch (UserStoreException e) {
@@ -898,7 +897,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
                     log.debug("Removed subdirectory : " + dn + ", in the user store domain : " + userStoreDomain);
                 }
             } else {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST,
+                throw handleClientException(DELETE_REQUEST_UNSUPPORTED_USER_STORE_MANAGER,
                         "User store manager doesn't support manipulating LDAP directories. Tenant id : " + tenantId
                                 + ", Domain : " + userStoreDomain);
             }

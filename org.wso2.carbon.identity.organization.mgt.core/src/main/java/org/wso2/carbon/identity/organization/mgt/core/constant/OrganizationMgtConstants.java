@@ -221,7 +221,7 @@ public class OrganizationMgtConstants {
                 "Provided organization doesn't exist in this tenant"), // 404
         PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_ORGANIZATION("ORG-60054", "Invalid organization",
                 "Provided organization doesn't exist in this tenant"), // 404
-        PATCH_USER_STORE_CONFIGS_REQUEST_OPERATION_UNDEFINED("ORG-60055","Patch operation is not defined.",
+        PATCH_USER_STORE_CONFIGS_REQUEST_OPERATION_UNDEFINED("ORG-60055", "Patch operation is not defined.",
                 "Patch operation is not defined."),
         PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_OPERATION("ORG-60056", "Invalid patch operation",
                 "Configuration patch may only contain 'replace' operation."),
@@ -231,38 +231,7 @@ public class OrganizationMgtConstants {
         PATCH_USER_STORE_CONFIGS_REQUEST_VALUE_UNDEFINED("ORG-60059", "Patch value undefined",
                 "Patch operation value is not defined."),
         PATCH_USER_STORE_CONFIGS_REQUEST_RDN_UNAVAILABLE("ORG-60060", "LDAP directory unavailable", "%s"),
-        INVALID_REQUEST("ORG-60061", "Invalid request",
-                "Error while processing the request."), // Duplicate this 4 times
-        // Role mgt client errors (ORG_60200-ORG_60999)
-        INVALID_ROLE_NON_INTERNAL_ROLE("ORG-60200", "Invalid role",
-                "%s"),
-        INVALID_ROLE_ID("ORG-60201", "Invalid role", "Invalid role ID: %s"), //Duplicate
-        INVALID_ORGANIZATION_ROLE_USERS_GET_REQUEST("ORG-60202", "Invalid users search/get request for an "
-                + "organization's role",
-                "Invalid pagination arguments. 'limit' should be greater than 0 and 'offset' should be greater than -1"),
-        DELETE_ORG_ROLE_USER_REQUEST_INVALID_MAPPING("ORG-60203", "Role mapping does not exist",
-                "No organization user role mapping found for organization: %s, user: %s, role: %s"),
-        ADD_ORG_ROLE_USER_REQUEST_INVALID_USER("ORG-60204", "Invalid user",
-                "No user exists with user ID: %s"),
-        DELETE_ORG_ROLE_USER_REQUEST_INVALID_DIRECT_MAPPING("ORG-60205", "Invalid direct role mapping",
-                "No directly assigned organization user role mapping found for organization: %s," +
-                          " user: %s, role: %s, directly assigned at organization: %s"),
-        PATCH_ORG_ROLE_USER_REQUEST_TOO_MANY_OPERATIONS("ORG-60206", "Too many operations",
-                "Only one patch operation is valid because only the includeSubOrg attribute can be changed."),
-        PATCH_ORG_ROLE_USER_REQUEST_INVALID_MAPPING("ORG-60207", "Invalid mapping",
-                "No matching role mapping to be updated."),
-        PATCH_ORG_ROLE_USER_REQUEST_OPERATION_UNDEFINED("ORG-60208", "Operation undefined",
-                "Patch operation is not defined"),
-        PATCH_ORG_ROLE_USER_REQUEST_INVALID_OPERATOIN("ORG-60209", "Invalid operation",
-                "Patch op must be 'replace'"),
-        PATCH_ORG_ROLE_USER_REQUEST_PATH_UNDEFINED("ORG-60210", "Path undefined",
-                "Patch operation path is not defined"),
-        PATCH_ORG_ROLE_USER_REQUEST_INVALID_PATH("ORG-60211", "Invalid path",
-                "Patch path must be '/includeSubOrgs'"),
-        PATCH_ORG_ROLE_USER_REQUEST_INVALID_VALUE("ORG-60212", "Invalid value",
-                "Patch operation value must be a boolean"),
-        ADD_ORG_ROLE_USER_REQUEST_("ORG-60213", "Mapping already exists",
-                "Directly assigned role %s to user: %s over the organization: %s is already exists"),
+        INVALID_REQUEST("ORG-60061", "Invalid request", "Error while processing the request."),
 
         // Server errors (ORG-65001 - ORG-65999)
         ERROR_CODE_ORGANIZATION_ADD_ERROR("ORG-65001", "Error while creating the organization : %s", ""),
@@ -282,7 +251,8 @@ public class OrganizationMgtConstants {
         ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_NAME_ERROR("ORG-65011",
                 "Error while checking if the organization name exist : %s", ""),
         ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR("ORG-65012", "User store configurations error : %s", ""),
-        ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORG-65013", "Error while checking if the attribute exist : %s", ""),
+        ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORG-65013",
+                "Error while checking if the attribute exist : %s", ""),
         ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR("ORG-65014",
                 "Error while retrieving organization Id by name : %s", ""),
         ERROR_CODE_EVENTING_ERROR("ORG-65015", "Error while handling the event : %s", ""),
@@ -293,7 +263,8 @@ public class OrganizationMgtConstants {
                 "Organization Management Server configuration error : %s", ""),
         ERROR_CODE_RETRIEVING_AUTHORIZED_ORGANIZATION_LIST_ERROR("ORG-65020",
                 "Error while retrieving authorized organizations list : %s", ""),
-        ERROR_CODE_INITIALIZATION_ERROR("ORG-65021", "Error while initializing the organization mgt component : %s", ""),
+        ERROR_CODE_INITIALIZATION_ERROR("ORG-65021",
+                "Error while initializing the organization mgt component : %s", ""),
 
         ERROR_CODE_UNEXPECTED("ORG-65022", "Unexpected Error", "");
 
@@ -329,7 +300,7 @@ public class OrganizationMgtConstants {
      */
     public enum ForbiddenErrorMessages {
 
-        ORGMGT_00014;
+        ORG_60045
     }
 
     /**
@@ -337,7 +308,7 @@ public class OrganizationMgtConstants {
      */
     public enum NotFoundErrorMessages {
 
-        ORGMGT_00004, ORGMGT_00017;
+        ORG_60048, ORG_60049, ORG_60050, ORG_60051, ORG_60052, ORG_60053, ORG_60054
     }
 
     /**
@@ -345,6 +316,6 @@ public class OrganizationMgtConstants {
      */
     public enum ConflictErrorMessages {
 
-        ORGMGT_00016;
+        ORG_60046, ORG_60047, ORG_60029
     }
 }

@@ -45,13 +45,13 @@ public class Utils {
     public static OrganizationUserRoleMgtClientException handleClientException(
             OrganizationUserRoleMgtConstants.ErrorMessages error, String data) {
 
-        String message;
+        String description;
         if (StringUtils.isNotBlank(data)) {
-            message = String.format(error.getMessage(), data);
+            description = String.format(error.getDescription(), data);
         } else {
-            message = error.getMessage();
+            description = error.getDescription();
         }
-        return new OrganizationUserRoleMgtClientException(message, error.getCode());
+        return new OrganizationUserRoleMgtClientException(error.getMessage(), description, error.getCode());
     }
 
     public static OrganizationUserRoleMgtServerException handleServerException(

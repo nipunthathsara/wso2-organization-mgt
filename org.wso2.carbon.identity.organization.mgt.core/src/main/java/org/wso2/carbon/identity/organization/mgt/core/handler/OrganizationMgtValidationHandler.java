@@ -40,8 +40,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ATTRIBUTE_VALIDATION_INVALID_ATTRIBUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_EVENTING_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_EVENT;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.DATA;
@@ -151,7 +151,7 @@ public class OrganizationMgtValidationHandler extends AbstractEventHandler {
             if (!isValid) {
                 String errorMsg = "Invalid attribute. attribute key : " + attribute.getKey() + ", attribute value : "
                         + attribute.getValue() + ", validation criteria : " + criteria;
-                throw handleClientException(ERROR_CODE_INVALID_EVENT, errorMsg);
+                throw handleClientException(ATTRIBUTE_VALIDATION_INVALID_ATTRIBUTE, errorMsg);
             }
         }
     }

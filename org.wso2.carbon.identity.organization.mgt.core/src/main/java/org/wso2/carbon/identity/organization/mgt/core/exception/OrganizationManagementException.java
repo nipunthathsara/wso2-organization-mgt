@@ -26,6 +26,7 @@ import org.wso2.carbon.identity.event.IdentityEventException;
 public class OrganizationManagementException extends IdentityEventException {
 
     private String errorCode;
+    private String description;
 
     public OrganizationManagementException(String message, String errorCode) {
 
@@ -39,6 +40,20 @@ public class OrganizationManagementException extends IdentityEventException {
         this.errorCode = errorCode;
     }
 
+    public OrganizationManagementException(String message, String description, String errorCode) {
+
+        super(message);
+        this.errorCode = errorCode;
+        this.description = description;
+    }
+
+    public OrganizationManagementException(String message, String description, String errorCode, Throwable cause) {
+
+        super(message, cause);
+        this.errorCode = errorCode;
+        this.description = description;
+    }
+
     public String getErrorCode() {
 
         return errorCode;
@@ -47,5 +62,15 @@ public class OrganizationManagementException extends IdentityEventException {
     public void setErrorCode(String errorCode) {
 
         this.errorCode = errorCode;
+    }
+
+    public String getDescription() {
+
+        return description;
+    }
+
+    public void setDescription(String description) {
+
+        this.description = description;
     }
 }

@@ -41,17 +41,21 @@ public class OrganizationUserRoleMgtEndpointUtil {
     public static Response handleBadRequestResponse(OrganizationUserRoleMgtClientException e, Log log) {
 
         if (isNotFoundError(e)) {
-            throw OrganizationMgtEndpointUtil.buildNotFoundRequestException(e.getMessage(), e.getErrorCode(), log, e);
+            throw OrganizationUserRoleMgtEndpointUtil.buildNotFoundRequestException(e.getDescription(), e.getMessage(),
+                    e.getErrorCode(), log, e);
         }
 
         if (isConflictError(e)) {
-            throw OrganizationMgtEndpointUtil.buildConflictRequestException(e.getMessage(), e.getErrorCode(), log, e);
+            throw OrganizationUserRoleMgtEndpointUtil.buildConflictRequestException(e.getDescription(), e.getMessage(),
+                    e.getErrorCode(), log, e);
         }
 
         if (isForbiddenError(e)) {
-            throw OrganizationMgtEndpointUtil.buildForbiddenException(e.getMessage(), e.getErrorCode(), log, e);
+            throw OrganizationUserRoleMgtEndpointUtil.buildForbiddenException(e.getDescription(), e.getMessage(),
+                    e.getErrorCode(), log, e);
         }
-        throw OrganizationMgtEndpointUtil.buildBadRequestException(e.getMessage(), e.getErrorCode(), log, e);
+        throw OrganizationUserRoleMgtEndpointUtil.buildBadRequestException(e.getDescription(), e.getMessage(),
+                e.getErrorCode(), log, e);
     }
 
     public static Response handleServerErrorResponse(OrganizationUserRoleMgtException e, Log log) {
@@ -68,7 +72,7 @@ public class OrganizationUserRoleMgtEndpointUtil {
 
         for (OrganizationUserRoleMgtConstants.NotFoundErrorMessages notFoundError :
                 OrganizationUserRoleMgtConstants.NotFoundErrorMessages.values()) {
-            if (notFoundError.toString().equals(e.getErrorCode())) {
+            if (notFoundError.toString().replace('_', '-').equals(e.getErrorCode())) {
                 return true;
             }
         }
@@ -79,7 +83,7 @@ public class OrganizationUserRoleMgtEndpointUtil {
 
         for (OrganizationUserRoleMgtConstants.ConflictErrorMessages conflictError :
                 OrganizationUserRoleMgtConstants.ConflictErrorMessages.values()) {
-            if (conflictError.toString().equals(e.getErrorCode())) {
+            if (conflictError.toString().replace('_', '-').equals(e.getErrorCode())) {
                 return true;
             }
         }
@@ -90,39 +94,41 @@ public class OrganizationUserRoleMgtEndpointUtil {
 
         for (OrganizationUserRoleMgtConstants.ForbiddenErrorMessages forbiddenError :
                 OrganizationUserRoleMgtConstants.ForbiddenErrorMessages.values()) {
-            if (forbiddenError.toString().equals(e.getErrorCode())) {
+            if (forbiddenError.toString().replace('_', '-').equals(e.getErrorCode())) {
                 return true;
             }
         }
         return false;
     }
 
-    public static NotFoundException buildNotFoundRequestException(String description, String code, Log log,
-            Throwable e) {
+    public static NotFoundException buildNotFoundRequestException(String description, String message, String code,
+            Log log, Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(Response.Status.NOT_FOUND.toString(), description, code);
+        ErrorDTO errorDTO = getErrorDTO(message, description, code);
         logDebug(log, e);
         return new NotFoundException(errorDTO);
     }
 
-    public static ConflictRequestException buildConflictRequestException(String description, String code, Log log,
-            Throwable e) {
+    public static ConflictRequestException buildConflictRequestException(String description, String message,
+            String code, Log log, Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
+        ErrorDTO errorDTO = getErrorDTO(message, description, code);
         logDebug(log, e);
         return new ConflictRequestException(errorDTO);
     }
 
-    public static ForbiddenException buildForbiddenException(String description, String code, Log log, Throwable e) {
+    public static ForbiddenException buildForbiddenException(String description, String message, String code, Log log,
+            Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
+        ErrorDTO errorDTO = getErrorDTO(message, description, code);
         logDebug(log, e);
         return new ForbiddenException(errorDTO);
     }
 
-    public static BadRequestException buildBadRequestException(String description, String code, Log log, Throwable e) {
+    public static BadRequestException buildBadRequestException(String description, String message, String code, Log log,
+            Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
+        ErrorDTO errorDTO = getErrorDTO(message, description, code);
         logDebug(log, e);
         return new BadRequestException(errorDTO);
     }

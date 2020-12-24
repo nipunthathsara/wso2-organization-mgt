@@ -38,8 +38,8 @@ import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_RETRIEVING_AUTHORIZED_ORGANIZATION_LIST_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.LIST_REQUEST_FILTER_TOO_LONG;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ADMIN_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_VIEW_PERMISSION;
@@ -342,8 +342,8 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                 log.debug("Error building SQL query. Get organizations expression " + "query length: " + query.length()
                         + " exceeds the maximum limit: " + MAX_QUERY_LENGTH_IN_BYTES_SQL);
             }
-            throw handleClientException(ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED,
-                    "Query length exceeded the maximum limit.");
+            throw handleClientException(LIST_REQUEST_FILTER_TOO_LONG,
+                    "Query length exceeded the maximum limit: " + getMaximumQueryLengthInBytes());
         }
     }
 
