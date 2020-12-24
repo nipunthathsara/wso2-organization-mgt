@@ -24,6 +24,7 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.exception;
 public class OrganizationUserRoleMgtException extends Exception {
 
     private String errorCode;
+    private String description;
 
     public OrganizationUserRoleMgtException() {
 
@@ -42,6 +43,20 @@ public class OrganizationUserRoleMgtException extends Exception {
         this.errorCode = errorCode;
     }
 
+    public OrganizationUserRoleMgtException(String message, String description, String errorCode) {
+
+        super(message);
+        this.errorCode = errorCode;
+        this.description = description;
+    }
+
+    public OrganizationUserRoleMgtException(String message, String description, String errorCode, Throwable cause) {
+
+        super(message, cause);
+        this.errorCode = errorCode;
+        this.description = description;
+    }
+
     public OrganizationUserRoleMgtException(Throwable cause) {
 
         super(cause);
@@ -55,5 +70,15 @@ public class OrganizationUserRoleMgtException extends Exception {
     protected void setErrorCode(String errorCode) {
 
         this.errorCode = errorCode;
+    }
+
+    public String getDescription() {
+
+        return description;
+    }
+
+    public void setDescription(String description) {
+
+        this.description = description;
     }
 }

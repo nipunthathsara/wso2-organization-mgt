@@ -52,11 +52,12 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ADMIN_MANAGE_IDENTITY_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ADMIN_MANAGE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ADMIN_PERMISSION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.INVALID_USER_STORE_DOMAIN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.UNSUPPORTED_USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ADMIN_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
@@ -97,13 +98,13 @@ public class Utils {
     public static OrganizationManagementClientException handleClientException(
             OrganizationMgtConstants.ErrorMessages error, String data) {
 
-        String message;
+        String description;
         if (StringUtils.isNotBlank(data)) {
-            message = String.format(error.getMessage(), data);
+            description = String.format(error.getDescription(), data);
         } else {
-            message = error.getMessage();
+            description = error.getDescription();
         }
-        return new OrganizationManagementClientException(message, error.getCode());
+        return new OrganizationManagementClientException(error.getMessage(), description, error.getCode());
     }
 
     public static OrganizationManagementServerException handleServerException(
@@ -147,7 +148,7 @@ public class Utils {
         }
         // Check if user domain exists
         if (matchingRealmConfig == null) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS,
+            throw handleClientException(INVALID_USER_STORE_DOMAIN,
                     "Provided user store domain is not valid : " + userStoreDomain);
         }
         // Check if the underlying user store supports
@@ -159,7 +160,7 @@ public class Utils {
         }
         if (!(UniqueIDReadWriteLDAPUserStoreManager.class.isAssignableFrom(className)
                 || UniqueIDReadOnlyLDAPUserStoreManager.class.isAssignableFrom(className))) {
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS,
+            throw handleClientException(UNSUPPORTED_USER_STORE_DOMAIN,
                     "Provided user store domain does not support organization management : " + userStoreDomain);
         }
         return matchingRealmConfig.getUserStoreProperties().get(userSearchBase);

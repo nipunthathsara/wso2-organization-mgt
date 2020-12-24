@@ -23,57 +23,65 @@ package org.wso2.carbon.identity.organization.user.role.mgt.core.constant;
  */
 public class OrganizationUserRoleMgtConstants {
 
-    public static final String PATCH_OP_REPLACE = "replace";
     /**
      * Error messages.
      */
     public enum ErrorMessages {
 
-        // Client errors (ORGPERMMGT_00001-ORGPERMMGT_00049)
-        ERROR_CODE_ADD_NONE_INTERNAL_ERROR("ORGPERMMGT_00001",
-                "Only internal roles are allowed. Role : %s is not an internal role."),
-        ERROR_CODE_INVALID_ROLE_ERROR("ORGPERMMGT_00002", "Invalid role id: %s"),
-        ERROR_CODE_INVALID_USER_GET_REQUEST_FOR_ORG_ROLE("ORGPERMMGT_00003",
-                "Invalid users search/get request for an organization's role: %s"),
-        ERROR_NO_ROLE_MAPPING_FOUND("ORGPERMMGT_00004",
-                "No organization user role mapping found for organization: %s, user: %s, role: %s"),
-        ERROR_CODE_NON_EXISTING_USERID_ERROR("ORGPERMMGT_00005", "No user exists with user id: %s"),
-        ERROR_NO_DIRECTLY_ASSIGNED_ROLE_MAPPING_FOUND("ORGPERMMGT_00006",
-                "No directly assigned organization user role mapping found for organization: %s, " +
-                        "user: %s, role: %s, directly assigned at organization: %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_PATCH_REQUEST("ORGPERMMGT_00007",
-                "Invalid organization user role patch request : %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_USER_ROLE_POST_REQUEST("ORGPERMMGT_00008",
-                "Invalid organization user role post request : %s"),
+        // Role mgt client errors (ORG-60200 - ORG-60999)
+        INVALID_ROLE_NON_INTERNAL_ROLE("ORG-60200", "Invalid role", "%s"),
+        INVALID_ROLE_ID("ORG-60201", "Invalid role", "%s"), //Duplicate
+        INVALID_ORGANIZATION_ROLE_USERS_GET_REQUEST("ORG-60202",
+            "Invalid users search/get request for an organization's role",
+            "Invalid pagination arguments. 'limit' should be greater than 0 and 'offset' should be greater than -1"),
+        DELETE_ORG_ROLE_USER_REQUEST_INVALID_MAPPING("ORG-60203", "Role mapping does not exist", "%s"),
+        ADD_ORG_ROLE_USER_REQUEST_INVALID_USER("ORG-60204", "Invalid user", "%s"),
+        DELETE_ORG_ROLE_USER_REQUEST_INVALID_DIRECT_MAPPING("ORG-60205", "Invalid direct role mapping", "%s"),
+        PATCH_ORG_ROLE_USER_REQUEST_TOO_MANY_OPERATIONS("ORG-60206", "Too many operations",
+                "Only one patch operation is valid because only the includeSubOrg attribute can be changed."),
+        PATCH_ORG_ROLE_USER_REQUEST_INVALID_MAPPING("ORG-60207", "Invalid mapping",
+                "No matching role mapping to be updated."),
+        PATCH_ORG_ROLE_USER_REQUEST_OPERATION_UNDEFINED("ORG-60208", "Operation undefined",
+                "Patch operation is not defined"),
+        PATCH_ORG_ROLE_USER_REQUEST_INVALID_OPERATION("ORG-60209", "Invalid operation",
+                "Patch op must be 'replace'"),
+        PATCH_ORG_ROLE_USER_REQUEST_PATH_UNDEFINED("ORG-60210", "Path undefined",
+                "Patch operation path is not defined"),
+        PATCH_ORG_ROLE_USER_REQUEST_INVALID_PATH("ORG-60211", "Invalid path",
+                "Patch path must be '/includeSubOrgs'"),
+        PATCH_ORG_ROLE_USER_REQUEST_INVALID_VALUE("ORG-60212", "Invalid value",
+                "Patch operation value must be a boolean"),
+        ADD_ORG_ROLE_USER_REQUEST_MAPPING_EXISTS("ORG-60213", "Mapping already exists", "%s"),
 
-        // Server errors (ORGPERMMGT_00050-ORGPERMMGT_00100)
-        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR("ORGPERMMGT_00050",
-                "Error while creating the role mappings"),
-        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_ERROR("ORGPERMMGT_00051",
-                "Error while deleting the role : %s, for user : %s for organizations"),
-        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_RETRIEVING_ERROR("ORGPERMMGT_00052",
-                "Error while retrieving the role : %s, for user : %s for organization : %s"),
-        ERROR_CODE_HYBRID_ROLE_ID_RETRIEVING_ERROR("ORGPERMMGT_00053",
-                "Error while retrieving the hybrid role id for role : %s"),
-        ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR("ORGPERMMGT_00054",
-                "Error while retrieving users for role: %s , organization : %s"),
-        ERROR_CODE_ROLES_PER_ORG_USER_RETRIEVING_ERROR("ORGPERMMGT_00055",
-                "Error while retrieving roles for user: %s , organization : %s"),
-        ERROR_CODE_EVENTING_ERROR("ORGPERMMGT_00056", "Error while handling the event : %s"),
-        ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGPERMMGT_00057", "Error accessing user store : %s"),
-        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_PER_USER_ERROR("ORGPERMMGT_00058",
-                "Error while deleting organization user role mappings for user : %s"),
-        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_UPDATE_ERROR("ORGPERMMGT_00059",
-                "Error while updating includeSubOrgs property of organization: %s , user: %s, role: %s mapping"),
-        ;
+        // Role mgt server errors (ORG-65200 - ORG-65999)
+        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR("ORG-65200",
+                "Error while creating the role mappings", ""),
+        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_ERROR("ORG-65201",
+                "Error while deleting the role : %s, for user : %s for organizations", ""),
+        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_RETRIEVING_ERROR("ORG-65202",
+                "Error while retrieving the role : %s, for user : %s for organization : %s", ""),
+        ERROR_CODE_HYBRID_ROLE_ID_RETRIEVING_ERROR("ORG-65203",
+                "Error while retrieving the hybrid role id for role : %s", ""),
+        ERROR_CODE_USERS_PER_ORG_ROLE_RETRIEVING_ERROR("ORG-65204",
+                "Error while retrieving users for role: %s , organization : %s", ""),
+        ERROR_CODE_ROLES_PER_ORG_USER_RETRIEVING_ERROR("ORG-65205",
+                "Error while retrieving roles for user: %s , organization : %s", ""),
+        ERROR_CODE_EVENTING_ERROR("ORG-65206", "Error while handling the event : %s", ""),
+        ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORG-65207", "Error accessing user store : %s", ""),
+        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_DELETE_PER_USER_ERROR("ORG-65208",
+                "Error while deleting organization user role mappings for user : %s", ""),
+        ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_UPDATE_ERROR("ORG-65209",
+                "Error while updating includeSubOrgs property of organization: %s , user: %s, role: %s mapping", "");
 
         private final String code;
         private final String message;
+        private final String description;
 
-        ErrorMessages(String code, String message) {
+        ErrorMessages(String code, String message, String description) {
 
             this.code = code;
             this.message = message;
+            this.description = description;
         }
 
         public String getCode() {
@@ -84,6 +92,11 @@ public class OrganizationUserRoleMgtConstants {
         public String getMessage() {
 
             return message;
+        }
+
+        public String getDescription() {
+
+            return description;
         }
     }
 
@@ -99,8 +112,7 @@ public class OrganizationUserRoleMgtConstants {
      */
     public enum NotFoundErrorMessages {
 
-        ORGPERMMGT_00004, ORGPERMMGT_00005, ORGPERMMGT_00006,
-        ;
+        ORG_60203, ORG_60204, ORG_60205
     }
 
     /**
@@ -108,6 +120,6 @@ public class OrganizationUserRoleMgtConstants {
      */
     public enum ConflictErrorMessages {
 
-        ORGPERMMGT_00008;
+        ORG_60213
     }
 }

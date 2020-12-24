@@ -127,72 +127,156 @@ public class OrganizationMgtConstants {
      */
     public enum ErrorMessages {
 
-        // Client errors (ORGMGT_00001-ORGMGT_00049)
-        ERROR_CODE_INVALID_ORGANIZATION_ADD_REQUEST("ORGMGT_00001", "Invalid organization add request : %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_IMPORT_REQUEST("ORGMGT_00002", "Invalid organization import request : %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST("ORGMGT_00003", "Invalid organization search/get request : %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_GET_BY_ID_REQUEST("ORGMGT_00004",
-                "Invalid get organization by ID request : %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_PATCH_REQUEST("ORGMGT_00005", "Invalid organization patch request : %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_DELETE_REQUEST("ORGMGT_00006", "Invalid organization delete request : %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_CHILDREN_GET_REQUEST("ORGMGT_00007",
-                "Invalid get child organizations request : %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_CONFIG_GET_REQUEST("ORGMGT_00008",
-                "Invalid get organization configs request : %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_CONFIG_PATCH_REQUEST("ORGMGT_00009",
-                "Invalid patch organization config request : %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_USER_STORE_CONFIGURATIONS("ORGMGT_00010",
-                "Invalid user store configurations : %s"),
-        ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED("ORGMGT_00011", "Request caused an SQL query limit exceed : %s"),
-        ERROR_CODE_INVALID_ORGANIZATION_GET_ID_BY_NAME_REQUEST("ORGMGT_00012",
-                "Invalid get organization Id by name request : %s"),
-        ERROR_CODE_INVALID_EVENT("ORGMGT_00013", "Invalid event : %s"),
-        ERROR_CODE_UNAUTHORIZED_ACTION("ORGMGT_00014", "Unauthorized action : %s"),
-        ERROR_CODE_INVALID_DATE_FORMAT("ORGMGT_00015", "Invalid search criteria : %s"),
-        ERROR_CODE_CONFLICTING_REQUEST("ORGMGT_00016", "%s"),
-        ERROR_CODE_RESOURCE_NOT_FOUND("ORGMGT_00017", "Resource not found : %s"),
-        ERROR_CODE_UNCLASSIFIED_ERROR("ORGMGT_00019", "Error while processing : %s"),
+        // Client errors (ORG-60001 - ORG-60999)
+        ADD_REQUEST_UNEXPECTED_DN_PARAMETER("ORG-60001", "DN defined in the organization create request.",
+                "DN parameter is only acceptable in '/import' requests."),
+        ADD_REQUEST_REQUIRED_FIELDS_MISSING("ORG-60002", "Missing required fields.",
+                "Missing parameters : %s"),
+        ADD_REQUEST_MISSING_ATTRIBUTE_KEY("ORG-60003", "Attribute key is missing.",
+                "Attribute keys cannot be empty."),
+        ADD_REQUEST_DUPLICATE_ATTRIBUTE_KEYS("ORG-60004", "Attribute keys are duplicated.",
+                "Attribute keys cannot be duplicated."),
+        ADD_REQUEST_MISSING_USER_STORE_CONFIG_KEY_OR_VALUE("ORG-60005", "Missing user store config key/value.",
+                "User store config keys/values cannot be empty."),
+        ADD_REQUEST_INVALID_PARENT_ORGANIZATION("ORG-60006", "Invalid parent organization.",
+                "Defined parent organization doesn't exist in this tenant."),
+        ADD_REQUEST_DISABLED_PARENT_ORGANIZATION("ORG-60007", "Parent organization is disabled.",
+                "Defined parent organization is not ACTIVE."),
+        ADD_REQUEST_INCOMPATIBLE_USER_STORE_DOMAIN("ORG-60008", "Incompatible user store domains.",
+                "%s"),
+        ADD_REQUEST_INCOMPATIBLE_USER_STORE_MANAGER("ORG-60009", "Incompatible user store manager.", "%s"),
+        IMPORT_REQUEST_REQUIRED_FIELDS_MISSING("ORG-60010", "Missing required fields.",
+                "RDN parameter is mandatory to import an organization."),
+        LIST_REQUEST_BAD_FILTER("ORG-60011", "Bad filter", "Bad filter"),
+        LIST_REQUEST_INVALID_SORT_PARAMETER("ORG-60012", "Invalid sorting parameter.", "%s"),
+        LIST_REQUEST_INVALID_FILTER_PARAMETER("ORG-60013", "Invalid filter parameter",
+                "Error passing the filter condition."),
+        LIST_REQUEST_INVALID_PAGINATION_PARAMETER("ORG-60014", "Invalid pagination parameters.",
+                "'limit' should be greater than 0 and 'offset' should be greater than -1"),
+        LIST_REQUEST_INVALID_DATE_FILTER("ORG-60015", "Invalid filter parameter.", "%s"),
+        GET_REQUEST_ORGANIZATION_ID_UNDEFINED("ORG-60016", "Empty organization ID.",
+                "Provided organization ID is empty."),
+        PATCH_REQUEST_ORGANIZATION_ID_UNDEFINED("ORG-60017", "Empty organization ID.",
+                "Provided organization ID is empty."),
+        PATCH_REQUEST_OPERATION_UNDEFINED("ORG-60018", "Missing patch operation.",
+                "Patch operation is not defined."),
+        PATCH_REQUEST_INVALID_OPERATION("ORG-60019", "Invalid patch operation.", "%s"),
+        PATCH_REQUEST_PATH_UNDEFINED("ORG-60020", "Empty patch path.", "Patch path is not defined."),
+        PATCH_REQUEST_INVALID_PATH("ORG-60021", "Invalid patch path.", "%s"),
+        PATCH_REQUEST_VALUE_UNDEFINED("ORG-60022", "Missing required value.",
+                "Value is mandatory for 'add' and 'replace' operations."),
+        PATCH_REQUEST_INVALID_REMOVE_OPERATION("ORG-60023", "Cannot remove mandatory fields.", "%s"), // 2 usages
+        PATCH_REQUEST_INVALID_STATUS("ORG-60024", "Invalid organization status.", "%s"),
+        PATCH_REQUEST_CANNOT_DISABLE_WITH_ACTIVE_CHILD("ORG-60025",
+                "Cannot disable with active child organization/s.",
+                "Organization has one or more active child organization/s."),
+        PATCH_REQUEST_CANNOT_DISABLE_WITH_ACTIVE_USERS("ORG-60026", "Cannot disable with active user/s.",
+                "Organization has one or more active user/s."),
+        PATCH_REQUEST_CANNOT_ACTIVATE_WITH_DISABLED_PARENT("ORG-60027", "Cannot activate under a disabled parent.",
+                "Cannot activate the organization as its parent organization is not ACTIVE."),
+        PATCH_REQUEST_INVALID_PARENT("ORG-60028", "Invalid parent organizations.",
+                "Provided parent ID doesn't represent an ACTIVE organization."),
+        PATCH_REQUEST_NAME_UNAVAILABLE("ORG-60029", "Organization name unavailable.",
+                "Provided organization name already exists."),
+        PATCH_REQUEST_ATTRIBUTE_KEY_UNDEFINED("ORG-60030", "Missing attribute key", "%s"),
+        PATCH_REQUEST_INVALID_ATTRIBUTE_KEY("ORG-60031", "Invalid attribute key", "%s"),
+        DELETE_REQUEST_ORGANIZATION_ID_UNDEFINED("ORG-60032", "Empty organization ID",
+                "Provided organization ID is empty."),
+        DELETE_REQUEST_ACTIVE_ORGANIZATION("ORG-60033", "Organization is active",
+                "Organization is not in the disabled status."),
+        DELETE_REQUEST_CANNOT_DELETE_WITH_ACTIVE_CHILD("ORG-60034", "Cannot delete with active children",
+                "Organization has one or more child organization/s."),
+        DELETE_REQUEST_CANNOT_DELETE_WITH_USERS("ORG-60035", "Cannot delete with user/s",
+                "Organization has one or more user/s."),
+        DELETE_REQUEST_UNSUPPORTED_USER_STORE_MANAGER("ORG-60036", "Unsupported user store manager", "%s"),
+        GET_CHILDREN_REQUEST_ORGANIZATION_UNDEFINED("ORG-60037", "Empty organization ID",
+                "Provided organization ID is empty."),
+        GET_USER_STORE_CONFIGS_ORGANIZATION_UNDEFINED("ORG-60038", "Empty organization ID",
+                "Provided organization ID is empty."),
+        PATCH_USER_STORE_CONFIGS_ORGANIZATION_UNDEFINED("ORG-60039", "Empty organization ID",
+                "Provided organization ID is empty."),
+        INVALID_USER_STORE_DOMAIN("ORG-60040", "Invalid user store domain", "%s"),
+        UNSUPPORTED_USER_STORE_DOMAIN("ORG-60041", "Unsupported user store domain", "%s"),
+        LIST_REQUEST_FILTER_TOO_LONG("ORG-60042", "Filter too long", "%s"), // Duplicate this everywhere. fix later
+        GET_ID_BY_NAME_REQUEST_ORGANIZATION_UNDEFINED("ORG-60043", "Empty organization ID",
+                "Provided organization ID is empty"),
+        ATTRIBUTE_VALIDATION_INVALID_ATTRIBUTE("ORG-60044", "Invalid attribute", "%s"),
+        ADD_REQUEST_UNAUTHORIZED_PARENT("ORG-60045", "Unauthorized parent organization",
+                "User is not authorized to create organizations under this parent."),
+        ADD_REQUEST_NAME_CONFLICT("ORG-60046", "Organization already exists",
+                "Provided organization name already exists under this tenant."),
+        ADD_REQUEST_RDN_CONFLICT("ORG-60047", "RDN is not available",
+                "Provided RDN is not available under this parent organization"),
+        GET_REQUEST_INVALID_ORGANIZATION("ORG-60048", "Invalid organization",
+                "Provided organization doesn't exist in this tenant"), // 404
+        GET_ORG_BY_NAME_REQUEST_INVALID_ORGANIZATION("ORG-60049", "Invalid organization",
+                "Provided organization doesn't exist in this tenant."), // 404
+        PATCH_REQUEST_INVALID_ORGANIZATION("ORG-60050", "Invalid organization",
+                "Provided organization doesn't exist in this tenant."), // 404
+        DELETE_REQUEST_INVALID_ORGANIZATION("ORG-60051", "Invalid organization",
+                "Provided organization doesn't exist in this tenant."), // 404
+        GET_USER_STORE_CONFIGS_REQUEST_INVALID_ORGANIZATION("ORG-60052", "Invalid organization",
+                "Provided organization doesn't exist in this tenant."), // 404
+        GET_CHILDREN_REQUEST_INVALID_ORGANIZATION("ORG-60053", "Invalid organization",
+                "Provided organization doesn't exist in this tenant"), // 404
+        PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_ORGANIZATION("ORG-60054", "Invalid organization",
+                "Provided organization doesn't exist in this tenant"), // 404
+        PATCH_USER_STORE_CONFIGS_REQUEST_OPERATION_UNDEFINED("ORG-60055", "Patch operation is not defined.",
+                "Patch operation is not defined."),
+        PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_OPERATION("ORG-60056", "Invalid patch operation",
+                "Configuration patch may only contain 'replace' operation."),
+        PATCH_USER_STORE_CONFIGS_REQUEST_PATH_UNDEFINED("ORG-60057", "Patch path undefined",
+                "Patch operation path is not defined."),
+        PATCH_USER_STORE_CONFIGS_REQUEST_INVALID_PATH("ORG-60058", "Invalid patch path", "%s"),
+        PATCH_USER_STORE_CONFIGS_REQUEST_VALUE_UNDEFINED("ORG-60059", "Patch value undefined",
+                "Patch operation value is not defined."),
+        PATCH_USER_STORE_CONFIGS_REQUEST_RDN_UNAVAILABLE("ORG-60060", "LDAP directory unavailable", "%s"),
+        INVALID_REQUEST("ORG-60061", "Invalid request", "Error while processing the request."),
 
-        // Server errors (ORGMGT_00050-ORGMGT_00100)
-        ERROR_CODE_ORGANIZATION_ADD_ERROR("ORGMGT_00050", "Error while creating the organization : %s"),
-        ERROR_CODE_ORGANIZATION_IMPORT_ERROR("ORGMGT_00051", "Error while importing the organization : %s"),
-        ERROR_CODE_ORGANIZATION_GET_ERROR("ORGMGT_00052", "Error while retrieving/searching the organizations : %s"),
-        ERROR_CODE_ORGANIZATION_GET_BY_ID_ERROR("ORGMGT_00053", "Error while retrieving the organization : %s"),
-        ERROR_CODE_ORGANIZATION_DELETE_ERROR("ORGMGT_00054", "Error while deleting the organization : %s"),
-        ERROR_CODE_ORGANIZATION_PATCH_ERROR("ORGMGT_00055", "Error while patching the organization : %s"),
-        ERROR_CODE_ORGANIZATION_GET_CHILDREN_ERROR("ORGMGT_00056",
-                "Error while retrieving the child organizations : %s"),
-        ERROR_CODE_ORGANIZATION_GET_CONFIGS_ERROR("ORGMGT_00057",
-                "Error while retrieving the organization configs : %s"),
-        ERROR_CODE_ORGANIZATION_PATCH_CONFIGS_ERROR("ORGMGT_00058",
-                "Error while patching the organization configs : %s"),
-        ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_ID_ERROR("ORGMGT_00059",
-                "Error while checking if the organization id exist : %s"),
-        ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_NAME_ERROR("ORGMGT_00060",
-                "Error while checking if the organization name exist : %s"),
-        ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR("ORGMGT_00061", "User store configurations error : %s"),
-        ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORGMGT_00062", "Error while checking if the attribute exist : %s"),
-        ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR("ORGMGT_00063",
-                "Error while retrieving organization Id by name : %s"),
-        ERROR_CODE_EVENTING_ERROR("ORGMGT_00064", "Error while handling the event : %s"),
-        ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORGMGT_00065", "Error accessing user store : %s"),
-        ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR("ORGMGT_00066", "Error checking RDN availability : %s"),
-        ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR("ORGMGT_00067", "Error while authorizing : %s"),
-        ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR("ORGMGT_00068",
-                "Organization Management Server configuration error : %s"),
-        ERROR_CODE_RETRIEVING_AUTHORIZED_ORGANIZATION_LIST_ERROR("ORGMGT_00069",
-                "Error while retrieving authorized organizations list : %s"),
-        ERROR_CODE_INITIALIZATION_ERROR("ORGMGT_00070", "Error while initializing the organization mgt component : %s"),
+        // Server errors (ORG-65001 - ORG-65999)
+        ERROR_CODE_ORGANIZATION_ADD_ERROR("ORG-65001", "Error while creating the organization : %s", ""),
+        ERROR_CODE_ORGANIZATION_IMPORT_ERROR("ORG-65002", "Error while importing the organization : %s", ""),
+        ERROR_CODE_ORGANIZATION_GET_ERROR("ORG-65003", "Error while retrieving/searching the organizations : %s", ""),
+        ERROR_CODE_ORGANIZATION_GET_BY_ID_ERROR("ORG-65004", "Error while retrieving the organization : %s", ""),
+        ERROR_CODE_ORGANIZATION_DELETE_ERROR("ORG-65005", "Error while deleting the organization : %s", ""),
+        ERROR_CODE_ORGANIZATION_PATCH_ERROR("ORG-65006", "Error while patching the organization : %s", ""),
+        ERROR_CODE_ORGANIZATION_GET_CHILDREN_ERROR("ORG-65007",
+                "Error while retrieving the child organizations : %s", ""),
+        ERROR_CODE_ORGANIZATION_GET_CONFIGS_ERROR("ORG-65008",
+                "Error while retrieving the organization configs : %s", ""),
+        ERROR_CODE_ORGANIZATION_PATCH_CONFIGS_ERROR("ORG-65009",
+                "Error while patching the organization configs : %s", ""),
+        ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_ID_ERROR("ORG-65010",
+                "Error while checking if the organization id exist : %s", ""),
+        ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_NAME_ERROR("ORG-65011",
+                "Error while checking if the organization name exist : %s", ""),
+        ERROR_CODE_USER_STORE_CONFIGURATIONS_ERROR("ORG-65012", "User store configurations error : %s", ""),
+        ERROR_CODE_CHECK_ATTRIBUTE_EXIST_ERROR("ORG-65013",
+                "Error while checking if the attribute exist : %s", ""),
+        ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR("ORG-65014",
+                "Error while retrieving organization Id by name : %s", ""),
+        ERROR_CODE_EVENTING_ERROR("ORG-65015", "Error while handling the event : %s", ""),
+        ERROR_CODE_USER_STORE_OPERATIONS_ERROR("ORG-65016", "Error accessing user store : %s", ""),
+        ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR("ORG-65017", "Error checking RDN availability : %s", ""),
+        ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR("ORG-65018", "Error while authorizing : %s", ""),
+        ERROR_CODE_ORG_MGT_SERVER_CONFIG_ERROR("ORG-65019",
+                "Organization Management Server configuration error : %s", ""),
+        ERROR_CODE_RETRIEVING_AUTHORIZED_ORGANIZATION_LIST_ERROR("ORG-65020",
+                "Error while retrieving authorized organizations list : %s", ""),
+        ERROR_CODE_INITIALIZATION_ERROR("ORG-65021",
+                "Error while initializing the organization mgt component : %s", ""),
 
-        ERROR_CODE_UNEXPECTED("ORGMGT_00101", "Unexpected Error");
+        ERROR_CODE_UNEXPECTED("ORG-65022", "Unexpected Error", "");
 
         private final String code;
         private final String message;
+        private final String description;
 
-        ErrorMessages(String code, String message) {
+        ErrorMessages(String code, String message, String description) {
 
             this.code = code;
             this.message = message;
+            this.description = description;
         }
 
         public String getCode() {
@@ -204,6 +288,11 @@ public class OrganizationMgtConstants {
 
             return message;
         }
+
+        public String getDescription() {
+
+            return description;
+        }
     }
 
     /**
@@ -211,7 +300,7 @@ public class OrganizationMgtConstants {
      */
     public enum ForbiddenErrorMessages {
 
-        ORGMGT_00014;
+        ORG_60045
     }
 
     /**
@@ -219,7 +308,7 @@ public class OrganizationMgtConstants {
      */
     public enum NotFoundErrorMessages {
 
-        ORGMGT_00004, ORGMGT_00017;
+        ORG_60048, ORG_60049, ORG_60050, ORG_60051, ORG_60052, ORG_60053, ORG_60054
     }
 
     /**
@@ -227,6 +316,6 @@ public class OrganizationMgtConstants {
      */
     public enum ConflictErrorMessages {
 
-        ORGMGT_00016;
+        ORG_60046, ORG_60047, ORG_60029
     }
 }

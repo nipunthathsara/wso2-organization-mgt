@@ -63,7 +63,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_ID_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_ORGANIZATION_EXIST_BY_NAME_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_CHECK_RDN_AVAILABILITY_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_ADD_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_DELETE_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_BY_ID_ERROR;
@@ -72,8 +71,9 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_GET_ID_BY_NAME_ERROR;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_ORGANIZATION_PATCH_ERROR;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.LIST_REQUEST_FILTER_TOO_LONG;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.LIST_REQUEST_INVALID_FILTER_PARAMETER;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
@@ -759,7 +759,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         .getAttributes().size() + " exceeds the maximum query length: "
                         + MAX_QUERY_LENGTH_IN_BYTES_SQL);
             }
-            throw handleClientException(ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED,
+            throw handleClientException(LIST_REQUEST_FILTER_TOO_LONG,
                     "Too much attributes for the creation request. Try patching.");
         }
         return sb.toString();
@@ -841,7 +841,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 log.debug("Error building SQL query. Get organizations expression " + "query length: " + query.length()
                         + " exceeds the maximum limit: " + MAX_QUERY_LENGTH_IN_BYTES_SQL);
             }
-            throw handleClientException(ERROR_CODE_SQL_QUERY_LIMIT_EXCEEDED,
+            throw handleClientException(LIST_REQUEST_FILTER_TOO_LONG,
                     "Query length exceeded the maximum limit.");
         }
     }
@@ -864,7 +864,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             if (log.isDebugEnabled()) {
                 log.debug("Error passing the condition ", e);
             }
-            throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST, "Error passing the condition");
+            throw handleClientException(LIST_REQUEST_INVALID_FILTER_PARAMETER, null);
         }
 
         StringBuilder sb = new StringBuilder();

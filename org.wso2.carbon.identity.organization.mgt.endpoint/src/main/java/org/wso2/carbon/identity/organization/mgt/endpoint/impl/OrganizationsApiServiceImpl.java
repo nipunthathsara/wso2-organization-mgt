@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.LIST_REQUEST_INVALID_PAGINATION_PARAMETER;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_PATH;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ORGANIZATION_ROLES_PATH;
@@ -66,7 +66,7 @@ import static org.wso2.carbon.identity.organization.mgt.endpoint.util.Organizati
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleBadRequestResponse;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleServerErrorResponse;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.util.OrganizationMgtEndpointUtil.handleUnexpectedServerError;
-import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_INVALID_USER_GET_REQUEST_FOR_ORG_ROLE;
+import static org.wso2.carbon.identity.organization.user.role.mgt.core.constant.OrganizationUserRoleMgtConstants.ErrorMessages.INVALID_ORGANIZATION_ROLE_USERS_GET_REQUEST;
 
 /**
  * Organizations Api Service Impl.
@@ -115,9 +115,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
 
         try {
             if ((limit != null && limit < 1) || (offset != null && offset < 0)) {
-                throw handleClientException(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST,
-                        "Invalid pagination arguments. 'limit' should be greater than 0 and 'offset' should be "
-                                + "greater than -1");
+                throw handleClientException(LIST_REQUEST_INVALID_PAGINATION_PARAMETER, null);
             }
             // If pagination parameters not defined in the request, set them to -1
             limit = (limit == null) ? Integer.valueOf(-1) : limit;
@@ -227,9 +225,7 @@ public class OrganizationsApiServiceImpl extends OrganizationsApiService {
         try {
             if ((limit != null && limit < 1) || (offset != null && offset < 0)) {
                 throw org.wso2.carbon.identity.organization.user.role.mgt.core.util.Utils
-                        .handleClientException(ERROR_CODE_INVALID_USER_GET_REQUEST_FOR_ORG_ROLE,
-                                "Invalid pagination arguments. 'limit' should be greater than 0 and 'offset' should be "
-                                        + "greater than -1");
+                        .handleClientException(INVALID_ORGANIZATION_ROLE_USERS_GET_REQUEST, null);
             }
             // If pagination parameters not defined in the request, set them to -1
             limit = (limit == null) ? Integer.valueOf(-1) : limit;

@@ -64,8 +64,9 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.LIST_REQUEST_BAD_FILTER;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.LIST_REQUEST_INVALID_DATE_FILTER;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CREATED;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.DATE_SEARCH_FORMAT;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ENDS_WITH;
@@ -249,17 +250,21 @@ public class OrganizationMgtEndpointUtil {
     public static Response handleBadRequestResponse(OrganizationManagementClientException e, Log log) {
 
         if (isNotFoundError(e)) {
-            throw OrganizationMgtEndpointUtil.buildNotFoundRequestException(e.getMessage(), e.getErrorCode(), log, e);
+            throw OrganizationMgtEndpointUtil.buildNotFoundRequestException(e.getDescription(), e.getMessage(),
+                    e.getErrorCode(), log, e);
         }
 
         if (isConflictError(e)) {
-            throw OrganizationMgtEndpointUtil.buildConflictRequestException(e.getMessage(), e.getErrorCode(), log, e);
+            throw OrganizationMgtEndpointUtil.buildConflictRequestException(e.getDescription(), e.getMessage(),
+                    e.getErrorCode(), log, e);
         }
 
         if (isForbiddenError(e)) {
-            throw OrganizationMgtEndpointUtil.buildForbiddenException(e.getMessage(), e.getErrorCode(), log, e);
+            throw OrganizationMgtEndpointUtil.buildForbiddenException(e.getDescription(), e.getMessage(),
+                    e.getErrorCode(), log, e);
         }
-        throw OrganizationMgtEndpointUtil.buildBadRequestException(e.getMessage(), e.getErrorCode(), log, e);
+        throw OrganizationMgtEndpointUtil.buildBadRequestException(e.getDescription(), e.getMessage(),
+                e.getErrorCode(), log, e);
     }
 
     public static Response handleServerErrorResponse(OrganizationManagementException e, Log log) {
@@ -277,7 +282,7 @@ public class OrganizationMgtEndpointUtil {
         for (OrganizationMgtConstants.NotFoundErrorMessages notFoundError :
                 OrganizationMgtConstants.NotFoundErrorMessages
                 .values()) {
-            if (notFoundError.toString().equals(e.getErrorCode())) {
+            if (notFoundError.toString().replace('_', '-').equals(e.getErrorCode())) {
                 return true;
             }
         }
@@ -289,7 +294,7 @@ public class OrganizationMgtEndpointUtil {
         for (OrganizationMgtConstants.ConflictErrorMessages conflictError :
                 OrganizationMgtConstants.ConflictErrorMessages
                         .values()) {
-            if (conflictError.toString().equals(e.getErrorCode())) {
+            if (conflictError.toString().replace('_', '-').equals(e.getErrorCode())) {
                 return true;
             }
         }
@@ -301,39 +306,41 @@ public class OrganizationMgtEndpointUtil {
         for (OrganizationMgtConstants.ForbiddenErrorMessages forbiddenError :
                 OrganizationMgtConstants.ForbiddenErrorMessages
                 .values()) {
-            if (forbiddenError.toString().equals(e.getErrorCode())) {
+            if (forbiddenError.toString().replace('_', '-').equals(e.getErrorCode())) {
                 return true;
             }
         }
         return false;
     }
 
-    public static NotFoundException buildNotFoundRequestException(String description, String code, Log log,
-            Throwable e) {
+    public static NotFoundException buildNotFoundRequestException(String description, String message, String code,
+            Log log, Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(Response.Status.NOT_FOUND.toString(), description, code);
+        ErrorDTO errorDTO = getErrorDTO(message, description, code);
         logDebug(log, e);
         return new NotFoundException(errorDTO);
     }
 
-    public static ConflictRequestException buildConflictRequestException(String description, String code, Log log,
-            Throwable e) {
+    public static ConflictRequestException buildConflictRequestException(String description, String message,
+            String code, Log log, Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(Response.Status.CONFLICT.toString(), description, code);
+        ErrorDTO errorDTO = getErrorDTO(message, description, code);
         logDebug(log, e);
         return new ConflictRequestException(errorDTO);
     }
 
-    public static ForbiddenException buildForbiddenException(String description, String code, Log log, Throwable e) {
+    public static ForbiddenException buildForbiddenException(String description, String message,
+            String code, Log log, Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(Response.Status.FORBIDDEN.toString(), description, code);
+        ErrorDTO errorDTO = getErrorDTO(message, description, code);
         logDebug(log, e);
         return new ForbiddenException(errorDTO);
     }
 
-    public static BadRequestException buildBadRequestException(String description, String code, Log log, Throwable e) {
+    public static BadRequestException buildBadRequestException(String description, String message,
+            String code, Log log, Throwable e) {
 
-        ErrorDTO errorDTO = getErrorDTO(Response.Status.BAD_REQUEST.toString(), description, code);
+        ErrorDTO errorDTO = getErrorDTO(message, description, code);
         logDebug(log, e);
         return new BadRequestException(errorDTO);
     }
@@ -354,8 +361,10 @@ public class OrganizationMgtEndpointUtil {
             searchCondition = searchContext.getCondition(reference);
         } catch (RuntimeException e) {
             throw new OrganizationManagementClientException(
-                    String.format(ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST.getMessage(), "Bad filter"),
-                    ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST.getCode(), e);
+                    LIST_REQUEST_BAD_FILTER.getMessage(),
+                    LIST_REQUEST_BAD_FILTER.getDescription(),
+                    LIST_REQUEST_BAD_FILTER.getCode(),
+                    e);
         }
         return buildSearchCondition(searchCondition);
     }
@@ -383,9 +392,12 @@ public class OrganizationMgtEndpointUtil {
                         date = format.parse(primitiveStatement.getValue().toString());
                     } catch (ParseException e) {
                         throw new OrganizationManagementClientException(
-                                ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST.getMessage() + "'created' and "
-                                        + "'lastModified' search criteria should be of " + DATE_SEARCH_FORMAT
-                                        + " format.", ERROR_CODE_INVALID_ORGANIZATION_GET_REQUEST.getCode(), e);
+                            LIST_REQUEST_INVALID_DATE_FILTER.getMessage(),
+                            String.format(LIST_REQUEST_INVALID_DATE_FILTER.getDescription(),
+                                    "'created' and 'lastModified' search criteria should be of : "
+                                            + DATE_SEARCH_FORMAT + " format."),
+                            LIST_REQUEST_INVALID_DATE_FILTER.getCode(),
+                            e);
                     }
                     PrimitiveStatement statement = new PrimitiveStatement(primitiveStatement.getProperty(),
                             new Timestamp(date.getTime()), Timestamp.class, primitiveStatement.getCondition());

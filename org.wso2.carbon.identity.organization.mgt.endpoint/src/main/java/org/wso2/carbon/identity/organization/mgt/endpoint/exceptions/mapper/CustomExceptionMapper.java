@@ -30,7 +30,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNCLASSIFIED_ERROR;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.INVALID_REQUEST;
 
 /**
  * This class maps request format errors into proper HTTP 400 errors
@@ -43,15 +43,15 @@ public class CustomExceptionMapper implements ExceptionMapper<JsonMappingExcepti
     @Override
     public Response toResponse(JsonMappingException e) {
 
-        String description = "Invalid request";
         OrganizationManagementClientException clientException = new OrganizationManagementClientException(
-                String.format(ERROR_CODE_UNCLASSIFIED_ERROR.getMessage(), description),
-                ERROR_CODE_UNCLASSIFIED_ERROR.getCode(),
+                INVALID_REQUEST.getMessage(),
+                INVALID_REQUEST.getDescription(),
+                INVALID_REQUEST.getCode(),
                 e);
         ErrorDTO errorDTO = getErrorDTO(
-                Response.Status.BAD_REQUEST.toString(),
-                String.format(ERROR_CODE_UNCLASSIFIED_ERROR.getMessage(), description),
-                ERROR_CODE_UNCLASSIFIED_ERROR.getCode());
+                INVALID_REQUEST.getMessage(),
+                INVALID_REQUEST.getDescription(),
+                INVALID_REQUEST.getCode());
         if (log.isDebugEnabled()) {
             log.debug(Response.Status.BAD_REQUEST, clientException);
         }

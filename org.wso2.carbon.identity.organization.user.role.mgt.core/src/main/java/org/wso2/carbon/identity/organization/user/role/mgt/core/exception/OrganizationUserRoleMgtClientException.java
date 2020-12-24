@@ -27,14 +27,15 @@ public class OrganizationUserRoleMgtClientException extends OrganizationUserRole
 
     }
 
-    public OrganizationUserRoleMgtClientException(String message, String errorCode) {
+    public OrganizationUserRoleMgtClientException(String message, String description, String errorCode) {
 
-        super(message, errorCode);
+        super(message, description, errorCode);
     }
 
-    public OrganizationUserRoleMgtClientException(String message, String errorCode, Throwable cause) {
+    public OrganizationUserRoleMgtClientException(String message, String description, String errorCode,
+            Throwable cause) {
 
-        super(message, errorCode, cause);
+        super(message, description, errorCode, cause);
     }
 
     public OrganizationUserRoleMgtClientException(Throwable cause) {
