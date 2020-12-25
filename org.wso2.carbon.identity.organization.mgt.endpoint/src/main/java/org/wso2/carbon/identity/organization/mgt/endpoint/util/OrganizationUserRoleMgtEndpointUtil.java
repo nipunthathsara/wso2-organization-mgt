@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.organization.mgt.endpoint.util;
 
 import org.apache.commons.logging.Log;
+import org.apache.log4j.MDC;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.BadRequestException;
 import org.wso2.carbon.identity.organization.mgt.endpoint.exceptions.ConflictRequestException;
@@ -31,7 +32,10 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.Organi
 
 import javax.ws.rs.core.Response;
 
+import java.util.UUID;
+
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CORRELATION_ID_MDC;
 
 /**
  * Organization User Role Mgt Endpoint Util.
@@ -147,6 +151,7 @@ public class OrganizationUserRoleMgtEndpointUtil {
         errorDTO.setCode(code);
         errorDTO.setMessage(message);
         errorDTO.setDescription(description);
+        errorDTO.setTraceID(getCorrelation());
         return errorDTO;
     }
 
@@ -160,5 +165,21 @@ public class OrganizationUserRoleMgtEndpointUtil {
     private static void logError(Log log, Throwable throwable) {
 
         log.error(throwable.getMessage(), throwable);
+    }
+
+
+    public static String getCorrelation() {
+        String ref;
+        if (isCorrelationIDPresent()) {
+            ref = MDC.get(CORRELATION_ID_MDC).toString();
+        } else {
+            ref = UUID.randomUUID().toString();
+
+        }
+        return ref;
+    }
+
+    public static boolean isCorrelationIDPresent() {
+        return MDC.get(CORRELATION_ID_MDC) != null;
     }
 }

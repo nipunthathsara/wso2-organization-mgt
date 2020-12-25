@@ -32,4 +32,6 @@ public class OrganizationMgtEndpointConstants {
     public static final String STARTS_WITH = "startswith";
     public static final String ENDS_WITH = "endswith";
     public static final String SUBSTRING = "substring";
+
+    public static final String CORRELATION_ID_MDC = "Correlation-ID";
 }

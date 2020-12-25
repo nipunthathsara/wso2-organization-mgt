@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.jaxrs.ext.search.PrimitiveStatement;
 import org.apache.cxf.jaxrs.ext.search.SearchCondition;
 import org.apache.cxf.jaxrs.ext.search.SearchContext;
+import org.apache.log4j.MDC;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.organization.mgt.core.OrganizationManager;
 import org.wso2.carbon.identity.organization.mgt.core.constant.ConditionType;
@@ -60,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
@@ -67,6 +69,7 @@ import javax.ws.rs.core.Response;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.LIST_REQUEST_BAD_FILTER;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.LIST_REQUEST_INVALID_DATE_FILTER;
+import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CORRELATION_ID_MDC;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CREATED;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.DATE_SEARCH_FORMAT;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.ENDS_WITH;
@@ -490,6 +493,7 @@ public class OrganizationMgtEndpointUtil {
         errorDTO.setCode(code);
         errorDTO.setMessage(message);
         errorDTO.setDescription(description);
+        errorDTO.setTraceID(getCorrelation());
         return errorDTO;
     }
 
@@ -503,5 +507,20 @@ public class OrganizationMgtEndpointUtil {
     private static void logError(Log log, Throwable throwable) {
 
         log.error(throwable.getMessage(), throwable);
+    }
+
+    public static String getCorrelation() {
+        String ref;
+        if (isCorrelationIDPresent()) {
+            ref = MDC.get(CORRELATION_ID_MDC).toString();
+        } else {
+            ref = UUID.randomUUID().toString();
+
+        }
+        return ref;
+    }
+
+    public static boolean isCorrelationIDPresent() {
+        return MDC.get(CORRELATION_ID_MDC) != null;
     }
 }
