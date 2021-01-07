@@ -30,9 +30,9 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.constant.Organiz
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 
-import javax.ws.rs.core.Response;
-
 import java.util.UUID;
+
+import javax.ws.rs.core.Response;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CORRELATION_ID_MDC;
