@@ -30,9 +30,9 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.constant.Organiz
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtClientException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 
-import javax.ws.rs.core.Response;
-
 import java.util.UUID;
+
+import javax.ws.rs.core.Response;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ERROR_CODE_UNEXPECTED;
 import static org.wso2.carbon.identity.organization.mgt.endpoint.constants.OrganizationMgtEndpointConstants.CORRELATION_ID_MDC;
@@ -45,21 +45,21 @@ public class OrganizationUserRoleMgtEndpointUtil {
     public static Response handleBadRequestResponse(OrganizationUserRoleMgtClientException e, Log log) {
 
         if (isNotFoundError(e)) {
-            throw OrganizationUserRoleMgtEndpointUtil.buildNotFoundRequestException(e.getDescription(), e.getMessage(),
-                    e.getErrorCode(), log, e);
+            throw OrganizationUserRoleMgtEndpointUtil
+                    .buildNotFoundRequestException(e.getDescription(), e.getMessage(), e.getErrorCode(), log, e);
         }
 
         if (isConflictError(e)) {
-            throw OrganizationUserRoleMgtEndpointUtil.buildConflictRequestException(e.getDescription(), e.getMessage(),
-                    e.getErrorCode(), log, e);
+            throw OrganizationUserRoleMgtEndpointUtil
+                    .buildConflictRequestException(e.getDescription(), e.getMessage(), e.getErrorCode(), log, e);
         }
 
         if (isForbiddenError(e)) {
-            throw OrganizationUserRoleMgtEndpointUtil.buildForbiddenException(e.getDescription(), e.getMessage(),
-                    e.getErrorCode(), log, e);
+            throw OrganizationUserRoleMgtEndpointUtil
+                    .buildForbiddenException(e.getDescription(), e.getMessage(), e.getErrorCode(), log, e);
         }
-        throw OrganizationUserRoleMgtEndpointUtil.buildBadRequestException(e.getDescription(), e.getMessage(),
-                e.getErrorCode(), log, e);
+        throw OrganizationUserRoleMgtEndpointUtil
+                .buildBadRequestException(e.getDescription(), e.getMessage(), e.getErrorCode(), log, e);
     }
 
     public static Response handleServerErrorResponse(OrganizationUserRoleMgtException e, Log log) {
@@ -75,7 +75,8 @@ public class OrganizationUserRoleMgtEndpointUtil {
     private static boolean isNotFoundError(OrganizationUserRoleMgtClientException e) {
 
         for (OrganizationUserRoleMgtConstants.NotFoundErrorMessages notFoundError :
-                OrganizationUserRoleMgtConstants.NotFoundErrorMessages.values()) {
+                OrganizationUserRoleMgtConstants.NotFoundErrorMessages
+                .values()) {
             if (notFoundError.toString().replace('_', '-').equals(e.getErrorCode())) {
                 return true;
             }
@@ -86,7 +87,8 @@ public class OrganizationUserRoleMgtEndpointUtil {
     private static boolean isConflictError(OrganizationUserRoleMgtClientException e) {
 
         for (OrganizationUserRoleMgtConstants.ConflictErrorMessages conflictError :
-                OrganizationUserRoleMgtConstants.ConflictErrorMessages.values()) {
+                OrganizationUserRoleMgtConstants.ConflictErrorMessages
+                .values()) {
             if (conflictError.toString().replace('_', '-').equals(e.getErrorCode())) {
                 return true;
             }
@@ -97,7 +99,8 @@ public class OrganizationUserRoleMgtEndpointUtil {
     private static boolean isForbiddenError(OrganizationUserRoleMgtClientException e) {
 
         for (OrganizationUserRoleMgtConstants.ForbiddenErrorMessages forbiddenError :
-                OrganizationUserRoleMgtConstants.ForbiddenErrorMessages.values()) {
+                OrganizationUserRoleMgtConstants.ForbiddenErrorMessages
+                .values()) {
             if (forbiddenError.toString().replace('_', '-').equals(e.getErrorCode())) {
                 return true;
             }
@@ -166,7 +169,6 @@ public class OrganizationUserRoleMgtEndpointUtil {
 
         log.error(throwable.getMessage(), throwable);
     }
-
 
     public static String getCorrelation() {
         String ref;
