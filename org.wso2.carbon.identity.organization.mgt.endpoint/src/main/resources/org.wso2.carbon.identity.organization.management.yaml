@@ -123,15 +123,7 @@ paths:
             },
             "meta": {
                 "created": "2020-09-01T18:37:44.199Z",
-                "lastModified": "2020-09-01T18:37:44.199Z",
-                "createdBy": {
-                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
-                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
-                },
-                "lastModifiedBy": {
-                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
-                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
-                }
+                "lastModified": "2020-09-01T18:37:44.199Z"
             }
         }
       summary: |
@@ -202,15 +194,7 @@ paths:
                 },
                 "meta": {
                     "created": "2020-09-02 00:07:44.199",
-                    "lastModified": "2020-09-02 00:07:44.199",
-                    "createdBy": {
-                        "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
-                        "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
-                    },
-                    "lastModifiedBy": {
-                        "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
-                        "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
-                    }
+                    "lastModified": "2020-09-02 00:07:44.199"
                 },
                 "attributes": [
                     {
@@ -323,17 +307,7 @@ paths:
             },
             "meta": {
                 "created": "2020-09-02 00:07:44.199",
-                "lastModified": "2020-09-02 00:07:44.199",
-                "createdBy": {
-                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
-                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c",
-                    "username": john
-                },
-                "lastModifiedBy": {
-                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
-                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c",
-                    "username": john
-                }
+                "lastModified": "2020-09-02 00:07:44.199"
             },
             "attributes": [
                 {
@@ -955,15 +929,7 @@ paths:
             },
             "meta": {
                 "created": "2020-09-01T18:37:44.199Z",
-                "lastModified": "2020-09-01T18:37:44.199Z",
-                "createdBy": {
-                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
-                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
-                },
-                "lastModifiedBy": {
-                    "id": "8686b71c-6d25-45c0-a6be-d1337914205c",
-                    "ref": "/t/carbon.super/scim2/Users/8686b71c-6d25-45c0-a6be-d1337914205c"
-                }
+                "lastModified": "2020-09-01T18:37:44.199Z"
             }
         }
       summary: |
@@ -1140,10 +1106,6 @@ definitions:
       lastModified:
         type: string
         example: '2020-10-30T12:31:53.406Z'
-      createdBy:
-        $ref: '#/definitions/MetaUser'
-      lastModifiedBy:
-        $ref: '#/definitions/MetaUser'
   #-----------------------------------------------------
   # Organization MetaUser Object
   #-----------------------------------------------------
