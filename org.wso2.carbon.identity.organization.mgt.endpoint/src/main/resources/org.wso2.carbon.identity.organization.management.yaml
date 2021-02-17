@@ -1107,24 +1107,6 @@ definitions:
         type: string
         example: '2020-10-30T12:31:53.406Z'
   #-----------------------------------------------------
-  # Organization MetaUser Object
-  #-----------------------------------------------------
-  MetaUser:
-    type: object
-    required:
-      - id
-      - $ref
-    properties:
-      id:
-        type: string
-        example: '3cf471bf-951a-46ca-b7a7-aed7d3351604'
-      $ref:
-        type: string
-        example: '/t/carbon.super/scim2/Users/3cf471bf-951a-46ca-b7a7-aed7d3351604'
-      username:
-        type: string
-        example: 'john'
-  #-----------------------------------------------------
   # Organization Attribute Object
   #-----------------------------------------------------
   Attribute:

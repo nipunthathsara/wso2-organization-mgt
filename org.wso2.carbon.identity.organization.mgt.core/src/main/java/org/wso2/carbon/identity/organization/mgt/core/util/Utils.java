@@ -233,11 +233,11 @@ public class Utils {
         sb.append("\nCreated time : " + organization.getMetadata().getCreated());
         sb.append("\nLast modified time : " + organization.getMetadata().getLastModified());
         sb.append("\nCreated by id : " + organization.getMetadata().getCreatedBy().getId());
-        sb.append("\nCreated by username : " + organization.getMetadata().getCreatedBy().getUsername());
-        sb.append("\nCreated by $ref : " + organization.getMetadata().getCreatedBy().getRef());
+//        sb.append("\nCreated by username : " + organization.getMetadata().getCreatedBy().getUsername());
+//        sb.append("\nCreated by $ref : " + organization.getMetadata().getCreatedBy().getRef());
         sb.append("\nLast modified by id : " + organization.getMetadata().getLastModifiedBy().getId());
-        sb.append("\nLast modified by username : " + organization.getMetadata().getLastModifiedBy().getUsername());
-        sb.append("\nLast modified by $ref : " + organization.getMetadata().getLastModifiedBy().getRef());
+//        sb.append("\nLast modified by username : " + organization.getMetadata().getLastModifiedBy().getUsername());
+//        sb.append("\nLast modified by $ref : " + organization.getMetadata().getLastModifiedBy().getRef());
         sb.append("\nUser store configs : ");
         StringJoiner configJoiner = new StringJoiner(",");
         organization.getUserStoreConfigs().entrySet().stream()

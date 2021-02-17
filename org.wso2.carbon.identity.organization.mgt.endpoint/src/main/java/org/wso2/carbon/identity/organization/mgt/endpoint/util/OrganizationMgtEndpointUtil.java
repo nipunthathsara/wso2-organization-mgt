@@ -41,7 +41,6 @@ import org.wso2.carbon.identity.organization.mgt.endpoint.dto.AttributeDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.BasicOrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ErrorDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.MetaDTO;
-import org.wso2.carbon.identity.organization.mgt.endpoint.dto.MetaUserDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationAddDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.OrganizationDTO;
 import org.wso2.carbon.identity.organization.mgt.endpoint.dto.ParentDTO;
@@ -128,16 +127,8 @@ public class OrganizationMgtEndpointUtil {
         basicOrganizationDTO.setParent(parentDTO);
         // Set metadata
         MetaDTO metaDTO = new MetaDTO();
-        metaDTO.setCreatedBy(new MetaUserDTO());
-        metaDTO.setLastModifiedBy(new MetaUserDTO());
         metaDTO.setCreated(organization.getMetadata().getCreated());
         metaDTO.setLastModified(organization.getMetadata().getLastModified());
-        metaDTO.getCreatedBy().setId(organization.getMetadata().getCreatedBy().getId());
-        metaDTO.getCreatedBy().setRef(organization.getMetadata().getCreatedBy().getRef());
-        metaDTO.getCreatedBy().setUsername(organization.getMetadata().getCreatedBy().getUsername());
-        metaDTO.getLastModifiedBy().setId(organization.getMetadata().getLastModifiedBy().getId());
-        metaDTO.getLastModifiedBy().setRef(organization.getMetadata().getLastModifiedBy().getRef());
-        metaDTO.getLastModifiedBy().setUsername(organization.getMetadata().getLastModifiedBy().getUsername());
         basicOrganizationDTO.setMeta(metaDTO);
         return basicOrganizationDTO;
     }
@@ -159,16 +150,8 @@ public class OrganizationMgtEndpointUtil {
         organizationDTO.setParent(parentDTO);
         // Set metadata
         MetaDTO metaDTO = new MetaDTO();
-        metaDTO.setCreatedBy(new MetaUserDTO());
-        metaDTO.setLastModifiedBy(new MetaUserDTO());
         metaDTO.setCreated(organization.getMetadata().getCreated());
         metaDTO.setLastModified(organization.getMetadata().getLastModified());
-        metaDTO.getCreatedBy().setId(organization.getMetadata().getCreatedBy().getId());
-        metaDTO.getCreatedBy().setRef(organization.getMetadata().getCreatedBy().getRef());
-        metaDTO.getCreatedBy().setUsername(organization.getMetadata().getCreatedBy().getUsername());
-        metaDTO.getLastModifiedBy().setId(organization.getMetadata().getLastModifiedBy().getId());
-        metaDTO.getLastModifiedBy().setRef(organization.getMetadata().getLastModifiedBy().getRef());
-        metaDTO.getLastModifiedBy().setUsername(organization.getMetadata().getLastModifiedBy().getUsername());
         organizationDTO.setMeta(metaDTO);
         organizationDTO.setAttributes(organization.getAttributes().values().stream()
                 .map(OrganizationMgtEndpointUtil::getAttributeDTOFromAttribute).collect(Collectors.toList()));
@@ -219,14 +202,8 @@ public class OrganizationMgtEndpointUtil {
             organizationDTO.setParent(parentDTO);
             // Set metadata
             MetaDTO metaDTO = new MetaDTO();
-            metaDTO.setCreatedBy(new MetaUserDTO());
-            metaDTO.setLastModifiedBy(new MetaUserDTO());
             metaDTO.setCreated(org.getMetadata().getCreated());
             metaDTO.setLastModified(org.getMetadata().getLastModified());
-            metaDTO.getCreatedBy().setId(org.getMetadata().getCreatedBy().getId());
-            metaDTO.getCreatedBy().setRef(org.getMetadata().getCreatedBy().getRef());
-            metaDTO.getLastModifiedBy().setId(org.getMetadata().getLastModifiedBy().getId());
-            metaDTO.getLastModifiedBy().setRef(org.getMetadata().getLastModifiedBy().getRef());
             organizationDTO.setMeta(metaDTO);
             // Set attributes if any
             if (org.hasAttributes()) {

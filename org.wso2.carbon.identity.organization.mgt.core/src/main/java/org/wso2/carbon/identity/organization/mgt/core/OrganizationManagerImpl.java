@@ -131,7 +131,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_STATUS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.SCIM2_USER_RESOURCE_BASE_PATH;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.UI_EXECUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.DATA;
@@ -169,7 +168,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_STATUS_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getUserIDFromUserName;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getUserNameFromUserID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.hasActiveUsers;
@@ -205,7 +203,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         fireEvent(event, null, organizationAdd, Status.FAILURE);
         validateAddOrganizationRequest(organizationAdd);
         Organization organization = generateOrganizationFromRequest(organizationAdd);
-        // We can't perform this from the authorization valve. Hence, authorize from here
+        // We can't perform this in the authorization valve. Hence, authorize here
         boolean isAuthorized = isUserAuthorizedToCreateOrganization(organization.getParent().getId());
         if (!isAuthorized) {
             throw handleClientException(ADD_REQUEST_UNAUTHORIZED_PARENT, null);
@@ -214,9 +212,9 @@ public class OrganizationManagerImpl implements OrganizationManager {
         organization.setTenantId(getTenantId());
         // Set metadata
         organization.getMetadata().getCreatedBy().setId(getAuthenticatedUserId());
-        organization.getMetadata().getCreatedBy()
-                .setRef(String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(), getAuthenticatedUserId()));
-        organization.getMetadata().getCreatedBy().setUsername(getAuthenticatedUsername());
+//        organization.getMetadata().getCreatedBy()
+//                .setRef(String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(), getAuthenticatedUserId()));
+//        organization.getMetadata().getCreatedBy().setUsername(getAuthenticatedUsername());
         organization.getMetadata().setLastModifiedBy(organization.getMetadata().getCreatedBy());
         setUserStoreConfigs(organization, isImport);
         logOrganizationObject(organization);
@@ -262,15 +260,15 @@ public class OrganizationManagerImpl implements OrganizationManager {
             organization.getParent().setRef(String
                     .format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), organization.getParent().getId()));
         }
-        organization.getMetadata().getCreatedBy().setRef(String.format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
-                organization.getMetadata().getCreatedBy().getId()));
-        organization.getMetadata().getCreatedBy()
-                .setUsername(getUserNameFromUserID(organization.getMetadata().getCreatedBy().getId(), getTenantId()));
-        organization.getMetadata().getLastModifiedBy().setRef(String
-                .format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
-                        organization.getMetadata().getLastModifiedBy().getId()));
-        organization.getMetadata().getLastModifiedBy().setUsername(
-                getUserNameFromUserID(organization.getMetadata().getLastModifiedBy().getId(), getTenantId()));
+//        organization.getMetadata().getCreatedBy().setRef(String.format(SCIM2_USER_RESOURCE_BASE_PATH,
+//                getTenantDomain(), organization.getMetadata().getCreatedBy().getId()));
+//        organization.getMetadata().getCreatedBy()
+//                .setUsername(getUserNameFromUserID(organization.getMetadata().getCreatedBy().getId(), getTenantId()));
+//        organization.getMetadata().getLastModifiedBy().setRef(String
+//                .format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
+//                        organization.getMetadata().getLastModifiedBy().getId()));
+//        organization.getMetadata().getLastModifiedBy().setUsername(
+//                getUserNameFromUserID(organization.getMetadata().getLastModifiedBy().getId(), getTenantId()));
         // Fire post-event
         fireEvent(POST_GET_ORGANIZATION, organizationId, organization, Status.SUCCESS);
         return organization;
@@ -296,12 +294,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 organization.getParent().setRef(String
                         .format(ORGANIZATION_RESOURCE_BASE_PATH, getTenantDomain(), organization.getParent().getId()));
             }
-            organization.getMetadata().getCreatedBy().setRef(String
-                    .format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
-                            organization.getMetadata().getCreatedBy().getId()));
-            organization.getMetadata().getLastModifiedBy().setRef(String
-                    .format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
-                            organization.getMetadata().getLastModifiedBy().getId()));
+//            organization.getMetadata().getCreatedBy().setRef(String
+//                    .format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
+//                            organization.getMetadata().getCreatedBy().getId()));
+//            organization.getMetadata().getLastModifiedBy().setRef(String
+//                    .format(SCIM2_USER_RESOURCE_BASE_PATH, getTenantDomain(),
+//                            organization.getMetadata().getLastModifiedBy().getId()));
         }
         // Fire post-events
         fireEvent(POST_LIST_ORGANIZATIONS, null, organizations, Status.SUCCESS);
