@@ -37,9 +37,10 @@ public abstract class AbstractOrganizationMgtUserStoreManager extends UniqueIDRe
      * This method creates a subDirectory in the LDAP.
      *
      * @param dn
+     * @param rdn
      * @throws UserStoreException
      */
-    public abstract void createOu(String dn) throws UserStoreException;
+    public abstract void createOu(String dn, String rdn) throws UserStoreException;
 
     /**
      * This method removes the provided subdirectory from the LDAP.

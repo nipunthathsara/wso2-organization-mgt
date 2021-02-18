@@ -219,8 +219,12 @@ public class OrganizationManagerImpl implements OrganizationManager {
         setUserStoreConfigs(organization, isImport);
         logOrganizationObject(organization);
         if (!isImport) {
-            createLdapDirectory(getTenantId(), organization.getUserStoreConfigs().get(USER_STORE_DOMAIN).getValue(),
-                    organization.getUserStoreConfigs().get(DN).getValue());
+            createLdapDirectory(
+                    getTenantId(),
+                    organization.getUserStoreConfigs().get(USER_STORE_DOMAIN).getValue(),
+                    organization.getUserStoreConfigs().get(DN).getValue(),
+                    organization.getUserStoreConfigs().get(RDN).getValue()
+            );
             if (log.isDebugEnabled()) {
                 log.debug("Creating LDAP subdirectory for the organization id : " + organization.getId());
             }
@@ -836,7 +840,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
     }
 
-    private void createLdapDirectory(int tenantId, String userStoreDomain, String dn)
+    private void createLdapDirectory(int tenantId, String userStoreDomain, String dn, String rdn)
             throws OrganizationManagementException {
 
         // TODO check if RDN is available first
@@ -856,7 +860,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
             UserStoreManager userStoreManager = tenantUserRealm.getUserStoreManager()
                     .getSecondaryUserStoreManager(userStoreDomain);
             if (userStoreManager instanceof AbstractOrganizationMgtUserStoreManager) {
-                ((AbstractOrganizationMgtUserStoreManager) userStoreManager).createOu(dn);
+                ((AbstractOrganizationMgtUserStoreManager) userStoreManager).createOu(dn, rdn);
                 if (log.isDebugEnabled()) {
                     log.debug("Created subdirectory : " + dn + ", in the user store domain : " + userStoreDomain);
                 }
