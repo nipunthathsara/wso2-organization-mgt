@@ -71,7 +71,7 @@
                         </Import-Package>
                         <Export-Package>
                             !org.wso2.carbon.identity.organization.mgt.core.internal,
-                            org.wso2.carbon.identity.organization.mgt.core.*; version="${parent.version}",
+                            org.wso2.carbon.identity.organization.mgt.core.*; version="${project.version}",
                         </Export-Package>
                         <DynamicImport-Package>*</DynamicImport-Package>
                     </instructions>

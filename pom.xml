@@ -30,9 +30,7 @@
     <version>0.23-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WSO2 - Organization Management Module</name>
-    <description>
-        Hierarchical organization management with REST API support.
-    </description>
+    <description>Hierarchical organization management with REST API support.</description>
     <url>http://www.wso2.org</url>
 
     <modules>
@@ -41,11 +39,11 @@
         <module>org.wso2.carbon.identity.organization.user.role.mgt.core</module>
         <module>org.wso2.carbon.identity.organization.scope.handler</module>
     </modules>
+
     <scm>
-        <url>https://github.com/nipunthathsara/wso2-organization-userstore-manager</url>
-        <developerConnection>scm:git:https://github.com/nipunthathsara/wso2-organization-userstore-manager
-        </developerConnection>
-        <connection>scm:git:https://github.com/nipunthathsara/wso2-organization-userstore-manager</connection>
+        <url>https://github.com/nipunthathsara/wso2-organization-mgt</url>
+        <developerConnection>scm:git:https://github.com/nipunthathsara/wso2-organization-mgt</developerConnection>
+        <connection>scm:git:https://github.com/nipunthathsara/wso2-organization-mgt</connection>
         <tag>HEAD</tag>
     </scm>
 
@@ -53,7 +51,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-
         <org.wso2.carbon.database.utils.version>2.0.7</org.wso2.carbon.database.utils.version>
         <commons-lang.wso2.version>2.6.0.wso2v1</commons-lang.wso2.version>
         <commons.logging.version>1.2</commons.logging.version>
@@ -74,9 +71,15 @@
         <org.powermock.version>1.7.4</org.powermock.version>
         <h2database.version>1.4.199</h2database.version>
         <maven.buildnumber.plugin.version>1.4</maven.buildnumber.plugin.version>
+        <javax.ws.rs-api.version>2.1.1</javax.ws.rs-api.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>${javax.ws.rs-api.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.wso2.carbon.utils</groupId>
             <artifactId>org.wso2.carbon.database.utils</artifactId>
@@ -117,7 +120,6 @@
                     <artifactId>xalan</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
@@ -277,20 +279,18 @@
                 </exclusion>
             </exclusions>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.wso2.carbon.identity.framework</groupId>-->
-<!--            <artifactId>org.wso2.carbon.identity.configuration.mgt.core</artifactId>-->
-<!--            -->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.configuration.mgt.core</artifactId>
+            <version>${carbon.identity.framework.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.json.wso2</groupId>
             <artifactId>json</artifactId>
             <version>${json.wso2.version}</version>
             <scope>provided</scope>
         </dependency>
-
-        <!--        -->
         <dependency>
             <groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>
             <artifactId>org.wso2.carbon.identity.oauth</artifactId>
@@ -325,7 +325,7 @@
             <name>WSO2 internal Repository</name>
             <url>https://maven.wso2.org/nexus/content/groups/wso2-public/</url>
             <releases>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
                 <updatePolicy>daily</updatePolicy>
                 <checksumPolicy>ignore</checksumPolicy>
             </releases>
@@ -337,7 +337,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.0</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                     <source>1.8</source>
