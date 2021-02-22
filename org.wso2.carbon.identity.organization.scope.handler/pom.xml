@@ -38,6 +38,14 @@
         <axiom.osgi.version.range>[1.2.11, 2.0.0)</axiom.osgi.version.range>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.carbon.identity.framework</groupId>
+            <artifactId>org.wso2.carbon.identity.organization.mgt.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -67,7 +75,7 @@
                         </Private-Package>
                         <Export-Package>
                             !org.wso2.carbon.identity.organization.scope.handler.internal.*,
-                            org.wso2.carbon.identity.organization.scope.handler.*; version="${parent.version}",
+                            org.wso2.carbon.identity.organization.scope.handler.*; version="${project.version}",
                         </Export-Package>
                         <Import-Package>
                             org.osgi.framework.*,
