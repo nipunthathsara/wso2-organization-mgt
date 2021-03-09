@@ -64,7 +64,7 @@
         <org.apache.cxf.version>3.3.1</org.apache.cxf.version>
         <com.fasterxml.jackson.jaxrs-json-provider-version>2.9.7</com.fasterxml.jackson.jaxrs-json-provider-version>
         <com.fasterxml.jackson.version>2.9.7</com.fasterxml.jackson.version>
-        <com.fasterxml.jackson.annotation.version>2.9.8</com.fasterxml.jackson.annotation.version>
+        <com.fasterxml.jackson.annotation.version>2.12.2</com.fasterxml.jackson.annotation.version>
         <springframework.spring-web.version>5.1.1.RELEASE</springframework.spring-web.version>
         <io.swagger.version>1.5.20</io.swagger.version>
         <json.wso2.version>3.0.0.wso2v1</json.wso2.version>
