@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
+import org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
@@ -428,6 +429,26 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                                 if (!isInternalCall) {
                                     preparedStatement.setString(++parameterIndex, userId);
                                 }
+                    });
+            return childOrganizationIds;
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_GET_CHILDREN_ERROR, "Organization Id " + organizationId,
+                    e);
+        }
+    }
+
+    @Override
+    public List<String> getAllOfChildOrganizationIds(String organizationId)
+            throws OrganizationManagementException {
+
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        try {
+            List<String> childOrganizationIds = jdbcTemplate.executeQuery(
+                    SQLConstants.FIND_ALL_CHILD_ORG_IDS,
+                    (resultSet, rowNumber) -> resultSet.getString(VIEW_ID_COLUMN),
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex, organizationId);
                     });
             return childOrganizationIds;
         } catch (DataAccessException e) {

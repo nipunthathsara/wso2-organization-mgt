@@ -34,7 +34,7 @@ import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import java.util.List;
 import java.util.Map;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.*;
 
 /**
  * Cached organization tree nodes for organization management.
@@ -172,6 +172,42 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
     }
 
     @Override
+    public List<String> getAllOfChildOrganizationIds(String organizationId)
+            throws OrganizationManagementException {
+
+        OrganizationCacheKey cacheKey =
+                new OrganizationCacheKey(String.format(ALL_CHILD_ORG_CACHE_KEY_FORMAT, organizationId));
+        OrganizationCacheEntry entry = organizationCache.getValueFromCache(cacheKey);
+
+        if (entry != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Cache entry found for organization id: " + organizationId);
+            }
+            List<String> childrenOrgs = entry.getChildrenOrganizations();
+            return childrenOrgs;
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug(
+                        "Fetching entry from DB because cache entry not found for organization id: " + organizationId);
+            }
+        }
+
+        List<String> childrenOrgs = organizationMgtDao.getAllOfChildOrganizationIds(organizationId);
+        if (childrenOrgs != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Entry fetched from the database for organization: " + organizationId + ". Updating cache");
+            }
+            organizationCache.addToCache(cacheKey, new OrganizationCacheEntry(childrenOrgs));
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("Children organizations for organization with id " + organizationId +
+                        " not found in cache or DB.");
+            }
+        }
+        return childrenOrgs;
+    }
+
+    @Override
     public void patchOrganization(String organizationId, Operation operation) throws OrganizationManagementException {
 
         String path = operation.getPath();
@@ -236,6 +272,8 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
             }
             OrganizationCacheKey cacheKey = new OrganizationCacheKey(organizationId);
             organizationCache.clearCacheEntry(cacheKey);
+            organizationCache.clearCacheEntry(
+                    new OrganizationCacheKey(String.format(ALL_CHILD_ORG_CACHE_KEY_FORMAT, organizationId)));
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("Entry for Organization with id " + organizationId + " not found in cache or DB");

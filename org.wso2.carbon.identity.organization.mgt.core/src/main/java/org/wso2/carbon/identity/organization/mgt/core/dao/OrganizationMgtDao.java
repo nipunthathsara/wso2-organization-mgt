@@ -25,6 +25,7 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -131,6 +132,18 @@ public interface OrganizationMgtDao {
      * @throws OrganizationManagementException
      */
     List<String> getChildOrganizationIds(String organizationId, String userId) throws OrganizationManagementException;
+
+    /**
+     * Fetch All the child organization IDs for a specified parent organization.
+     *
+     * @param organizationId
+     * @return
+     * @throws OrganizationManagementException
+     */
+    default List<String> getAllOfChildOrganizationIds(String organizationId) throws OrganizationManagementException {
+
+        return new ArrayList<>();
+    }
 
     /**
      * Add, remove or replace organization field, attribute or user store configuration.

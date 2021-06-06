@@ -191,6 +191,17 @@ public class SQLConstants {
             "    UM_ORG O\n" +
             "WHERE\n" +
             "    O.PARENT_ID = ?";
+    public static final String FIND_ALL_CHILD_ORG_IDS =
+            "SELECT \n" +
+            "    ID\n" +
+            "FROM \n" +
+            "    UM_ORG\n" +
+            "START WITH \n" +
+            "    PARENT_ID = ?\n" +
+            "CONNECT BY NOCYCLE  \n" +
+            "    PARENT_ID = PRIOR ID\n" +
+            "ORDER SIBLINGS BY \n" +
+            "    PARENT_ID;";
     // ORDER BY with DISTINCT requires to have the columns in the SELECT clause.
     public static final String GET_ALL_ORGANIZATION_IDS =
             "SELECT\n" +

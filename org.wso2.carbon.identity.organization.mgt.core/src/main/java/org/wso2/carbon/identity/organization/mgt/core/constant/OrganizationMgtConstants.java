@@ -34,6 +34,8 @@ public class OrganizationMgtConstants {
             "/t/%s/api/identity/organization-mgt/v1.0/organizations/%s";
     public static final String ACCOUNT_DISABLED_CLAIM_URI = "http://wso2.org/claims/identity/accountDisabled";
 
+    public static final String ALL_CHILD_ORG_CACHE_KEY_FORMAT = "child-of-parent-org-%";
+
     public static final String PATCH_OP_ADD = "add";
     public static final String PATCH_OP_REMOVE = "remove";
     public static final String PATCH_OP_REPLACE = "replace";

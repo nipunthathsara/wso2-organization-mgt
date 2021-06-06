@@ -138,21 +138,16 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
         List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
         // Get child organizations and add role mappings.
         if (CollectionUtils.isNotEmpty(usersGetPermissionsForSubOrgs)) {
-            Queue<String> organizationList = new LinkedList<>();
+            List<String> childOrganizationList = cacheBackedOrganizationMgtDAO.
+                    getAllOfChildOrganizationIds(organizationId);
             // Add starting organization populate role mapping for that.
-            organizationList.add(organizationId);
             organizationUserRoleMappings
                     .addAll(populateOrganizationUserRoleMappings(organizationId, roleId, hybridRoleId, organizationId,
                             usersGetPermissionsForSubOrgs));
-            while (!organizationList.isEmpty()) {
-                String currentOrgId = organizationList.remove();
-                List<String> children = cacheBackedOrganizationMgtDAO.getChildOrganizationIds(currentOrgId, null);
-                for (String childOrg : children) {
-                    organizationList.add(childOrg);
-                    organizationUserRoleMappings
-                            .addAll(populateOrganizationUserRoleMappings(childOrg, roleId, hybridRoleId, organizationId,
-                                    usersGetPermissionsForSubOrgs));
-                }
+            for (String childOrg : childOrganizationList) {
+                organizationUserRoleMappings
+                        .addAll(populateOrganizationUserRoleMappings(childOrg, roleId, hybridRoleId, organizationId,
+                                usersGetPermissionsForSubOrgs));
             }
         }
         // Populate role mappings for non-cascading assignments.
@@ -209,23 +204,18 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                 new CacheBackedOrganizationMgtDAO(organizationMgtDao);
         List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
         List<String> organizationListToBeDeleted = new ArrayList<>();
-        Queue<String> organizationsList = new LinkedList<>();
+        List<String> childOrganizationList = cacheBackedOrganizationMgtDAO.
+                getAllOfChildOrganizationIds(organizationId);
         int hybridRoleId = getHybridRoleIdFromSCIMGroupId(roleId);
-        organizationsList.add(organizationId);
-        while (!organizationsList.isEmpty()) {
-            String currentOrgId = organizationsList.remove();
-            List<String> children = cacheBackedOrganizationMgtDAO.getChildOrganizationIds(currentOrgId, null);
-            for (String childOrg : children) {
-                organizationsList.add(childOrg);
-                if (operationValue) {
-                    List<UserRoleMappingUser> userRoleMappings = new ArrayList<>();
-                    userRoleMappings.add(new UserRoleMappingUser(userId, operationValue));
-                    organizationUserRoleMappings
-                            .addAll(populateOrganizationUserRoleMappings(childOrg, roleId, hybridRoleId, organizationId,
-                                    userRoleMappings));
-                } else {
-                    organizationListToBeDeleted.add(childOrg);
-                }
+        for (String childOrg : childOrganizationList) {
+            if (operationValue) {
+                List<UserRoleMappingUser> userRoleMappings = new ArrayList<>();
+                userRoleMappings.add(new UserRoleMappingUser(userId, operationValue));
+                organizationUserRoleMappings
+                        .addAll(populateOrganizationUserRoleMappings(childOrg, roleId, hybridRoleId, organizationId,
+                                userRoleMappings));
+            } else {
+                organizationListToBeDeleted.add(childOrg);
             }
         }
         organizationUserRoleMgtDAO
@@ -273,26 +263,15 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
         mapping with include sub-org = false.
          */
         List<String> organizationListToBeDeleted = new ArrayList<>();
-        organizationListToBeDeleted.add(organizationId);
         if (directlyAssignedRoleMappingsInheritance == 1) {
             OrganizationMgtDao organizationMgtDao = new OrganizationMgtDaoImpl();
             CacheBackedOrganizationMgtDAO cacheBackedOrganizationMgtDAO =
                     new CacheBackedOrganizationMgtDAO(organizationMgtDao);
-            /*
-            Traverse the sub organizations and added as the organizations to be checked for deleting the
-            mentioned role mapping.
-             */
-            Queue<String> organizationsList = new LinkedList<>();
-            // Add starting organization.
-            organizationsList.add(organizationId);
-            while (!organizationsList.isEmpty()) {
-                String currentOrgId = organizationsList.remove();
-                List<String> children = cacheBackedOrganizationMgtDAO.getChildOrganizationIds(currentOrgId, null);
-                for (String childOrg : children) {
-                    organizationsList.add(childOrg);
-                    organizationListToBeDeleted.add(childOrg);
-                }
-            }
+            organizationListToBeDeleted = cacheBackedOrganizationMgtDAO.
+                    getAllOfChildOrganizationIds(organizationId);
+            organizationListToBeDeleted.add(organizationId);
+        } else {
+            organizationListToBeDeleted.add(organizationId);
         }
         organizationUserRoleMgtDAO
                 .deleteOrganizationsUserRoleMapping(organizationId, organizationListToBeDeleted, userId, roleId,
