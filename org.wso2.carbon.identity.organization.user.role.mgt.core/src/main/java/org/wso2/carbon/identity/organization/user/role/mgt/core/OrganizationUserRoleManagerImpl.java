@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.stream.Collectors;
 
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.INSERT_ROLES_WITH_STORED_PROCEDURE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.DATA;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.ORGANIZATION_ID;
@@ -135,27 +136,34 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                     " for tenant Id " + getTenantId());
         }
 
-        List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
-        // Get child organizations and add role mappings.
-        if (CollectionUtils.isNotEmpty(usersGetPermissionsForSubOrgs)) {
-            List<String> childOrganizationList = cacheBackedOrganizationMgtDAO.
-                    getAllOfChildOrganizationIds(organizationId);
-            // Add starting organization populate role mapping for that.
+        String useSpforInsert = System.getProperty(INSERT_ROLES_WITH_STORED_PROCEDURE);
+
+        if (StringUtils.isNotBlank(useSpforInsert) && Boolean.parseBoolean(useSpforInsert)) {
+            organizationUserRoleMgtDAO.addOrganizationUserRoleMappingsWithSp(usersGetPermissionsForSubOrgs, roleId,
+                    hybridRoleId, getTenantId(), organizationId);
+        } else {
+            List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
+            // Get child organizations and add role mappings.
+            if (CollectionUtils.isNotEmpty(usersGetPermissionsForSubOrgs)) {
+                List<String> childOrganizationList = cacheBackedOrganizationMgtDAO.
+                        getAllOfChildOrganizationIds(organizationId);
+                // Add starting organization populate role mapping for that.
+                organizationUserRoleMappings
+                        .addAll(populateOrganizationUserRoleMappings(organizationId, roleId, hybridRoleId, organizationId,
+                                usersGetPermissionsForSubOrgs));
+                for (String childOrg : childOrganizationList) {
+                    organizationUserRoleMappings
+                            .addAll(populateOrganizationUserRoleMappings(childOrg, roleId, hybridRoleId, organizationId,
+                                    usersGetPermissionsForSubOrgs));
+                }
+            }
+            // Populate role mappings for non-cascading assignments.
             organizationUserRoleMappings
                     .addAll(populateOrganizationUserRoleMappings(organizationId, roleId, hybridRoleId, organizationId,
-                            usersGetPermissionsForSubOrgs));
-            for (String childOrg : childOrganizationList) {
-                organizationUserRoleMappings
-                        .addAll(populateOrganizationUserRoleMappings(childOrg, roleId, hybridRoleId, organizationId,
-                                usersGetPermissionsForSubOrgs));
-            }
+                            usersGetPermissionOnlyToOneOrg));
+            organizationUserRoleMgtDAO
+                    .addOrganizationUserRoleMappings(organizationUserRoleMappings, getTenantId());
         }
-        // Populate role mappings for non-cascading assignments.
-        organizationUserRoleMappings
-                .addAll(populateOrganizationUserRoleMappings(organizationId, roleId, hybridRoleId, organizationId,
-                        usersGetPermissionOnlyToOneOrg));
-        organizationUserRoleMgtDAO
-                .addOrganizationUserRoleMappings(organizationUserRoleMappings, getTenantId());
         // Fire post-event.
         OrganizationUserRoleMappingForEvent organizationUserRoleMappingForEvent =
                 new OrganizationUserRoleMappingForEvent(organizationId, roleId, userRoleMapping.getUsers().stream()

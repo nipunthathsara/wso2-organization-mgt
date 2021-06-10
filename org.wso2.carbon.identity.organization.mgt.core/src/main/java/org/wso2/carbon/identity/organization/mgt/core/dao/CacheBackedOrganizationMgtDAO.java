@@ -176,7 +176,7 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
             throws OrganizationManagementException {
 
         OrganizationCacheKey cacheKey =
-                new OrganizationCacheKey(String.format(ALL_CHILD_ORG_CACHE_KEY_FORMAT, organizationId));
+                new OrganizationCacheKey(String.format(ALL_LEVEL_CHILD_ORG_LIST_CACHE_KEY_FORMAT, organizationId));
         OrganizationCacheEntry entry = organizationCache.getValueFromCache(cacheKey);
 
         if (entry != null) {
@@ -273,7 +273,7 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
             OrganizationCacheKey cacheKey = new OrganizationCacheKey(organizationId);
             organizationCache.clearCacheEntry(cacheKey);
             organizationCache.clearCacheEntry(
-                    new OrganizationCacheKey(String.format(ALL_CHILD_ORG_CACHE_KEY_FORMAT, organizationId)));
+                    new OrganizationCacheKey(String.format(ALL_LEVEL_CHILD_ORG_LIST_CACHE_KEY_FORMAT, organizationId)));
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("Entry for Organization with id " + organizationId + " not found in cache or DB");

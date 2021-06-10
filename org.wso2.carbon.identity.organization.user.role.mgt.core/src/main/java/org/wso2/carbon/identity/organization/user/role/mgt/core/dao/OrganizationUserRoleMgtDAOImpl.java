@@ -23,16 +23,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.database.utils.jdbc.exceptions.TransactionException;
+import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleAssignedLevel;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleAssignment;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleMember;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.*;
 import org.wso2.carbon.identity.scim2.common.impl.IdentitySCIMManager;
 import org.wso2.charon3.core.exceptions.CharonException;
 import org.wso2.charon3.core.extensions.UserManager;
@@ -40,6 +40,9 @@ import org.wso2.charon3.core.protocol.SCIMResponse;
 import org.wso2.charon3.core.protocol.endpoints.UserResourceManager;
 
 import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -88,6 +91,8 @@ import static org.wso2.carbon.identity.organization.user.role.mgt.core.util.Util
  */
 public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDAO {
 
+    private static final Log LOG = LogFactory.getLog(OrganizationUserRoleMgtDAOImpl.class);
+
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public void addOrganizationUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings,
@@ -115,6 +120,43 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                         }
                     }, organizationUserRoleMappings, false);
         } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR, "", e);
+        }
+    }
+
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
+    @Override
+    public void addOrganizationUserRoleMappingsWithSp (List<UserRoleMappingUser> userList, String roleId,
+                                                      int hybridRoleId, int tenantID, String assignedAt)
+            throws OrganizationUserRoleMgtException {
+
+        try (Connection connection = IdentityDatabaseUtil.getDBConnection(true)) {
+            try (CallableStatement callableStatement = connection
+                    .prepareCall(SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING_USING_SP)) {
+                for (UserRoleMappingUser user: userList) {
+                    callableStatement.setString(1, user.getUserId());
+                    callableStatement.setString(2, roleId);
+                    callableStatement.setInt(3, hybridRoleId);
+                    callableStatement.setInt(4, tenantID);
+                    callableStatement.setString(5, assignedAt);
+                    callableStatement.setInt(6, user.isCascadedRole() ? 1 : 0);
+
+                    callableStatement.addBatch();
+                }
+                //execute batch insert
+                callableStatement.executeBatch();
+                IdentityDatabaseUtil.commitTransaction(connection);
+            } catch (SQLException e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Error occurred while executing the batch insert: ", e);
+                }
+                IdentityDatabaseUtil.rollbackTransaction(connection);
+                throw handleServerException(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR, "", e);
+            }
+        } catch (Exception e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Error occurred while executing the batch insert: ", e);
+            }
             throw handleServerException(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR, "", e);
         }
     }

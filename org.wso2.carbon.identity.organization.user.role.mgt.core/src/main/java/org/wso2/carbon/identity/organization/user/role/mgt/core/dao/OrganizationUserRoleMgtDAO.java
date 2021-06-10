@@ -23,6 +23,7 @@ import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.Organi
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleMember;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMappingUser;
 
 import java.util.List;
 
@@ -33,6 +34,12 @@ public interface OrganizationUserRoleMgtDAO {
 
     void addOrganizationUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings, int tenantID)
             throws OrganizationUserRoleMgtException;
+
+    default void addOrganizationUserRoleMappingsWithSp(List<UserRoleMappingUser> userIdList, String roleId,
+                                                       int hybridRoleId, int tenantID, String assignedAt)
+            throws OrganizationUserRoleMgtException {
+        return;
+    }
 
     List<RoleMember> getUserIdsByOrganizationAndRole(String organizationID, String roleId, int offset, int limit,
                                                      List<String> requestedAttributes, int tenantID, String filter)
