@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.database.utils.jdbc.exceptions.TransactionException;
+import org.wso2.carbon.identity.core.persistence.UmPersistenceManager;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
@@ -42,6 +43,7 @@ import org.wso2.charon3.core.protocol.endpoints.UserResourceManager;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,7 +132,8 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                                                       int hybridRoleId, int tenantID, String assignedAt)
             throws OrganizationUserRoleMgtException {
 
-        try (Connection connection = IdentityDatabaseUtil.getDBConnection(true)) {
+        try (Connection connection = IdentityDatabaseUtil.getUserDBConnection()) {
+            connection.setAutoCommit(false);
             try (CallableStatement callableStatement = connection
                     .prepareCall(SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING_USING_SP)) {
                 for (UserRoleMappingUser user: userList) {
@@ -145,12 +148,12 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
                 }
                 //execute batch insert
                 callableStatement.executeBatch();
-                IdentityDatabaseUtil.commitTransaction(connection);
+                connection.commit();
             } catch (SQLException e) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Error occurred while executing the batch insert: ", e);
                 }
-                IdentityDatabaseUtil.rollbackTransaction(connection);
+                connection.rollback();
                 throw handleServerException(ERROR_CODE_ORGANIZATION_USER_ROLE_MAPPINGS_ADD_ERROR, "", e);
             }
         } catch (Exception e) {
