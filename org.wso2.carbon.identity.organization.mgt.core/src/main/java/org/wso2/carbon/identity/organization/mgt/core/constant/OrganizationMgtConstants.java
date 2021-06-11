@@ -34,7 +34,7 @@ public class OrganizationMgtConstants {
             "/t/%s/api/identity/organization-mgt/v1.0/organizations/%s";
     public static final String ACCOUNT_DISABLED_CLAIM_URI = "http://wso2.org/claims/identity/accountDisabled";
 
-    public static final String ALL_LEVEL_CHILD_ORG_LIST_CACHE_KEY_FORMAT = "all-lvl-childs-of-%";
+    public static final String CASCADED_CHILD_ORG_LIST_CACHE_KEY_FORMAT = "cascaded-children-%s";
     public static final String INSERT_ROLES_WITH_STORED_PROCEDURE = "useSpForInsertOrgRoleMapping";
 
     public static final String PATCH_OP_ADD = "add";

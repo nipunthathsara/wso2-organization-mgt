@@ -133,8 +133,9 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                     OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
                     " for tenant Id " + getTenantId());
         }
-
-        if (Boolean.parseBoolean(System.getProperty(INSERT_ROLES_WITH_STORED_PROCEDURE))) {
+        String isCascadeInsert = System.getProperty(INSERT_ROLES_WITH_STORED_PROCEDURE);
+        // Defaults to SP when property is not available.
+        if (isCascadeInsert == null || Boolean.parseBoolean(isCascadeInsert)) {
             organizationUserRoleMgtDAO.addOrganizationUserRoleMappingsWithSp(usersGetPermissionsForSubOrgs, roleId,
                     hybridRoleId, getTenantId(), organizationId);
         } else {
