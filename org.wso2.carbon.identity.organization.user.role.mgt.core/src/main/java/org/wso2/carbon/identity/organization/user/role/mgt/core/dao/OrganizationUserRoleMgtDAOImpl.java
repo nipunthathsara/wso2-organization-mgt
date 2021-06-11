@@ -28,12 +28,16 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
 import org.wso2.carbon.database.utils.jdbc.exceptions.TransactionException;
-import org.wso2.carbon.identity.core.persistence.UmPersistenceManager;
 import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.constant.SQLConstants;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtException;
 import org.wso2.carbon.identity.organization.user.role.mgt.core.exception.OrganizationUserRoleMgtServerException;
-import org.wso2.carbon.identity.organization.user.role.mgt.core.model.*;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.OrganizationUserRoleMapping;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.Role;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleAssignedLevel;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleAssignment;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.RoleMember;
+import org.wso2.carbon.identity.organization.user.role.mgt.core.model.UserRoleMappingUser;
 import org.wso2.carbon.identity.scim2.common.impl.IdentitySCIMManager;
 import org.wso2.charon3.core.exceptions.CharonException;
 import org.wso2.charon3.core.extensions.UserManager;
@@ -43,7 +47,6 @@ import org.wso2.charon3.core.protocol.endpoints.UserResourceManager;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -129,7 +132,7 @@ public class OrganizationUserRoleMgtDAOImpl implements OrganizationUserRoleMgtDA
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public void addOrganizationUserRoleMappingsWithSp (List<UserRoleMappingUser> userList, String roleId,
-                                                      int hybridRoleId, int tenantID, String assignedAt)
+                                                       int hybridRoleId, int tenantID, String assignedAt)
             throws OrganizationUserRoleMgtException {
 
         try (Connection connection = IdentityDatabaseUtil.getUserDBConnection()) {

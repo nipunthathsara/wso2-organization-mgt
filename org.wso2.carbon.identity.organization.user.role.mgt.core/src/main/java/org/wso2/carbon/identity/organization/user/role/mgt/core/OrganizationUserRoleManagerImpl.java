@@ -52,11 +52,9 @@ import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Queue;
 import java.util.stream.Collectors;
 
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.INSERT_ROLES_WITH_STORED_PROCEDURE;
@@ -136,9 +134,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                     " for tenant Id " + getTenantId());
         }
 
-        String useSpforInsert = System.getProperty(INSERT_ROLES_WITH_STORED_PROCEDURE);
-
-        if (StringUtils.isNotBlank(useSpforInsert) && Boolean.parseBoolean(useSpforInsert)) {
+        if (Boolean.parseBoolean(System.getProperty(INSERT_ROLES_WITH_STORED_PROCEDURE))) {
             organizationUserRoleMgtDAO.addOrganizationUserRoleMappingsWithSp(usersGetPermissionsForSubOrgs, roleId,
                     hybridRoleId, getTenantId(), organizationId);
         } else {
@@ -146,7 +142,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
             // Get child organizations and add role mappings.
             if (CollectionUtils.isNotEmpty(usersGetPermissionsForSubOrgs)) {
                 List<String> childOrganizationList = cacheBackedOrganizationMgtDAO.
-                        getAllOfChildOrganizationIds(organizationId);
+                        getAllCascadedChildOrganizationIds(organizationId);
                 // Add starting organization populate role mapping for that.
                 organizationUserRoleMappings
                         .addAll(populateOrganizationUserRoleMappings(organizationId, roleId, hybridRoleId, organizationId,
@@ -213,7 +209,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
         List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
         List<String> organizationListToBeDeleted = new ArrayList<>();
         List<String> childOrganizationList = cacheBackedOrganizationMgtDAO.
-                getAllOfChildOrganizationIds(organizationId);
+                getAllCascadedChildOrganizationIds(organizationId);
         int hybridRoleId = getHybridRoleIdFromSCIMGroupId(roleId);
         for (String childOrg : childOrganizationList) {
             if (operationValue) {
@@ -276,7 +272,7 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
             CacheBackedOrganizationMgtDAO cacheBackedOrganizationMgtDAO =
                     new CacheBackedOrganizationMgtDAO(organizationMgtDao);
             organizationListToBeDeleted = cacheBackedOrganizationMgtDAO.
-                    getAllOfChildOrganizationIds(organizationId);
+                    getAllCascadedChildOrganizationIds(organizationId);
             organizationListToBeDeleted.add(organizationId);
         } else {
             organizationListToBeDeleted.add(organizationId);

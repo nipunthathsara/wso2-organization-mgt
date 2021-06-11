@@ -134,16 +134,13 @@ public interface OrganizationMgtDao {
     List<String> getChildOrganizationIds(String organizationId, String userId) throws OrganizationManagementException;
 
     /**
-     * Fetch All the child organization IDs for a specified parent organization.
+     * Fetch all the child organization IDs for a specified parent organization.
      *
      * @param organizationId
      * @return
      * @throws OrganizationManagementException
      */
-    default List<String> getAllOfChildOrganizationIds(String organizationId) throws OrganizationManagementException {
-
-        return new ArrayList<>();
-    }
+    List<String> getAllCascadedChildOrganizationIds(String organizationId) throws OrganizationManagementException;
 
     /**
      * Add, remove or replace organization field, attribute or user store configuration.

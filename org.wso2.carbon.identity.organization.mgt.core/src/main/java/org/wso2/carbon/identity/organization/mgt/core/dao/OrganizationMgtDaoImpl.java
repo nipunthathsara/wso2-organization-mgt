@@ -438,7 +438,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     }
 
     @Override
-    public List<String> getAllOfChildOrganizationIds(String organizationId)
+    public List<String> getAllCascadedChildOrganizationIds(String organizationId)
             throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -446,10 +446,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             List<String> childOrganizationIds = jdbcTemplate.executeQuery(
                     SQLConstants.FIND_ALL_CHILD_ORG_IDS,
                     (resultSet, rowNumber) -> resultSet.getString(VIEW_ID_COLUMN),
-                    preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    });
+                    preparedStatement ->
+                        preparedStatement.setString(1, organizationId));
             return childOrganizationIds;
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_CHILDREN_ERROR, "Organization Id " + organizationId,

@@ -34,7 +34,8 @@ import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 import java.util.List;
 import java.util.Map;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.*;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ALL_LEVEL_CHILD_ORG_LIST_CACHE_KEY_FORMAT;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
 
 /**
  * Cached organization tree nodes for organization management.
@@ -172,7 +173,7 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
     }
 
     @Override
-    public List<String> getAllOfChildOrganizationIds(String organizationId)
+    public List<String> getAllCascadedChildOrganizationIds(String organizationId)
             throws OrganizationManagementException {
 
         OrganizationCacheKey cacheKey =
@@ -192,7 +193,7 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
             }
         }
 
-        List<String> childrenOrgs = organizationMgtDao.getAllOfChildOrganizationIds(organizationId);
+        List<String> childrenOrgs = organizationMgtDao.getAllCascadedChildOrganizationIds(organizationId);
         if (childrenOrgs != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Entry fetched from the database for organization: " + organizationId + ". Updating cache");
