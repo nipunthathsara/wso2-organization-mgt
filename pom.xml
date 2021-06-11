@@ -26,7 +26,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.wso2.carbon.identity.framework</groupId>
     <artifactId>organization-mgt</artifactId>
-    <version>0.24-SNAPSHOT</version>
+    <version>0.24</version>
     <packaging>pom</packaging>
     <name>WSO2 - Organization Management Module</name>
     <description>Hierarchical organization management with REST API support.</description>
