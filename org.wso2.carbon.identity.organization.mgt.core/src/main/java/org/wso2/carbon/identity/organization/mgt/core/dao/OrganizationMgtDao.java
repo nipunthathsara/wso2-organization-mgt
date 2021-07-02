@@ -142,6 +142,16 @@ public interface OrganizationMgtDao {
     void patchOrganization(String organizationId, Operation operation) throws OrganizationManagementException;
 
     /**
+     * Add, remove or replace multiple organization fields, attributes or user store configurations with single DB statement
+     *
+     * @param organizationId
+     * @param operations
+     * @throws OrganizationManagementException
+     */
+    void patchOrganizationMultipleAttributes(String organizationId, List<Operation> operations)
+            throws OrganizationManagementException;
+
+    /**
      * Patch user store configurations of the organization identified by the provided ID.
      *
      * @param organizationId
