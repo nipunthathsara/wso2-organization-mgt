@@ -313,13 +313,11 @@ public class SQLConstants {
             "     UM_USER_ROLE_ORG URO,\n" +
             "     UM_HYBRID_ROLE UHR,\n" +
             "     UM_ROLE_PERMISSION URP,\n" +
-            "     UM_PERMISSION UP,\n" +
-            "     UM_ORG UO\n" +
+            "     UM_PERMISSION UP\n" +
             "WHERE\n" +
             "     URO.UM_HYBRID_ROLE_ID = UHR.UM_ID (+) AND\n" +
             "     UHR.UM_ROLE_NAME = URP.UM_ROLE_NAME (+) AND\n" +
             "     URP.UM_PERMISSION_ID = UP.UM_ID (+) AND\n" +
-            "     URO.ORG_ID = UO.ID(+) AND\n" +
             "     UP.UM_RESOURCE_ID IN (\n" +
             "        '/permission/admin',\n" +
             "        '/permission/admin/manage',\n" +
@@ -336,6 +334,23 @@ public class SQLConstants {
                     "OR UM_RESOURCE_ID = '/permission/admin/manage/identity' " +
                     "OR UM_RESOURCE_ID = ? " +
                     "OR UM_RESOURCE_ID = ?)";
+    public static final String IS_USER_AUTHORIZED_WITHOUT_VIEW =
+            "SELECT\n" +
+            "     COUNT(1)\n" +
+            "FROM\n" +
+            "     UM_USER_ROLE_ORG URO,\n" +
+            "     UM_HYBRID_ROLE UHR,\n" +
+            "     UM_ROLE_PERMISSION URP,\n" +
+            "     UM_PERMISSION UP\n" +
+            "WHERE\n" +
+            "     URO.UM_HYBRID_ROLE_ID = UHR.UM_ID (+) AND\n" +
+            "     UHR.UM_ROLE_NAME = URP.UM_ROLE_NAME (+) AND\n" +
+            "     URP.UM_PERMISSION_ID = UP.UM_ID (+) AND\n" +
+            "     URO.UM_USER_ID = ? AND URO.ORG_ID = ? AND\n" +
+            "     UP.UM_RESOURCE_ID IN (\n" +
+            "        '/permission/admin',\n" +
+            "        '/permission/admin/manage',\n" +
+            "        '/permission/admin/manage/identity', ?, ?)";
     public static final String ADD_USER_ROLE_ORG_MAPPING =
             "INSERT INTO\n" +
             "    UM_USER_ROLE_ORG\n" +
@@ -363,6 +378,19 @@ public class SQLConstants {
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
             "    UM_USER_ID = ? AND ORG_ID IN (#)";
+    public static final String GET_USER_ORGANIZATIONS_PERMISSIONS_WITHOUT_VIEW =
+            "SELECT\n" +
+            "     DISTINCT UM_RESOURCE_ID, ORG_ID\n" +
+            "FROM\n" +
+            "     UM_USER_ROLE_ORG URO,\n" +
+            "     UM_HYBRID_ROLE UHR,\n" +
+            "     UM_ROLE_PERMISSION URP,\n" +
+            "     UM_PERMISSION UP\n" +
+            "WHERE\n" +
+            "     URO.UM_HYBRID_ROLE_ID = UHR.UM_ID (+) AND\n" +
+            "     UHR.UM_ROLE_NAME = URP.UM_ROLE_NAME (+) AND\n" +
+            "     URP.UM_PERMISSION_ID = UP.UM_ID (+) AND\n" +
+            "     URO.UM_USER_ID = ? AND URO.ORG_ID IN (#)";
     public static final String GET_USER_ROLE_ORG_MAPPINGS_DELEGATE_TO_NEW_ORG =
             "SELECT\n" +
             "    UM_USER_ID, UM_ROLE_ID, UM_HYBRID_ROLE_ID, ASSIGNED_AT, INHERIT\n" +
@@ -382,6 +410,19 @@ public class SQLConstants {
             "    ORG_AUTHZ_VIEW\n" +
             "WHERE\n" +
             "    UM_USER_ID = ?";
+    public static final String GET_USER_PERMISSIONS_WITHOUT_VIEW =
+            "SELECT\n" +
+            "     DISTINCT UM_RESOURCE_ID\n" +
+            "FROM\n" +
+            "     UM_USER_ROLE_ORG URO,\n" +
+            "     UM_HYBRID_ROLE UHR,\n" +
+            "     UM_ROLE_PERMISSION URP,\n" +
+            "     UM_PERMISSION UP\n" +
+            "WHERE\n" +
+            "     URO.UM_HYBRID_ROLE_ID = UHR.UM_ID (+) AND\n" +
+            "     UHR.UM_ROLE_NAME = URP.UM_ROLE_NAME (+) AND\n" +
+            "     URP.UM_PERMISSION_ID = UP.UM_ID (+) AND\n" +
+            "     URO.UM_USER_ID = ?";
     // Permissions can be assigned at base levels or leaf level. Hence, multiple UM_RESOURCE_IDs.
     public static final String GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS =
             "SELECT\n" +

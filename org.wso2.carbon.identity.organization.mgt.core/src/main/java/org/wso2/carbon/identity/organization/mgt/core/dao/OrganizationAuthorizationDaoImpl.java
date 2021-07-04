@@ -73,7 +73,8 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                                 : permission));
         try {
             int mappingsCount = jdbcTemplate
-                    .fetchSingleRecord(IS_USER_AUTHORIZED, (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
+                    .fetchSingleRecord(isViewsInUse() ? IS_USER_AUTHORIZED : IS_USER_AUTHORIZED_WITHOUT_VIEW,
+                            (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
                             preparedStatement -> {
                                 int parameterIndex = 0;
                                 preparedStatement.setString(++parameterIndex, userId);
@@ -157,7 +158,8 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
     public Map<String, List<String>> findUserPermissionsForOrganizations(JdbcTemplate template, String userId,
             List<String> organizationIds, boolean listAsAdmin) throws OrganizationManagementException {
 
-        String query = GET_USER_ORGANIZATIONS_PERMISSIONS;
+        String query = isViewsInUse() ?
+                GET_USER_ORGANIZATIONS_PERMISSIONS : GET_USER_ORGANIZATIONS_PERMISSIONS_WITHOUT_VIEW;
         StringJoiner sj = new StringJoiner(",");
         for (String id : organizationIds) {
             sj.add("'" + id + "'");
@@ -264,7 +266,8 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
 
         List<String> permissions;
         try {
-            permissions = template.executeQuery(GET_USER_PERMISSIONS, (resultSet, rowNumber) ->
+            permissions = template.executeQuery(isViewsInUse() ?
+                    GET_USER_PERMISSIONS : GET_USER_PERMISSIONS_WITHOUT_VIEW, (resultSet, rowNumber) ->
                     resultSet.getString(UM_RESOURCE_ID_COLUMN), preparedStatement -> {
                 int parameterIndex = 0;
                 preparedStatement.setString(++parameterIndex, userId);
@@ -290,7 +293,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         String query;
         if (listByNames) {
             query = isViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES :
-                    GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS_WITHOUT_VIEW;
+                    GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES_WITHOUT_VIEW;
         } else {
             query = isViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS :
                     GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS_WITHOUT_VIEW;

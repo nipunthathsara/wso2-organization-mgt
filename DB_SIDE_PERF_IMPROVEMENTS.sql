@@ -109,7 +109,7 @@ CREATE MATERIALIZED VIEW ORG_MGT_VIEW
     BUILD IMMEDIATE
     REFRESH
         FAST
-        ON DEMAND
+        ON COMMIT
 ENABLE QUERY REWRITE AS
     SELECT
         N.ROWID    N_ROWID,
@@ -169,41 +169,41 @@ ENABLE QUERY REWRITE AS
 DROP VIEW ORG_AUTHZ_VIEW;
 
 --Need to drop ORG_AUTHZ_VIEW materialized view if already existing
---DROP MATERIALIZED VIEW ORG_AUTHZ_VIEW;
+DROP MATERIALIZED VIEW ORG_AUTHZ_VIEW;
 
---Create ORG_AUTHZ_VIEW materialized view
-CREATE MATERIALIZED VIEW ORG_AUTHZ_VIEW
-BUILD IMMEDIATE
-REFRESH FAST ON COMMIT
-ENABLE QUERY REWRITE
-AS SELECT URO.ROWID URO_ROWID,
-          UHR.ROWID UHR_ROWID,
-          URP.ROWID URP_ROWID,
-          UP.ROWID  UP_ROWID,
-          UO.ROWID  UO_ROWID,
-          URP.UM_PERMISSION_ID,
-          URO.UM_ROLE_ID,
-          URO.UM_HYBRID_ROLE_ID,
-          URP.UM_ROLE_NAME,
-          URP.UM_IS_ALLOWED,
-          URP.UM_TENANT_ID,
-          URP.UM_DOMAIN_ID,
-          UP.UM_RESOURCE_ID,
-          UP.UM_ACTION,
-          UHR.UM_ID,
-          URO.UM_USER_ID,
-          URO.ORG_ID,
-          UO.NAME
-   FROM   UM_USER_ROLE_ORG URO,
-          UM_HYBRID_ROLE UHR,
-          UM_ROLE_PERMISSION URP,
-          UM_PERMISSION UP,
-          UM_ORG UO
-   WHERE  URO.UM_HYBRID_ROLE_ID = UHR.UM_ID (+)
-          AND UHR.UM_ROLE_NAME = URP.UM_ROLE_NAME (+)
-          AND URP.UM_PERMISSION_ID = UP.UM_ID (+)
-          AND URO.ORG_ID = UO.ID(+);
-/
+--Create ORG_AUTHZ_VIEW materialized view, This was disabled due to performance issues
+--CREATE MATERIALIZED VIEW ORG_AUTHZ_VIEW
+--BUILD IMMEDIATE
+--REFRESH FAST ON COMMIT
+--ENABLE QUERY REWRITE
+--AS SELECT URO.ROWID URO_ROWID,
+--          UHR.ROWID UHR_ROWID,
+--          URP.ROWID URP_ROWID,
+--          UP.ROWID  UP_ROWID,
+--          UO.ROWID  UO_ROWID,
+--          URP.UM_PERMISSION_ID,
+--          URO.UM_ROLE_ID,
+--          URO.UM_HYBRID_ROLE_ID,
+--          URP.UM_ROLE_NAME,
+--          URP.UM_IS_ALLOWED,
+--          URP.UM_TENANT_ID,
+--          URP.UM_DOMAIN_ID,
+--          UP.UM_RESOURCE_ID,
+--          UP.UM_ACTION,
+--          UHR.UM_ID,
+--          URO.UM_USER_ID,
+--          URO.ORG_ID,
+--          UO.NAME
+--   FROM   UM_USER_ROLE_ORG URO,
+--          UM_HYBRID_ROLE UHR,
+--          UM_ROLE_PERMISSION URP,
+--          UM_PERMISSION UP,
+--          UM_ORG UO
+--   WHERE  URO.UM_HYBRID_ROLE_ID = UHR.UM_ID (+)
+--          AND UHR.UM_ROLE_NAME = URP.UM_ROLE_NAME (+)
+--          AND URP.UM_PERMISSION_ID = UP.UM_ID (+)
+--          AND URO.ORG_ID = UO.ID(+);
+--/
 
 --Create a java source to randomly generate UUIDs
 CREATE OR REPLACE AND COMPILE JAVA SOURCE NAMED "RandomUUID"
