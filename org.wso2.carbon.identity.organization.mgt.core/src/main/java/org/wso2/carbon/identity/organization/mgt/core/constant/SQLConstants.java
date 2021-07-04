@@ -29,28 +29,28 @@ public class SQLConstants {
             IdentityUtil.getProperty("ConfigurationStore.MaximumQueryLengthInBytes");
     public static final String CHECK_ORGANIZATION_EXIST_BY_NAME =
             "SELECT\n" +
-            "    COUNT(ID)\n" +
+            "    COUNT(1)\n" +
             "FROM\n" +
             "    UM_ORG\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND NAME = ?";
     public static final String CHECK_ORGANIZATION_EXIST_BY_ID =
             "SELECT\n" +
-            "    COUNT(ID)\n" +
+            "    COUNT(1)\n" +
             "FROM\n" +
             "    UM_ORG\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND ID = ?";
     public static final String CHECK_ATTRIBUTE_EXIST_BY_KEY =
             "SELECT\n" +
-            "    COUNT(ID)\n" +
+            "    COUNT(1)\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND ID = ? AND ATTR_KEY = ?";
     public static final String CHECK_ORG_HAS_ATTRIBUTES =
             "SELECT\n" +
-            "    COUNT(ID)\n" +
+            "    COUNT(1)\n" +
             "FROM\n" +
             "    UM_ORG_ATTRIBUTES\n" +
             "WHERE\n" +
@@ -69,7 +69,7 @@ public class SQLConstants {
             "    UM_ORG\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND NAME = ?";
-    public static final String COUNT_COLUMN = "COUNT(ID)";
+    public static final String COUNT_COLUMN = "COUNT(1)";
     public static final String VIEW_ID_COLUMN = "ID";
     public static final String VIEW_ORG_ID_COLUMN = "ORG_ID";
     public static final String VIEW_TENANT_ID_COLUMN = "TENANT_ID";
@@ -290,7 +290,7 @@ public class SQLConstants {
     // LDAP OU names are case insensitive
     public static final String CHECK_RDN_AVAILABILITY =
             "SELECT\n" +
-            "    COUNT(ID)\n" +
+            "    COUNT(1)\n" +
             "FROM\n" +
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
