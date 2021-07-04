@@ -19,6 +19,7 @@
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
@@ -89,65 +90,8 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROLE_MGT_BASE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_MGT_BASE_PERMISSION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ATTRIBUTE_EXIST_BY_KEY;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_ID;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORGANIZATION_EXIST_BY_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_ORG_HAS_ATTRIBUTES;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CHECK_RDN_AVAILABILITY;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DEFAULT_CONDITION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.DELETE_ORGANIZATION_BY_ID;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_AUTHORIZED_CHILD_ORG_IDS;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATIONS_BY_IDS;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_BY_ID;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_ID_BY_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ROLE_IDS_FOR_PERMISSION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_STORE_CONFIGS_BY_ORG_ID;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES_CONCLUDE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ORGANIZATION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_ATTRIBUTE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_OR_UPDATE_USER_STORE_CONFIG;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INTERSECT;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.LIKE_SYMBOL;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ORDER_BY;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PAGINATION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_ORGANIZATION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_ORGANIZATION_CONCLUDE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.PATCH_USER_STORE_CONFIG;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.REMOVE_ATTRIBUTE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ROLE_ID_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UPDATE_HAS_ATTRIBUTES_FIELD;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UPDATE_ORGANIZATION_METADATA;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_ID_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_KEY_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ATTR_VALUE_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_ID_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_KEY_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CONFIG_VALUE_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_BY_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_CREATED_TIME_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DESCRIPTION_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_DISPLAY_NAME_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_HAS_ATTRIBUTES_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ID_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_BY_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_LAST_MODIFIED_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_DISPLAY_NAME_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_ID_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_NAME_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_STATUS_COLUMN;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getMaximumQueryLengthInBytes;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewTemplate;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.*;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.*;
 
 /**
  * Organization mgt dao implementation.
@@ -176,7 +120,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 preparedStatement.setString(++parameterIndex, organization.getMetadata().getLastModifiedBy().getId());
                 preparedStatement.setInt(++parameterIndex, organization.hasAttributes() ? 1 : 0);
                 preparedStatement.setString(++parameterIndex, organization.getStatus().toString());
-                preparedStatement.setString(++parameterIndex, organization.getParent().getId());
+                preparedStatement.setString(++parameterIndex, StringUtils.isNotBlank(organization.getParent().getId()) ?
+                        organization.getParent().getId() : organization.getParent().getRootParentId());
             }, organization, false);
             if (organization.hasAttributes()) {
                 insertOrganizationAttributes(jdbcTemplate, organization);
@@ -462,17 +407,21 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             List<UserStoreConfig> userStoreConfigs = jdbcTemplate
-                    .executeQuery(GET_USER_STORE_CONFIGS_BY_ORG_ID, (resultSet, rowNumber) -> {
-                        UserStoreConfig config = new UserStoreConfig();
-                        config.setId(resultSet.getString(VIEW_CONFIG_ID_COLUMN));
-                        config.setKey(resultSet.getString(VIEW_CONFIG_KEY_COLUMN));
-                        config.setValue(resultSet.getString(VIEW_CONFIG_VALUE_COLUMN));
-                        return config;
-                    }, preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    });
+                    .executeQuery(
+                        isViewsInUse() ? GET_USER_STORE_CONFIGS_BY_ORG_ID :
+                                GET_USER_STORE_CONFIGS_BY_ORG_ID_WITHOUT_VIEWS,
+                        (resultSet, rowNumber) -> {
+                            UserStoreConfig config = new UserStoreConfig();
+                            config.setId(resultSet.getString(VIEW_CONFIG_ID_COLUMN));
+                            config.setKey(resultSet.getString(VIEW_CONFIG_KEY_COLUMN));
+                            config.setValue(resultSet.getString(VIEW_CONFIG_VALUE_COLUMN));
+                            return config;
+                        },
+                        preparedStatement -> {
+                            int parameterIndex = 0;
+                            preparedStatement.setInt(++parameterIndex, tenantId);
+                            preparedStatement.setString(++parameterIndex, organizationId);
+                        });
             return userStoreConfigs.stream().collect(Collectors.toMap(UserStoreConfig::getKey, config -> config));
 
         } catch (DataAccessException e) {
@@ -931,7 +880,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION :
                                 permission));
         try {
-            roleIds = jdbcTemplate.executeQuery(GET_ROLE_IDS_FOR_PERMISSION,
+            roleIds = jdbcTemplate.executeQuery(isViewsInUse() ? GET_ROLE_IDS_FOR_PERMISSION :
+                            GET_ROLE_IDS_FOR_PERMISSION_WITHOUT_VIEW,
                     (resultSet, rowNumber) -> resultSet.getString(UM_ROLE_ID_COLUMN),
                     preparedStatement -> {
                         int parameterIndex = 0;
