@@ -118,7 +118,7 @@ public class SQLConstants {
             "SELECT\n" +
             "    C.ID AS CONFIG_ID,\n" +
             "    C.ATTR_KEY AS CONFIG_KEY,\n" +
-            "    C.ATTR_VALUE AS CONFIG_VALUE,\n" +
+            "    C.ATTR_VALUE AS CONFIG_VALUE\n" +
             "FROM\n" +
             "    UM_ORG U LEFT JOIN UM_ORG_USERSTORE_CONFIGS C\n" +
             "ON\n" +

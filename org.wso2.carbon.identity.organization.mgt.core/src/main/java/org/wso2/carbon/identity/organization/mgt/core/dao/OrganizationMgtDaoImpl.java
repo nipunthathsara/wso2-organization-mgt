@@ -120,8 +120,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 preparedStatement.setString(++parameterIndex, organization.getMetadata().getLastModifiedBy().getId());
                 preparedStatement.setInt(++parameterIndex, organization.hasAttributes() ? 1 : 0);
                 preparedStatement.setString(++parameterIndex, organization.getStatus().toString());
-                preparedStatement.setString(++parameterIndex, StringUtils.isNotBlank(organization.getParent().getId()) ?
-                        organization.getParent().getId() : organization.getParent().getRootParentId());
+                preparedStatement.setString(++parameterIndex, organization.getParent().getId());
             }, organization, false);
             if (organization.hasAttributes()) {
                 insertOrganizationAttributes(jdbcTemplate, organization);

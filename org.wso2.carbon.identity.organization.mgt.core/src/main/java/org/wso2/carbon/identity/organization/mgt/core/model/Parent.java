@@ -29,23 +29,13 @@ public class Parent {
     private String displayName;
     private String id;
     private String ref;
-    private final String ROOT_PARENT_ID = "CARBON.ROOT.PARENT.ID";
 
     public String getId() {
-
-        if (StringUtils.equals(id, ROOT_PARENT_ID)) {
-            return null;
-        }
         return id;
     }
 
     public void setId(String id) {
-
-        if (StringUtils.equals(id, ROOT_PARENT_ID)) {
-            this.id = null;
-        } else {
-            this.id = id;
-        }
+        this.id = id;
     }
 
     public String getRef() {
@@ -72,7 +62,4 @@ public class Parent {
         this.displayName = displayName;
     }
 
-    public final String getRootParentId() {
-        return ROOT_PARENT_ID;
-    }
 }
