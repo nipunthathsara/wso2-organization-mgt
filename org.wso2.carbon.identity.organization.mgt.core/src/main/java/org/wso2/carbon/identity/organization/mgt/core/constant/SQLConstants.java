@@ -69,7 +69,7 @@ public class SQLConstants {
             "    UM_ORG\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND NAME = ?";
-    public static final String COUNT_COLUMN = "COUNT(ID)";
+    public static final String COUNT_COLUMN = "COUNT(1)";
     public static final String VIEW_ID_COLUMN = "ID";
     public static final String VIEW_ORG_ID_COLUMN = "ORG_ID";
     public static final String VIEW_TENANT_ID_COLUMN = "TENANT_ID";
