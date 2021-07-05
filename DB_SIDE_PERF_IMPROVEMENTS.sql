@@ -162,7 +162,7 @@ ENABLE QUERY REWRITE AS
         )       K,
         UM_ORG  N
     WHERE
-        K.PARENT_ID = N.ID;
+        K.PARENT_ID = N.ID OR (K.PARENT_ID IS NULL)
 /
 
 --Need to drop ORG_AUTHZ_VIEW normal view

@@ -210,7 +210,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
 
         // Get organizations by IDs
-        query = GET_ORGANIZATIONS_BY_IDS;
+        query = isOrgViewsInUse() ? GET_ORGANIZATIONS_BY_IDS : GET_ORGANIZATIONS_BY_IDS_WITHOUT_VIEWS;
         sj = new StringJoiner(",");
         for (String id : orgIds) {
             sj.add("'" + id + "'");
@@ -274,30 +274,34 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
             organizationRowDataCollectors = jdbcTemplate
-                    .executeQuery(GET_ORGANIZATION_BY_ID, (resultSet, rowNumber) -> {
-                        OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
-                        collector.setId(organizationId);
-                        collector.setName(resultSet.getString(VIEW_NAME_COLUMN));
-                        collector.setDisplayName(resultSet.getString(VIEW_DISPLAY_NAME_COLUMN));
-                        collector.setDescription(resultSet.getString(VIEW_DESCRIPTION_COLUMN));
-                        collector.setParentId(resultSet.getString(VIEW_PARENT_ID_COLUMN));
-                        collector.setParentName(resultSet.getString(VIEW_PARENT_NAME_COLUMN));
-                        collector.setParentDisplayName(resultSet.getString(VIEW_PARENT_DISPLAY_NAME_COLUMN));
-                        collector.setStatus(Organization.OrgStatus.valueOf(resultSet.getString(VIEW_STATUS_COLUMN)));
-                        collector.setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED_COLUMN, calendar));
-                        collector.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME_COLUMN, calendar));
-                        collector.setCreatedBy(resultSet.getString(VIEW_CREATED_BY_COLUMN));
-                        collector.setLastModifiedBy(resultSet.getString(VIEW_LAST_MODIFIED_BY_COLUMN));
-                        collector.setHasAttributes(resultSet.getInt(VIEW_HAS_ATTRIBUTES_COLUMN) == 1 ? true : false);
-                        collector.setAttributeId(resultSet.getString(VIEW_ATTR_ID_COLUMN));
-                        collector.setAttributeKey(resultSet.getString(VIEW_ATTR_KEY_COLUMN));
-                        collector.setAttributeValue(resultSet.getString(VIEW_ATTR_VALUE_COLUMN));
-                        return collector;
-                    }, preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    });
+                    .executeQuery(
+                            isOrgViewsInUse() ? GET_ORGANIZATION_BY_ID : GET_ORGANIZATION_BY_ID_WITHOUT_VIEWS,
+                            (resultSet, rowNumber) -> {
+                                OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
+                                collector.setId(organizationId);
+                                collector.setName(resultSet.getString(VIEW_NAME_COLUMN));
+                                collector.setDisplayName(resultSet.getString(VIEW_DISPLAY_NAME_COLUMN));
+                                collector.setDescription(resultSet.getString(VIEW_DESCRIPTION_COLUMN));
+                                collector.setParentId(resultSet.getString(VIEW_PARENT_ID_COLUMN));
+                                collector.setParentName(resultSet.getString(VIEW_PARENT_NAME_COLUMN));
+                                collector.setParentDisplayName(resultSet.getString(VIEW_PARENT_DISPLAY_NAME_COLUMN));
+                                collector.setStatus(Organization.OrgStatus.valueOf(resultSet.getString(VIEW_STATUS_COLUMN)));
+                                collector.setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED_COLUMN, calendar));
+                                collector.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME_COLUMN, calendar));
+                                collector.setCreatedBy(resultSet.getString(VIEW_CREATED_BY_COLUMN));
+                                collector.setLastModifiedBy(resultSet.getString(VIEW_LAST_MODIFIED_BY_COLUMN));
+                                collector.setHasAttributes(resultSet.getInt(VIEW_HAS_ATTRIBUTES_COLUMN) == 1 ? true : false);
+                                collector.setAttributeId(resultSet.getString(VIEW_ATTR_ID_COLUMN));
+                                collector.setAttributeKey(resultSet.getString(VIEW_ATTR_KEY_COLUMN));
+                                collector.setAttributeValue(resultSet.getString(VIEW_ATTR_VALUE_COLUMN));
+                                return collector;
+                            },
+                            preparedStatement -> {
+                                int parameterIndex = 0;
+                                preparedStatement.setInt(++parameterIndex, tenantId);
+                                preparedStatement.setString(++parameterIndex, organizationId);
+                            }
+                    );
             // Populate each organization with permissions if required
             boolean includePermissions = userId != null;
             List<String> permissions = null;
@@ -407,7 +411,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         try {
             List<UserStoreConfig> userStoreConfigs = jdbcTemplate
                     .executeQuery(
-                        isViewsInUse() ? GET_USER_STORE_CONFIGS_BY_ORG_ID :
+                        isOrgViewsInUse() ? GET_USER_STORE_CONFIGS_BY_ORG_ID :
                                 GET_USER_STORE_CONFIGS_BY_ORG_ID_WITHOUT_VIEWS,
                         (resultSet, rowNumber) -> {
                             UserStoreConfig config = new UserStoreConfig();
@@ -540,7 +544,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
-            int attrCount = jdbcTemplate.fetchSingleRecord(CHECK_ATTRIBUTE_EXIST_BY_KEY,
+            int attrCount = jdbcTemplate.fetchSingleRecord(isOrgViewsInUse() ?
+                            CHECK_ATTRIBUTE_EXIST_BY_KEY : CHECK_ATTRIBUTE_EXIST_BY_KEY_WITHOUT_VIEWS,
                     (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN), preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);
@@ -614,7 +619,9 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             int matchingEntries = jdbcTemplate
-                    .fetchSingleRecord(CHECK_RDN_AVAILABILITY, (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
+                    .fetchSingleRecord(isOrgViewsInUse() ?
+                                    CHECK_RDN_AVAILABILITY : CHECK_RDN_AVAILABILITY_WITHOUT_VIEWS,
+                            (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
                             preparedStatement -> {
                                 int parameterIndex = 0;
                                 preparedStatement.setInt(++parameterIndex, tenantId);
@@ -879,7 +886,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION :
                                 permission));
         try {
-            roleIds = jdbcTemplate.executeQuery(isViewsInUse() ? GET_ROLE_IDS_FOR_PERMISSION :
+            roleIds = jdbcTemplate.executeQuery(isAuthzViewsInUse() ? GET_ROLE_IDS_FOR_PERMISSION :
                             GET_ROLE_IDS_FOR_PERMISSION_WITHOUT_VIEW,
                     (resultSet, rowNumber) -> resultSet.getString(UM_ROLE_ID_COLUMN),
                     preparedStatement -> {

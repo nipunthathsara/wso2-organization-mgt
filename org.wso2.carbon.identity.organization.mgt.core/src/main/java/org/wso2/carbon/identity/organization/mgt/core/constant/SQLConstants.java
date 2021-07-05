@@ -48,6 +48,34 @@ public class SQLConstants {
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND ID = ? AND ATTR_KEY = ?";
+    public static final String CHECK_ATTRIBUTE_EXIST_BY_KEY_WITHOUT_VIEWS =
+            "WITH ORG_INFO AS (\n" +
+            "SELECT\n" +
+            "    K.ID,\n" +
+            "    K.TENANT_ID,\n" +
+            "    K.PARENT_ID,\n" +
+            "    K.ATTR_KEY\n" +
+            "FROM\n" +
+            "(SELECT\n" +
+            "    O.ID,\n" +
+            "    O.TENANT_ID,\n" +
+            "    O.PARENT_ID,\n" +
+            "    A.ATTR_KEY\n" +
+            "FROM\n" +
+            "    UM_ORG O\n" +
+            "LEFT JOIN\n" +
+            "    UM_ORG_ATTRIBUTES A\n" +
+            "ON\n" +
+            "    (O.HAS_ATTRIBUTES = 1 AND O.ID = A.ORG_ID)\n" +
+            "LEFT JOIN\n" +
+            "    UM_ORG_USERSTORE_CONFIGS C\n" +
+            "ON\n" +
+            "    O.ID = C.ORG_ID) K,\n" +
+            "UM_ORG N\n" +
+            "WHERE\n" +
+            "    K.PARENT_ID = N.ID OR (K.PARENT_ID IS NULL))\n" +
+            "    \n" +
+            "SELECT COUNT(1) FROM ORG_INFO WHERE TENANT_ID = ? AND ID = ? AND ATTR_KEY = ?";
     public static final String CHECK_ORG_HAS_ATTRIBUTES =
             "SELECT\n" +
             "    COUNT(1)\n" +
@@ -134,6 +162,8 @@ public class SQLConstants {
             "    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String INSERT_ATTRIBUTES =
             "INSERT ALL\n";
+    public static final String INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING_USING_SP =
+            "{call add_org_user_role_mapping(?,?,?,?,?,?)}";
     public static final String INSERT_ATTRIBUTE =
             "    INTO UM_ORG_ATTRIBUTES (ID, ORG_ID, ATTR_KEY, ATTR_VALUE)\n" +
             "    VALUES (?, ?, ?, ?)\n";
@@ -188,6 +218,78 @@ public class SQLConstants {
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +
             "    V.TENANT_ID = ? AND V.ID = ?";
+    public static final String GET_ORGANIZATION_BY_ID_WITHOUT_VIEWS =
+            "WITH ORG_INFO AS (\n" +
+            "    SELECT\n" +
+            "        K.*,\n" +
+            "          --    To cater search by parent organization's name\n" +
+            "        CASE\n" +
+            "            WHEN K.PARENT_ID IS NULL THEN\n" +
+            "                NULL\n" +
+            "            WHEN K.PARENT_ID IS NOT NULL THEN\n" +
+            "                N.NAME\n" +
+            "        END AS PARENT_NAME,\n" +
+            "          --    To cater search by parent organization's display name\n" +
+            "        CASE\n" +
+            "            WHEN K.PARENT_ID IS NULL THEN\n" +
+            "                NULL\n" +
+            "            WHEN K.PARENT_ID IS NOT NULL THEN\n" +
+            "                N.DISPLAY_NAME\n" +
+            "        END AS PARENT_DISPLAY_NAME\n" +
+            "    FROM\n" +
+            "        (\n" +
+            "            SELECT\n" +
+            "                O.ID,\n" +
+            "                O.TENANT_ID,\n" +
+            "                O.NAME,\n" +
+            "                O.DISPLAY_NAME,\n" +
+            "                O.DESCRIPTION,\n" +
+            "                O.CREATED_TIME,\n" +
+            "                O.LAST_MODIFIED,\n" +
+            "                O.CREATED_BY,\n" +
+            "                O.LAST_MODIFIED_BY,\n" +
+            "                O.HAS_ATTRIBUTES,\n" +
+            "                O.STATUS,\n" +
+            "                O.PARENT_ID,\n" +
+            "                A.ID           ATTR_ID,\n" +
+            "                A.ATTR_KEY,\n" +
+            "                A.ATTR_VALUE,\n" +
+            "                C.ID           CONFIG_ID,\n" +
+            "                C.ATTR_KEY     CONFIG_KEY,\n" +
+            "                C.ATTR_VALUE   CONFIG_VALUE\n" +
+            "            FROM\n" +
+            "                UM_ORG                     O\n" +
+            "                LEFT JOIN UM_ORG_ATTRIBUTES          A ON ( O.ID = A.ORG_ID\n" +
+            "                                                   AND O.HAS_ATTRIBUTES = 1 )\n" +
+            "                LEFT JOIN UM_ORG_USERSTORE_CONFIGS   C ON O.ID = C.ORG_ID\n" +
+            "        ) K,\n" +
+            "        UM_ORG N\n" +
+            "    WHERE\n" +
+            "        K.PARENT_ID = N.ID\n" +
+            "        OR ( K.PARENT_ID IS NULL )\n" +
+            ")\n" +
+            "SELECT DISTINCT\n" +
+            "    V.ID,\n" +
+            "    V.NAME,\n" +
+            "    V.DISPLAY_NAME,\n" +
+            "    V.DESCRIPTION,\n" +
+            "    V.PARENT_ID,\n" +
+            "    V.PARENT_NAME,\n" +
+            "    V.PARENT_DISPLAY_NAME,\n" +
+            "    V.STATUS,\n" +
+            "    V.CREATED_TIME,\n" +
+            "    V.LAST_MODIFIED,\n" +
+            "    V.CREATED_BY,\n" +
+            "    V.LAST_MODIFIED_BY,\n" +
+            "    V.HAS_ATTRIBUTES,\n" +
+            "    V.ATTR_ID,\n" +
+            "    V.ATTR_KEY,\n" +
+            "    V.ATTR_VALUE\n" +
+            "FROM\n" +
+            "    ORG_INFO V\n" +
+            "WHERE\n" +
+            "    V.TENANT_ID = ?\n" +
+            "    AND V.ID = ?";
     public static final String FIND_AUTHORIZED_CHILD_ORG_IDS =
             "SELECT\n" +
             "    ID\n" +
@@ -219,6 +321,14 @@ public class SQLConstants {
             "    PARENT_ID";
     // ORDER BY with DISTINCT requires to have the columns in the SELECT clause.
     public static final String GET_ALL_ORGANIZATION_IDS =
+            "SELECT\n" +
+            "    DISTINCT ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY," +
+            " LAST_MODIFIED_BY, STATUS, PARENT_NAME, PARENT_DISPLAY_NAME\n" +
+            "FROM\n" +
+            "    ORG_MGT_VIEW\n" +
+            "WHERE\n" +
+            "    ";
+    public static final String GET_ALL_ORGANIZATION_IDS_WITHOUT_VIEWS =
             "SELECT\n" +
             "    DISTINCT ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY," +
             " LAST_MODIFIED_BY, STATUS, PARENT_NAME, PARENT_DISPLAY_NAME\n" +
@@ -265,6 +375,76 @@ public class SQLConstants {
             "    ORG_MGT_VIEW V\n" +
             "WHERE\n" +
             "    V.ID IN (?)";
+    public static final String GET_ORGANIZATIONS_BY_IDS_WITHOUT_VIEWS =
+            "WITH ORG_INFO AS (\n" +
+            "    SELECT\n" +
+            "        K.*,\n" +
+            "          --    To cater search by parent organization's name\n" +
+            "        CASE\n" +
+            "            WHEN K.PARENT_ID IS NULL THEN\n" +
+            "                NULL\n" +
+            "            WHEN K.PARENT_ID IS NOT NULL THEN\n" +
+            "                N.NAME\n" +
+            "        END AS PARENT_NAME,\n" +
+            "          --    To cater search by parent organization's display name\n" +
+            "        CASE\n" +
+            "            WHEN K.PARENT_ID IS NULL THEN\n" +
+            "                NULL\n" +
+            "            WHEN K.PARENT_ID IS NOT NULL THEN\n" +
+            "                N.DISPLAY_NAME\n" +
+            "        END AS PARENT_DISPLAY_NAME\n" +
+            "    FROM\n" +
+            "        (\n" +
+            "            SELECT\n" +
+            "                O.ID,\n" +
+            "                O.TENANT_ID,\n" +
+            "                O.NAME,\n" +
+            "                O.DISPLAY_NAME,\n" +
+            "                O.DESCRIPTION,\n" +
+            "                O.CREATED_TIME,\n" +
+            "                O.LAST_MODIFIED,\n" +
+            "                O.CREATED_BY,\n" +
+            "                O.LAST_MODIFIED_BY,\n" +
+            "                O.HAS_ATTRIBUTES,\n" +
+            "                O.STATUS,\n" +
+            "                O.PARENT_ID,\n" +
+            "                A.ID           ATTR_ID,\n" +
+            "                A.ATTR_KEY,\n" +
+            "                A.ATTR_VALUE,\n" +
+            "                C.ID           CONFIG_ID,\n" +
+            "                C.ATTR_KEY     CONFIG_KEY,\n" +
+            "                C.ATTR_VALUE   CONFIG_VALUE\n" +
+            "            FROM\n" +
+            "                UM_ORG                     O\n" +
+            "                LEFT JOIN UM_ORG_ATTRIBUTES          A ON ( O.ID = A.ORG_ID\n" +
+            "                                                   AND O.HAS_ATTRIBUTES = 1 )\n" +
+            "                LEFT JOIN UM_ORG_USERSTORE_CONFIGS   C ON O.ID = C.ORG_ID\n" +
+            "        ) K,\n" +
+            "        UM_ORG N\n" +
+            "    WHERE\n" +
+            "        K.PARENT_ID = N.ID\n" +
+            "        OR ( K.PARENT_ID IS NULL )\n" +
+            ")\n" +
+            "SELECT\n" +
+            "    DISTINCT ID,\n" +
+            "    NAME,\n" +
+            "    DISPLAY_NAME,\n" +
+            "    DESCRIPTION,\n" +
+            "    STATUS,\n" +
+            "    PARENT_ID, \n" +
+            "    PARENT_NAME, \n" +
+            "    PARENT_DISPLAY_NAME,\n" +
+            "    CREATED_TIME,\n" +
+            "    LAST_MODIFIED,\n" +
+            "    CREATED_BY,\n" +
+            "    LAST_MODIFIED_BY,\n" +
+            "    HAS_ATTRIBUTES,\n" +
+            "    ATTR_KEY,\n" +
+            "    ATTR_VALUE\n" +
+            "FROM\n" +
+            "    ORG_INFO V\n" +
+            "WHERE\n" +
+            "    ID IN (?)";
     public static final String PATCH_ORGANIZATION =
             "UPDATE\n" +
             "    UM_ORG\n" +
@@ -295,6 +475,40 @@ public class SQLConstants {
             "    ORG_MGT_VIEW\n" +
             "WHERE\n" +
             "    TENANT_ID = ? AND PARENT_ID = ? AND CONFIG_KEY = 'RDN' AND lower(CONFIG_VALUE) = lower(?)";
+    public static final String CHECK_RDN_AVAILABILITY_WITHOUT_VIEWS =
+            "WITH ORG_INFO AS (\n" +
+            "    SELECT\n" +
+            "        K.ID,\n" +
+            "        K.TENANT_ID,\n" +
+            "        K.CONFIG_KEY,\n" +
+            "        K.CONFIG_VALUE\n" +
+            "    FROM\n" +
+            "        (\n" +
+            "            SELECT\n" +
+            "                O.ID,\n" +
+            "                O.TENANT_ID,\n" +
+            "                O.PARENT_ID,\n" +
+            "                C.ATTR_KEY     CONFIG_KEY,\n" +
+            "                C.ATTR_VALUE   CONFIG_VALUE\n" +
+            "            FROM\n" +
+            "                UM_ORG                     O\n" +
+            "                LEFT JOIN UM_ORG_ATTRIBUTES          A ON ( O.ID = A.ORG_ID\n" +
+            "                                                   AND O.HAS_ATTRIBUTES = 1 )\n" +
+            "                LEFT JOIN UM_ORG_USERSTORE_CONFIGS   C ON O.ID = C.ORG_ID\n" +
+            "        ) K,\n" +
+            "        UM_ORG N\n" +
+            "    WHERE\n" +
+            "        K.PARENT_ID = N.ID\n" +
+            "        OR ( K.PARENT_ID IS NULL )\n" +
+            ")\n" +
+            "SELECT\n" +
+            "    COUNT(1)\n" +
+            "FROM\n" +
+            "    ORG_INFO\n" +
+            "WHERE\n" +
+            "    TENANT_ID = ?\n" +
+            "    AND CONFIG_KEY = ?\n" +
+            "    AND LOWER(CONFIG_VALUE) = LOWER(?)";
     public static final String GET_ROLE_IDS_FOR_PERMISSION =
             "SELECT\n" +
             "    DISTINCT UM_ROLE_ID\n" +

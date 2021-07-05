@@ -60,7 +60,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.DN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.*;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_DISABLED_PARENT_ORGANIZATION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_DUPLICATE_ATTRIBUTE_KEYS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.ADD_REQUEST_INCOMPATIBLE_USER_STORE_DOMAIN;
@@ -117,22 +117,6 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_USER_STORE_CONFIGS_REQUEST_PATH_UNDEFINED;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_USER_STORE_CONFIGS_REQUEST_RDN_UNAVAILABLE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ErrorMessages.PATCH_USER_STORE_CONFIGS_REQUEST_VALUE_UNDEFINED;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_ADMIN_PERMISSION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_CREATE_PERMISSION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ORGANIZATION_RESOURCE_BASE_PATH;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_ADD;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REMOVE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_ATTRIBUTES;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DESCRIPTION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_DISPLAY_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_NAME;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_PARENT_ID;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_PATH_ORG_STATUS;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.RDN;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.ROOT;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.UI_EXECUTE;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.DATA;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.ORGANIZATION_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.POST_CREATE_ORGANIZATION;
@@ -950,8 +934,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
                 }
                 organizationUserRoleMappingsForNewOrganization.add(organizationUserRoleMapping);
             }
-            authorizationDao
-                    .addOrganizationAndUserRoleMappings(organizationUserRoleMappingsForNewOrganization, getTenantId());
+            String isCascadeInsert = System.getProperty(INSERT_ROLES_WITH_STORED_PROCEDURE);
+            // Defaults to SP when property is not available.
+            if (isCascadeInsert == null || Boolean.parseBoolean(isCascadeInsert)) {
+                authorizationDao.addOrganizationAndUserRoleMappingsWithSp(organizationUserRoleMappingsForNewOrganization, getTenantId());
+            } else {
+                authorizationDao
+                        .addOrganizationAndUserRoleMappings(organizationUserRoleMappingsForNewOrganization, getTenantId());
+            }
         }
     }
 

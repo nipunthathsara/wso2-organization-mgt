@@ -23,6 +23,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
+import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
+import org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
@@ -30,6 +32,9 @@ import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationPermissi
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +78,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                                 : permission));
         try {
             int mappingsCount = jdbcTemplate
-                    .fetchSingleRecord(isViewsInUse() ? IS_USER_AUTHORIZED : IS_USER_AUTHORIZED_WITHOUT_VIEW,
+                    .fetchSingleRecord(isAuthzViewsInUse() ? IS_USER_AUTHORIZED : IS_USER_AUTHORIZED_WITHOUT_VIEW,
                             (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
                             preparedStatement -> {
                                 int parameterIndex = 0;
@@ -120,6 +125,46 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         }
     }
 
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
+    @Override
+    public void addOrganizationAndUserRoleMappingsWithSp (
+            List<OrganizationUserRoleMapping> organizationUserRoleMappings, int tenantID)
+            throws OrganizationManagementServerException {
+
+        try (Connection connection = IdentityDatabaseUtil.getUserDBConnection()) {
+            connection.setAutoCommit(false);
+            try (CallableStatement callableStatement = connection
+                    .prepareCall(SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING_USING_SP)) {
+                for (OrganizationUserRoleMapping organizationUserRoleMapping: organizationUserRoleMappings) {
+                    callableStatement.setString(1, organizationUserRoleMapping.getUserId());
+                    callableStatement.setString(2, organizationUserRoleMapping.getRoleId());
+                    callableStatement.setInt(3, organizationUserRoleMapping.getHybridRoleId());
+                    callableStatement.setInt(4, tenantID);
+                    callableStatement.setString(5, organizationUserRoleMapping.getAssignedOrganizationLevel());
+                    callableStatement.setInt(6, organizationUserRoleMapping.isCascadedRole() ? 1 : 0);
+
+                    callableStatement.addBatch();
+                }
+                //execute batch insert
+                callableStatement.executeBatch();
+                connection.commit();
+            } catch (SQLException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Error occurred while executing the batch insert: ", e);
+                }
+                connection.rollback();
+                throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
+                        "Error while adding org-authorization mapping entries.", e);
+            }
+        } catch (Exception e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Error occurred while executing the batch insert: ", e);
+            }
+            throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
+                    "Error while adding org-authorization mapping entries.", e);
+        }
+    }
+
     public int findHybridRoleIdFromRoleName(String role, int tenantId) throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -158,7 +203,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
     public Map<String, List<String>> findUserPermissionsForOrganizations(JdbcTemplate template, String userId,
             List<String> organizationIds, boolean listAsAdmin) throws OrganizationManagementException {
 
-        String query = isViewsInUse() ?
+        String query = isAuthzViewsInUse() ?
                 GET_USER_ORGANIZATIONS_PERMISSIONS : GET_USER_ORGANIZATIONS_PERMISSIONS_WITHOUT_VIEW;
         StringJoiner sj = new StringJoiner(",");
         for (String id : organizationIds) {
@@ -266,7 +311,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
 
         List<String> permissions;
         try {
-            permissions = template.executeQuery(isViewsInUse() ?
+            permissions = template.executeQuery(isAuthzViewsInUse() ?
                     GET_USER_PERMISSIONS : GET_USER_PERMISSIONS_WITHOUT_VIEW, (resultSet, rowNumber) ->
                     resultSet.getString(UM_RESOURCE_ID_COLUMN), preparedStatement -> {
                 int parameterIndex = 0;
@@ -292,10 +337,10 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                                 permission));
         String query;
         if (listByNames) {
-            query = isViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES :
+            query = isAuthzViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES :
                     GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES_WITHOUT_VIEW;
         } else {
-            query = isViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS :
+            query = isAuthzViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS :
                     GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS_WITHOUT_VIEW;
         }
         String selectColumn = listByNames ? VIEW_NAME_COLUMN : VIEW_ORG_ID_COLUMN;

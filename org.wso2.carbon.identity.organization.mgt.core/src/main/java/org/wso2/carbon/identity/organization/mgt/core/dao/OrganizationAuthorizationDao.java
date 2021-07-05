@@ -20,6 +20,7 @@ package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
+import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 
 import java.util.List;
@@ -54,6 +55,18 @@ public interface OrganizationAuthorizationDao {
     void addOrganizationAndUserRoleMappings(List<OrganizationUserRoleMapping> organizationUserRoleMappings,
                                             int tenantID) throws OrganizationManagementException;
 
+    /**
+     * Add multiple entries to the 'UM_USER_ROLE_ORG' table using stored procedures.
+     *
+     * @param organizationUserRoleMappings A list of organizationUserRole mappings.
+     * @param tenantID                     Tenant id.
+     * @throws OrganizationManagementException
+     */
+    default void addOrganizationAndUserRoleMappingsWithSp (
+            List<OrganizationUserRoleMapping> organizationUserRoleMappings, int tenantID)
+            throws OrganizationManagementServerException {
+
+    }
     /**
      * Find the 'UM_ID' by 'UM_ROLE_NAME' from the 'UM_HYBRID_ROLE' table.
      *

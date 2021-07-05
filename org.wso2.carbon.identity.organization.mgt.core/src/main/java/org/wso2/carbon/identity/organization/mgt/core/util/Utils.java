@@ -499,8 +499,13 @@ public class Utils {
         return matchingRealmConfig;
     }
 
-    public static boolean isViewsInUse() {
+    public static boolean isOrgViewsInUse() {
 
-        return Boolean.parseBoolean(System.getProperty(IS_VIEWS_IN_USE));
+        return Boolean.parseBoolean(System.getProperty(IS_ORG_VIEWS_IN_USE));
+    }
+
+    public static boolean isAuthzViewsInUse() {
+
+        return Boolean.parseBoolean(System.getProperty(IS_AUTHZ_VIEWS_IN_USE));
     }
 }

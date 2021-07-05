@@ -36,7 +36,8 @@ public class OrganizationMgtConstants {
 
     public static final String CASCADED_CHILD_ORG_LIST_CACHE_KEY_FORMAT = "cascaded-children-%s";
     public static final String INSERT_ROLES_WITH_STORED_PROCEDURE = "useSpForInsertOrgRoleMapping";
-    public static final String IS_VIEWS_IN_USE = "useViewsForSelectOps";
+    public static final String IS_ORG_VIEWS_IN_USE = "useOrgViewsForSelectOps";
+    public static final String IS_AUTHZ_VIEWS_IN_USE = "useAuthzViewsForSelectOps";
 
     public static final String PATCH_OP_ADD = "add";
     public static final String PATCH_OP_REMOVE = "remove";
