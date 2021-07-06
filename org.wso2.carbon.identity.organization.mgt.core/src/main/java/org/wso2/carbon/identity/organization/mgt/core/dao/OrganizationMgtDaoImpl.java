@@ -100,12 +100,14 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_AUTHORIZED_CHILD_ORG_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_CHILD_ORG_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ALL_AUTHORIZATION_ORGANIZATION_IDS_WITH_JOIN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATIONS_BY_IDS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_BY_ID;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ORGANIZATION_ID_BY_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ROLE_IDS_FOR_PERMISSION;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_ROLE_IDS_FOR_PERMISSION_WITHOUT_VIEW;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_STORE_CONFIGS_BY_ORG_ID;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_STORE_CONFIGS_BY_ORG_ID_WITHOUT_VIEWS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ATTRIBUTES_CONCLUDE;
@@ -143,11 +145,13 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_PARENT_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_STATUS_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.WITH_FILTERED_ORG_INFO_AS;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getMaximumQueryLengthInBytes;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewTemplate;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.isViewsInUse;
 
 /**
  * Organization mgt dao implementation.
@@ -330,30 +334,33 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
             organizationRowDataCollectors = jdbcTemplate
-                    .executeQuery(GET_ORGANIZATION_BY_ID, (resultSet, rowNumber) -> {
-                        OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
-                        collector.setId(organizationId);
-                        collector.setName(resultSet.getString(VIEW_NAME_COLUMN));
-                        collector.setDisplayName(resultSet.getString(VIEW_DISPLAY_NAME_COLUMN));
-                        collector.setDescription(resultSet.getString(VIEW_DESCRIPTION_COLUMN));
-                        collector.setParentId(resultSet.getString(VIEW_PARENT_ID_COLUMN));
-                        collector.setParentName(resultSet.getString(VIEW_PARENT_NAME_COLUMN));
-                        collector.setParentDisplayName(resultSet.getString(VIEW_PARENT_DISPLAY_NAME_COLUMN));
-                        collector.setStatus(Organization.OrgStatus.valueOf(resultSet.getString(VIEW_STATUS_COLUMN)));
-                        collector.setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED_COLUMN, calendar));
-                        collector.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME_COLUMN, calendar));
-                        collector.setCreatedBy(resultSet.getString(VIEW_CREATED_BY_COLUMN));
-                        collector.setLastModifiedBy(resultSet.getString(VIEW_LAST_MODIFIED_BY_COLUMN));
-                        collector.setHasAttributes(resultSet.getInt(VIEW_HAS_ATTRIBUTES_COLUMN) == 1 ? true : false);
-                        collector.setAttributeId(resultSet.getString(VIEW_ATTR_ID_COLUMN));
-                        collector.setAttributeKey(resultSet.getString(VIEW_ATTR_KEY_COLUMN));
-                        collector.setAttributeValue(resultSet.getString(VIEW_ATTR_VALUE_COLUMN));
-                        return collector;
-                    }, preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    });
+                    .executeQuery(GET_ORGANIZATION_BY_ID,
+                            (resultSet, rowNumber) -> {
+                                OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
+                                collector.setId(organizationId);
+                                collector.setName(resultSet.getString(VIEW_NAME_COLUMN));
+                                collector.setDisplayName(resultSet.getString(VIEW_DISPLAY_NAME_COLUMN));
+                                collector.setDescription(resultSet.getString(VIEW_DESCRIPTION_COLUMN));
+                                collector.setParentId(resultSet.getString(VIEW_PARENT_ID_COLUMN));
+                                collector.setParentName(resultSet.getString(VIEW_PARENT_NAME_COLUMN));
+                                collector.setParentDisplayName(resultSet.getString(VIEW_PARENT_DISPLAY_NAME_COLUMN));
+                                collector.setStatus(Organization.OrgStatus.valueOf(resultSet.getString(VIEW_STATUS_COLUMN)));
+                                collector.setLastModified(resultSet.getTimestamp(VIEW_LAST_MODIFIED_COLUMN, calendar));
+                                collector.setCreated(resultSet.getTimestamp(VIEW_CREATED_TIME_COLUMN, calendar));
+                                collector.setCreatedBy(resultSet.getString(VIEW_CREATED_BY_COLUMN));
+                                collector.setLastModifiedBy(resultSet.getString(VIEW_LAST_MODIFIED_BY_COLUMN));
+                                collector.setHasAttributes(resultSet.getInt(VIEW_HAS_ATTRIBUTES_COLUMN) == 1 ? true : false);
+                                collector.setAttributeId(resultSet.getString(VIEW_ATTR_ID_COLUMN));
+                                collector.setAttributeKey(resultSet.getString(VIEW_ATTR_KEY_COLUMN));
+                                collector.setAttributeValue(resultSet.getString(VIEW_ATTR_VALUE_COLUMN));
+                                return collector;
+                            },
+                            preparedStatement -> {
+                                int parameterIndex = 0;
+                                preparedStatement.setInt(++parameterIndex, tenantId);
+                                preparedStatement.setString(++parameterIndex, organizationId);
+                            }
+                    );
             // Populate each organization with permissions if required
             boolean includePermissions = userId != null;
             List<String> permissions = null;
@@ -462,17 +469,21 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             List<UserStoreConfig> userStoreConfigs = jdbcTemplate
-                    .executeQuery(GET_USER_STORE_CONFIGS_BY_ORG_ID, (resultSet, rowNumber) -> {
-                        UserStoreConfig config = new UserStoreConfig();
-                        config.setId(resultSet.getString(VIEW_CONFIG_ID_COLUMN));
-                        config.setKey(resultSet.getString(VIEW_CONFIG_KEY_COLUMN));
-                        config.setValue(resultSet.getString(VIEW_CONFIG_VALUE_COLUMN));
-                        return config;
-                    }, preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setInt(++parameterIndex, tenantId);
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                    });
+                    .executeQuery(
+                        isViewsInUse() ? GET_USER_STORE_CONFIGS_BY_ORG_ID :
+                                GET_USER_STORE_CONFIGS_BY_ORG_ID_WITHOUT_VIEWS,
+                        (resultSet, rowNumber) -> {
+                            UserStoreConfig config = new UserStoreConfig();
+                            config.setId(resultSet.getString(VIEW_CONFIG_ID_COLUMN));
+                            config.setKey(resultSet.getString(VIEW_CONFIG_KEY_COLUMN));
+                            config.setValue(resultSet.getString(VIEW_CONFIG_VALUE_COLUMN));
+                            return config;
+                        },
+                        preparedStatement -> {
+                            int parameterIndex = 0;
+                            preparedStatement.setInt(++parameterIndex, tenantId);
+                            preparedStatement.setString(++parameterIndex, organizationId);
+                        });
             return userStoreConfigs.stream().collect(Collectors.toMap(UserStoreConfig::getKey, config -> config));
 
         } catch (DataAccessException e) {
@@ -666,7 +677,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             int matchingEntries = jdbcTemplate
-                    .fetchSingleRecord(CHECK_RDN_AVAILABILITY, (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
+                    .fetchSingleRecord(CHECK_RDN_AVAILABILITY,
+                            (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
                             preparedStatement -> {
                                 int parameterIndex = 0;
                                 preparedStatement.setInt(++parameterIndex, tenantId);
@@ -885,29 +897,36 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             }
             throw handleClientException(LIST_REQUEST_INVALID_FILTER_PARAMETER, null);
         }
-
-        StringBuilder sb = new StringBuilder();
+        StringBuilder authorizedQueryBuilder;
+        StringBuilder queryBuilder = new StringBuilder();
         // Base query with tenant id search condition
-        sb.append(GET_ALL_ORGANIZATION_IDS)
+        queryBuilder.append(GET_ALL_ORGANIZATION_IDS)
                 .append(DEFAULT_CONDITION);
-        // Check organization permissions for non admin users
-        if (!listAsAdmin) {
-            sb.append(" AND ").append(GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION);
-        }
         // Append generated search conditions
         if (searchReq) {
-            sb.append("\n").append(INTERSECT).append("\n");
-            sb.append(placeholderSQL.getQuery());
+            queryBuilder.append("\n").append(INTERSECT).append("\n");
+            queryBuilder.append(placeholderSQL.getQuery());
         }
         // Append sorting condition
-        sb = new StringBuilder(String.format(ORDER_BY, sb.toString(), sortBy, sortOrder));
+        queryBuilder = new StringBuilder(String.format(ORDER_BY, queryBuilder.toString(), sortBy, sortOrder));
         // Append pagination condition
         if (paginationReq) {
-            sb.append(String.format(PAGINATION, offset, limit));
+            queryBuilder.append(String.format(PAGINATION, offset, limit));
         }
-        placeholderSQL.setQuery(sb.toString());
-        if (log.isDebugEnabled()) {
-            log.debug("Built query : " + placeholderSQL.getQuery());
+        // Check organization permissions for non admin users
+        if (!listAsAdmin) {
+            authorizedQueryBuilder = new StringBuilder(WITH_FILTERED_ORG_INFO_AS);
+            authorizedQueryBuilder.append(queryBuilder);
+            authorizedQueryBuilder.append(GET_ALL_AUTHORIZATION_ORGANIZATION_IDS_WITH_JOIN);
+            placeholderSQL.setQuery(authorizedQueryBuilder.toString());
+            if (log.isDebugEnabled()) {
+                log.debug("Built query : " + placeholderSQL.getQuery());
+            }
+        } else {
+            placeholderSQL.setQuery(queryBuilder.toString());
+            if (log.isDebugEnabled()) {
+                log.debug("Built query : " + placeholderSQL.getQuery());
+            }
         }
         return placeholderSQL;
     }
@@ -931,7 +950,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION :
                                 permission));
         try {
-            roleIds = jdbcTemplate.executeQuery(GET_ROLE_IDS_FOR_PERMISSION,
+            roleIds = jdbcTemplate.executeQuery(isViewsInUse() ? GET_ROLE_IDS_FOR_PERMISSION :
+                            GET_ROLE_IDS_FOR_PERMISSION_WITHOUT_VIEW,
                     (resultSet, rowNumber) -> resultSet.getString(UM_ROLE_ID_COLUMN),
                     preparedStatement -> {
                         int parameterIndex = 0;

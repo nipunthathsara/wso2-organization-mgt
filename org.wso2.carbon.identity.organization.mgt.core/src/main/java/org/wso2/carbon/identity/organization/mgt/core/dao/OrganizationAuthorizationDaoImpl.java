@@ -53,17 +53,23 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_UPDATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_VALUE_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CASCADE_INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_GROUP_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_HYBRID_ID_FROM_ROLE_NAME;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS_WITHOUT_VIEW;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES_WITHOUT_VIEW;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ORGANIZATIONS_PERMISSIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ORGANIZATIONS_PERMISSIONS_WITHOUT_VIEW;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_PERMISSIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_PERMISSIONS_WITHOUT_VIEW;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ROLE_ORG_MAPPINGS_DELEGATE_TO_NEW_ORG;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ALL;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.IS_USER_AUTHORIZED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.IS_USER_AUTHORIZED_WITHOUT_VIEW;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.SELECT_DUMMY_RECORD;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ASSIGNED_AT_COLUMN;
@@ -76,12 +82,13 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstan
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ORG_ID_COLUMN;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.dissemblePermissionString;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getMaximumQueryLengthInBytes;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewIdentityTemplate;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewTemplate;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
 import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.isViewsInUse;
 
 /**
  * Authorization DAO for organization mgt.
@@ -101,7 +108,8 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                                 : permission));
         try {
             int mappingsCount = jdbcTemplate
-                    .fetchSingleRecord(IS_USER_AUTHORIZED, (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
+                    .fetchSingleRecord(isViewsInUse() ? IS_USER_AUTHORIZED : IS_USER_AUTHORIZED_WITHOUT_VIEW,
+                            (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
                             preparedStatement -> {
                                 int parameterIndex = 0;
                                 preparedStatement.setString(++parameterIndex, userId);
@@ -147,6 +155,28 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
         }
     }
 
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
+    @Override
+    public void addOrganizationAndUserRoleMappings(String organizationId, String parentOrganizationId,
+                                                          String newOrgCreatorId, int tenantID)
+            throws OrganizationManagementServerException {
+
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        try {
+            jdbcTemplate.executeInsert(CASCADE_INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING,
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                        preparedStatement.setString(++parameterIndex, parentOrganizationId);
+                        preparedStatement.setInt(++parameterIndex, tenantID);
+                        preparedStatement.setString(++parameterIndex, newOrgCreatorId);
+                    }, new ArrayList<>(), false);
+        } catch (DataAccessException e) {
+            throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
+                    "Error while adding org-authorization mapping entries.", e);
+        }
+    }
+
     public int findHybridRoleIdFromRoleName(String role, int tenantId) throws OrganizationManagementException {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
@@ -185,7 +215,8 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
     public Map<String, List<String>> findUserPermissionsForOrganizations(JdbcTemplate template, String userId,
             List<String> organizationIds, boolean listAsAdmin) throws OrganizationManagementException {
 
-        String query = GET_USER_ORGANIZATIONS_PERMISSIONS;
+        String query = isViewsInUse() ?
+                GET_USER_ORGANIZATIONS_PERMISSIONS : GET_USER_ORGANIZATIONS_PERMISSIONS_WITHOUT_VIEW;
         StringJoiner sj = new StringJoiner(",");
         for (String id : organizationIds) {
             sj.add("'" + id + "'");
@@ -292,7 +323,8 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
 
         List<String> permissions;
         try {
-            permissions = template.executeQuery(GET_USER_PERMISSIONS, (resultSet, rowNumber) ->
+            permissions = template.executeQuery(isViewsInUse() ?
+                    GET_USER_PERMISSIONS : GET_USER_PERMISSIONS_WITHOUT_VIEW, (resultSet, rowNumber) ->
                     resultSet.getString(UM_RESOURCE_ID_COLUMN), preparedStatement -> {
                 int parameterIndex = 0;
                 preparedStatement.setString(++parameterIndex, userId);
@@ -315,8 +347,14 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                 (permission.contains(ROLE_MGT_BASE_PERMISSION) ? ROLE_MGT_BASE_PERMISSION :
                         (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION :
                                 permission));
-        String query =
-                listByNames ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES : GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS;
+        String query;
+        if (listByNames) {
+            query = isViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES :
+                    GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES_WITHOUT_VIEW;
+        } else {
+            query = isViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS :
+                    GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS_WITHOUT_VIEW;
+        }
         String selectColumn = listByNames ? VIEW_NAME_COLUMN : VIEW_ORG_ID_COLUMN;
         try {
             return jdbcTemplate.executeQuery(query,

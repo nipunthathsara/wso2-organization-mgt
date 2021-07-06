@@ -106,6 +106,7 @@ public class SQLConstants {
                     "    UM_USER_ROLE_ORG URO LEFT JOIN UM_ORG UO ON URO.ASSIGNED_AT = UO.ID\n" +
                     "WHERE\n" +
                     "    URO.ORG_ID = ? AND URO.UM_ROLE_ID = ? AND URO.UM_TENANT_ID = ?";
+    //TODO: may be doing with a join will improve perf
     public static final String GET_ROLES_BY_ORG_AND_USER =
             "SELECT\n" +
                     "    DISTINCT UM_ROLE_ID, UM_ROLE_NAME\n" +
@@ -113,6 +114,7 @@ public class SQLConstants {
                     "    ORG_AUTHZ_VIEW\n" +
                     "WHERE\n" +
                     "    ORG_ID = ? AND UM_USER_ID = ? AND UM_TENANT_ID = ?";
+    //TODO: may be group by clause will help
     public static final String GET_ROLES_WITH_INHERITANCE_BY_ORG_AND_USER =
             "SELECT\n" +
                     "    DISTINCT UM_ROLE_ID, UM_ROLE_NAME\n" +
