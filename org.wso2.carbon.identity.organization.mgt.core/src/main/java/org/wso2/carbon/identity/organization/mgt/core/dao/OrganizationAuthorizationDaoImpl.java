@@ -78,7 +78,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                                 : permission));
         try {
             int mappingsCount = jdbcTemplate
-                    .fetchSingleRecord(isAuthzViewsInUse() ? IS_USER_AUTHORIZED : IS_USER_AUTHORIZED_WITHOUT_VIEW,
+                    .fetchSingleRecord(isViewsInUse() ? IS_USER_AUTHORIZED : IS_USER_AUTHORIZED_WITHOUT_VIEW,
                             (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
                             preparedStatement -> {
                                 int parameterIndex = 0;
@@ -127,39 +127,21 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
-    public void addOrganizationAndUserRoleMappingsWithSp (
-            List<OrganizationUserRoleMapping> organizationUserRoleMappings, int tenantID)
+    public void addOrganizationAndUserRoleMappings(String organizationId, String parentOrganizationId,
+                                                          String newOrgCreatorId, int tenantID)
             throws OrganizationManagementServerException {
 
-        try (Connection connection = IdentityDatabaseUtil.getUserDBConnection()) {
-            connection.setAutoCommit(false);
-            try (CallableStatement callableStatement = connection
-                    .prepareCall(SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING_USING_SP)) {
-                for (OrganizationUserRoleMapping organizationUserRoleMapping: organizationUserRoleMappings) {
-                    callableStatement.setString(1, organizationUserRoleMapping.getUserId());
-                    callableStatement.setString(2, organizationUserRoleMapping.getRoleId());
-                    callableStatement.setInt(3, organizationUserRoleMapping.getHybridRoleId());
-                    callableStatement.setInt(4, tenantID);
-                    callableStatement.setString(5, organizationUserRoleMapping.getAssignedOrganizationLevel());
-                    callableStatement.setInt(6, organizationUserRoleMapping.isCascadedRole() ? 1 : 0);
-
-                    callableStatement.addBatch();
-                }
-                //execute batch insert
-                callableStatement.executeBatch();
-                connection.commit();
-            } catch (SQLException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Error occurred while executing the batch insert: ", e);
-                }
-                connection.rollback();
-                throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
-                        "Error while adding org-authorization mapping entries.", e);
-            }
-        } catch (Exception e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Error occurred while executing the batch insert: ", e);
-            }
+        JdbcTemplate jdbcTemplate = getNewTemplate();
+        try {
+            jdbcTemplate.executeInsert(CASCADE_INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING,
+                    preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                        preparedStatement.setString(++parameterIndex, parentOrganizationId);
+                        preparedStatement.setInt(++parameterIndex, tenantID);
+                        preparedStatement.setString(++parameterIndex, newOrgCreatorId);
+                    }, new ArrayList<>(), false);
+        } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_USER_ROLE_ORG_AUTHORIZATION_ERROR,
                     "Error while adding org-authorization mapping entries.", e);
         }
@@ -203,7 +185,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
     public Map<String, List<String>> findUserPermissionsForOrganizations(JdbcTemplate template, String userId,
             List<String> organizationIds, boolean listAsAdmin) throws OrganizationManagementException {
 
-        String query = isAuthzViewsInUse() ?
+        String query = isViewsInUse() ?
                 GET_USER_ORGANIZATIONS_PERMISSIONS : GET_USER_ORGANIZATIONS_PERMISSIONS_WITHOUT_VIEW;
         StringJoiner sj = new StringJoiner(",");
         for (String id : organizationIds) {
@@ -311,7 +293,7 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
 
         List<String> permissions;
         try {
-            permissions = template.executeQuery(isAuthzViewsInUse() ?
+            permissions = template.executeQuery(isViewsInUse() ?
                     GET_USER_PERMISSIONS : GET_USER_PERMISSIONS_WITHOUT_VIEW, (resultSet, rowNumber) ->
                     resultSet.getString(UM_RESOURCE_ID_COLUMN), preparedStatement -> {
                 int parameterIndex = 0;
@@ -337,10 +319,10 @@ public class OrganizationAuthorizationDaoImpl implements OrganizationAuthorizati
                                 permission));
         String query;
         if (listByNames) {
-            query = isAuthzViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES :
+            query = isViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES :
                     GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES_WITHOUT_VIEW;
         } else {
-            query = isAuthzViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS :
+            query = isViewsInUse() ? GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS :
                     GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS_WITHOUT_VIEW;
         }
         String selectColumn = listByNames ? VIEW_NAME_COLUMN : VIEW_ORG_ID_COLUMN;

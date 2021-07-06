@@ -58,15 +58,14 @@ public interface OrganizationAuthorizationDao {
     /**
      * Add multiple entries to the 'UM_USER_ROLE_ORG' table using stored procedures.
      *
-     * @param organizationUserRoleMappings A list of organizationUserRole mappings.
+     * @param organizationId Newly created Organization Id.
+     * @param parentOrganizationId Immediate Parent Organization Id.
+     * @param newOrgCreatorId Organization's creators user Id.
      * @param tenantID                     Tenant id.
      * @throws OrganizationManagementException
      */
-    default void addOrganizationAndUserRoleMappingsWithSp (
-            List<OrganizationUserRoleMapping> organizationUserRoleMappings, int tenantID)
-            throws OrganizationManagementServerException {
-
-    }
+    void addOrganizationAndUserRoleMappings(String organizationId, String parentOrganizationId,
+            String newOrgCreatorId, int tenantID) throws OrganizationManagementServerException;
     /**
      * Find the 'UM_ID' by 'UM_ROLE_NAME' from the 'UM_HYBRID_ROLE' table.
      *

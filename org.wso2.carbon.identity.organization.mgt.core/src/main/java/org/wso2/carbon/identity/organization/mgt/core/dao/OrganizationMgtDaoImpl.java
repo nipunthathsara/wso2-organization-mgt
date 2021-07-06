@@ -19,7 +19,6 @@
 package org.wso2.carbon.identity.organization.mgt.core.dao;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
@@ -210,7 +209,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         }
 
         // Get organizations by IDs
-        query = isOrgViewsInUse() ? GET_ORGANIZATIONS_BY_IDS : GET_ORGANIZATIONS_BY_IDS_WITHOUT_VIEWS;
+        query = GET_ORGANIZATIONS_BY_IDS;
         sj = new StringJoiner(",");
         for (String id : orgIds) {
             sj.add("'" + id + "'");
@@ -274,8 +273,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         List<OrganizationRowDataCollector> organizationRowDataCollectors;
         try {
             organizationRowDataCollectors = jdbcTemplate
-                    .executeQuery(
-                            isOrgViewsInUse() ? GET_ORGANIZATION_BY_ID : GET_ORGANIZATION_BY_ID_WITHOUT_VIEWS,
+                    .executeQuery(GET_ORGANIZATION_BY_ID,
                             (resultSet, rowNumber) -> {
                                 OrganizationRowDataCollector collector = new OrganizationRowDataCollector();
                                 collector.setId(organizationId);
@@ -411,7 +409,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         try {
             List<UserStoreConfig> userStoreConfigs = jdbcTemplate
                     .executeQuery(
-                        isOrgViewsInUse() ? GET_USER_STORE_CONFIGS_BY_ORG_ID :
+                        isViewsInUse() ? GET_USER_STORE_CONFIGS_BY_ORG_ID :
                                 GET_USER_STORE_CONFIGS_BY_ORG_ID_WITHOUT_VIEWS,
                         (resultSet, rowNumber) -> {
                             UserStoreConfig config = new UserStoreConfig();
@@ -544,8 +542,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
-            int attrCount = jdbcTemplate.fetchSingleRecord(isOrgViewsInUse() ?
-                            CHECK_ATTRIBUTE_EXIST_BY_KEY : CHECK_ATTRIBUTE_EXIST_BY_KEY_WITHOUT_VIEWS,
+            int attrCount = jdbcTemplate.fetchSingleRecord(CHECK_ATTRIBUTE_EXIST_BY_KEY,
                     (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN), preparedStatement -> {
                         int parameterIndex = 0;
                         preparedStatement.setInt(++parameterIndex, tenantId);
@@ -619,8 +616,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         JdbcTemplate jdbcTemplate = getNewTemplate();
         try {
             int matchingEntries = jdbcTemplate
-                    .fetchSingleRecord(isOrgViewsInUse() ?
-                                    CHECK_RDN_AVAILABILITY : CHECK_RDN_AVAILABILITY_WITHOUT_VIEWS,
+                    .fetchSingleRecord(CHECK_RDN_AVAILABILITY,
                             (resultSet, rowNumber) -> resultSet.getInt(COUNT_COLUMN),
                             preparedStatement -> {
                                 int parameterIndex = 0;
@@ -840,29 +836,36 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             }
             throw handleClientException(LIST_REQUEST_INVALID_FILTER_PARAMETER, null);
         }
-
-        StringBuilder sb = new StringBuilder();
+        StringBuilder authorizedQueryBuilder;
+        StringBuilder queryBuilder = new StringBuilder();
         // Base query with tenant id search condition
-        sb.append(GET_ALL_ORGANIZATION_IDS)
+        queryBuilder.append(GET_ALL_ORGANIZATION_IDS)
                 .append(DEFAULT_CONDITION);
-        // Check organization permissions for non admin users
-        if (!listAsAdmin) {
-            sb.append(" AND ").append(GET_ALL_ORGANIZATION_IDS_AUTHORIZATION_CONDITION);
-        }
         // Append generated search conditions
         if (searchReq) {
-            sb.append("\n").append(INTERSECT).append("\n");
-            sb.append(placeholderSQL.getQuery());
+            queryBuilder.append("\n").append(INTERSECT).append("\n");
+            queryBuilder.append(placeholderSQL.getQuery());
         }
         // Append sorting condition
-        sb = new StringBuilder(String.format(ORDER_BY, sb.toString(), sortBy, sortOrder));
+        queryBuilder = new StringBuilder(String.format(ORDER_BY, queryBuilder.toString(), sortBy, sortOrder));
         // Append pagination condition
         if (paginationReq) {
-            sb.append(String.format(PAGINATION, offset, limit));
+            queryBuilder.append(String.format(PAGINATION, offset, limit));
         }
-        placeholderSQL.setQuery(sb.toString());
-        if (log.isDebugEnabled()) {
-            log.debug("Built query : " + placeholderSQL.getQuery());
+        // Check organization permissions for non admin users
+        if (!listAsAdmin) {
+            authorizedQueryBuilder = new StringBuilder(WITH_FILTERED_ORG_INFO_AS);
+            authorizedQueryBuilder.append(queryBuilder);
+            authorizedQueryBuilder.append(GET_ALL_AUTHORIZATION_ORGANIZATION_IDS_WITH_JOIN);
+            placeholderSQL.setQuery(authorizedQueryBuilder.toString());
+            if (log.isDebugEnabled()) {
+                log.debug("Built query : " + placeholderSQL.getQuery());
+            }
+        } else {
+            placeholderSQL.setQuery(queryBuilder.toString());
+            if (log.isDebugEnabled()) {
+                log.debug("Built query : " + placeholderSQL.getQuery());
+            }
         }
         return placeholderSQL;
     }
@@ -886,7 +889,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         (permission.contains(ORGANIZATION_BASE_PERMISSION) ? ORGANIZATION_BASE_PERMISSION :
                                 permission));
         try {
-            roleIds = jdbcTemplate.executeQuery(isAuthzViewsInUse() ? GET_ROLE_IDS_FOR_PERMISSION :
+            roleIds = jdbcTemplate.executeQuery(isViewsInUse() ? GET_ROLE_IDS_FOR_PERMISSION :
                             GET_ROLE_IDS_FOR_PERMISSION_WITHOUT_VIEW,
                     (resultSet, rowNumber) -> resultSet.getString(UM_ROLE_ID_COLUMN),
                     preparedStatement -> {

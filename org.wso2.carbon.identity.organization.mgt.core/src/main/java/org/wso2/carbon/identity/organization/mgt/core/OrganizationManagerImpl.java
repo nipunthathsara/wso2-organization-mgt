@@ -910,37 +910,38 @@ public class OrganizationManagerImpl implements OrganizationManager {
         all role mappings assigned to the new organization creator will be delegated to the new organization.
          */
         if (StringUtils.isNotEmpty(parentOrganizationId)) {
-            List<OrganizationUserRoleMapping> organizationUserRoleMappingsOfParent = authorizationDao
-                    .getDelegatingOrganizationUserRoleMappingsToNewOrg(parentOrganizationId, newOrgCreatorId,
-                            getTenantId());
-            List<OrganizationUserRoleMapping> organizationUserRoleMappingsForNewOrganization = new ArrayList<>();
-            for (OrganizationUserRoleMapping mapping : organizationUserRoleMappingsOfParent) {
-                OrganizationUserRoleMapping organizationUserRoleMapping;
-                if (!mapping.isCascadedRole() && StringUtils.equals(newOrgCreatorId, mapping.getUserId())) {
-                    /*
-                     Delegate the role mappings that user creator has only against the immediate parent.
-                     It will be added against new org, ASSIGNED_AT = new org id and INHERIT = false.
-                     */
-                    organizationUserRoleMapping = new OrganizationUserRoleMapping(
-                            organizationId, mapping.getUserId(), mapping.getRoleId(), mapping.getHybridRoleId(),
-                            mapping.isCascadedRole(), organizationId);
-                } else {
-                    /*
-                     Delegate the role mappings that users have  against the immediate parent with INHERIT = true.
-                     */
-                    organizationUserRoleMapping = new OrganizationUserRoleMapping(
-                            organizationId, mapping.getUserId(), mapping.getRoleId(), mapping.getHybridRoleId(),
-                            mapping.isCascadedRole(), mapping.getAssignedOrganizationLevel());
-                }
-                organizationUserRoleMappingsForNewOrganization.add(organizationUserRoleMapping);
-            }
-            String isCascadeInsert = System.getProperty(INSERT_ROLES_WITH_STORED_PROCEDURE);
-            // Defaults to SP when property is not available.
+            String isCascadeInsert = System.getProperty(CASCADE_INSERT_USER_ORG_ROLES);
             if (isCascadeInsert == null || Boolean.parseBoolean(isCascadeInsert)) {
-                authorizationDao.addOrganizationAndUserRoleMappingsWithSp(organizationUserRoleMappingsForNewOrganization, getTenantId());
+                authorizationDao.addOrganizationAndUserRoleMappings(organizationId, parentOrganizationId,
+                        newOrgCreatorId, getTenantId());
             } else {
-                authorizationDao
-                        .addOrganizationAndUserRoleMappings(organizationUserRoleMappingsForNewOrganization, getTenantId());
+                List<OrganizationUserRoleMapping> organizationUserRoleMappingsOfParent = authorizationDao
+                        .getDelegatingOrganizationUserRoleMappingsToNewOrg(parentOrganizationId, newOrgCreatorId,
+                                getTenantId());
+                List<OrganizationUserRoleMapping> organizationUserRoleMappingsForNewOrganization = new ArrayList<>();
+                for (OrganizationUserRoleMapping mapping : organizationUserRoleMappingsOfParent) {
+                    OrganizationUserRoleMapping organizationUserRoleMapping;
+                    if (!mapping.isCascadedRole() && StringUtils.equals(newOrgCreatorId, mapping.getUserId())) {
+                        /*
+                         Delegate the role mappings that user creator has only against the immediate parent.
+                         It will be added against new org, ASSIGNED_AT = new org id and INHERIT = false.
+                         */
+                        organizationUserRoleMapping = new OrganizationUserRoleMapping(
+                                organizationId, mapping.getUserId(), mapping.getRoleId(), mapping.getHybridRoleId(),
+                                mapping.isCascadedRole(), organizationId);
+                    } else {
+                        /*
+                         Delegate the role mappings that users have  against the immediate parent with INHERIT = true.
+                         */
+                        organizationUserRoleMapping = new OrganizationUserRoleMapping(
+                                organizationId, mapping.getUserId(), mapping.getRoleId(), mapping.getHybridRoleId(),
+                                mapping.isCascadedRole(), mapping.getAssignedOrganizationLevel());
+                    }
+                    organizationUserRoleMappingsForNewOrganization.add(organizationUserRoleMapping);
+                }
+                // Defaults to SP when property is not available.
+                    authorizationDao
+                            .addOrganizationAndUserRoleMappings(organizationUserRoleMappingsForNewOrganization, getTenantId());
             }
         }
     }
