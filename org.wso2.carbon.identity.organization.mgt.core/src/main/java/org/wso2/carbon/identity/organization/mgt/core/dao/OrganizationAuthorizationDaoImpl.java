@@ -23,8 +23,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.database.utils.jdbc.JdbcTemplate;
 import org.wso2.carbon.database.utils.jdbc.exceptions.DataAccessException;
-import org.wso2.carbon.identity.core.util.IdentityDatabaseUtil;
-import org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementClientException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementException;
 import org.wso2.carbon.identity.organization.mgt.core.exception.OrganizationManagementServerException;
@@ -32,9 +30,6 @@ import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationPermissi
 import org.wso2.carbon.identity.organization.mgt.core.model.OrganizationUserRoleMapping;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,8 +52,43 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_DELETE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_UPDATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_VIEW_PERMISSION;
-import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.*;
-import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.*;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.ATTR_VALUE_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.CASCADE_INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.COUNT_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_GROUP_ID_FROM_ROLE_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.FIND_HYBRID_ID_FROM_ROLE_NAME;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_LIST_OF_AUTHORIZED_ORGANIZATION_IDS_WITHOUT_VIEW;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_LIST_OF_AUTHORIZED_ORGANIZATION_NAMES_WITHOUT_VIEW;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ORGANIZATIONS_PERMISSIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ORGANIZATIONS_PERMISSIONS_WITHOUT_VIEW;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_PERMISSIONS;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_PERMISSIONS_WITHOUT_VIEW;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.GET_USER_ROLE_ORG_MAPPINGS_DELEGATE_TO_NEW_ORG;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_ALL;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.INSERT_INTO_ORGANIZATION_USER_ROLE_MAPPING;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.IS_USER_AUTHORIZED;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.IS_USER_AUTHORIZED_WITHOUT_VIEW;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.SELECT_DUMMY_RECORD;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ASSIGNED_AT_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_HYBRID_ROLE_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_INHERIT_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_RESOURCE_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_ROLE_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.UM_UM_USER_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_NAME_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.VIEW_ORG_ID_COLUMN;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.dissemblePermissionString;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getMaximumQueryLengthInBytes;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewIdentityTemplate;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.generateUniqueID;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.getNewTemplate;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleClientException;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.handleServerException;
+import static org.wso2.carbon.identity.organization.mgt.core.util.Utils.isViewsInUse;
 
 /**
  * Authorization DAO for organization mgt.
