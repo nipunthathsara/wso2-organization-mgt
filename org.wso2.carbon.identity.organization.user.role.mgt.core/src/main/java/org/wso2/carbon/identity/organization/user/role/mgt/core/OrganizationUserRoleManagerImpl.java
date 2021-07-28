@@ -136,8 +136,14 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
         String isCascadeInsert = System.getProperty(CASCADE_INSERT_USER_ORG_ROLES);
         // Defaults to SP when property is not available.
         if (isCascadeInsert == null || Boolean.parseBoolean(isCascadeInsert)) {
-            organizationUserRoleMgtDAO.addOrganizationUserRoleMappingsWithSp(usersGetPermissionsForSubOrgs, roleId,
-                    hybridRoleId, getTenantId(), organizationId);
+            if (CollectionUtils.isNotEmpty(usersGetPermissionsForSubOrgs)) {
+                organizationUserRoleMgtDAO.addOrganizationUserRoleMappingsWithSp(usersGetPermissionsForSubOrgs, roleId,
+                        hybridRoleId, getTenantId(), organizationId);
+            }
+            if (CollectionUtils.isNotEmpty(usersGetPermissionOnlyToOneOrg)) {
+                organizationUserRoleMgtDAO.addOrganizationUserRoleMappingsWithSp(usersGetPermissionOnlyToOneOrg, roleId,
+                        hybridRoleId, getTenantId(), organizationId);
+            }
         } else {
             List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
             // Get child organizations and add role mappings.
