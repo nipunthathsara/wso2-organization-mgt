@@ -340,11 +340,8 @@ public class OrganizationManagerImpl implements OrganizationManager {
         }
         // validate patch operations (bulk)
         validateOrganizationPatchOperations(operations, organizationId);
-        if (operations.size() == 1) {
-            cacheBackedOrganizationMgtDAO.patchOrganization(organizationId, operations.get(0));
-        } else {
-            cacheBackedOrganizationMgtDAO.patchOrganizationMultipleAttributes(organizationId, operations);
-        }
+        cacheBackedOrganizationMgtDAO.patchOrganization(organizationId, operations);
+
         // Fire post-event (bulk)
         fireEvent(POST_PATCH_ORGANIZATION, organizationId, operations, Status.SUCCESS);
         // Update metadata

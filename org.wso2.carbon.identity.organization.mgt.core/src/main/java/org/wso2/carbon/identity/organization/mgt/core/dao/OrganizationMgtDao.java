@@ -133,22 +133,13 @@ public interface OrganizationMgtDao {
     List<String> getChildOrganizationIds(String organizationId, String userId) throws OrganizationManagementException;
 
     /**
-     * Add, remove or replace organization field, attribute or user store configuration.
-     *
-     * @param organizationId
-     * @param operation
-     * @throws OrganizationManagementException
-     */
-    void patchOrganization(String organizationId, Operation operation) throws OrganizationManagementException;
-
-    /**
      * Add, remove or replace multiple organization fields, attributes or user store configurations with single DB statement
      *
      * @param organizationId
      * @param operations
      * @throws OrganizationManagementException
      */
-    void patchOrganizationMultipleAttributes(String organizationId, List<Operation> operations)
+    void patchOrganization(String organizationId, List<Operation> operations)
             throws OrganizationManagementException;
 
     /**

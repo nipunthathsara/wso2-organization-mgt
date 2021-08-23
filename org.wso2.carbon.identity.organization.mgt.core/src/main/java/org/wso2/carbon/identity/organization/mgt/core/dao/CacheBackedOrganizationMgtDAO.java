@@ -174,35 +174,7 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
     }
 
     @Override
-    public void patchOrganization(String organizationId, Operation operation) throws OrganizationManagementException {
-
-        String path = operation.getPath();
-        String op = operation.getOp();
-        int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
-        if (path.equals(PATCH_PATH_ORG_PARENT_ID) && op.equalsIgnoreCase("REPLACE")) {
-            String newParentId = operation.getValue();
-            // Clear the children cache for the newParentId.
-            if (log.isDebugEnabled()) {
-                log.debug("Removing entry for Organization: " + newParentId + " from cache.");
-            }
-            clearOrganizationCache(tenantId, newParentId);
-
-            Organization organizationToBePatched = organizationMgtDao.getOrganization(tenantId, organizationId, null,
-                    false);
-            if (organizationToBePatched != null) {
-                String currentParentId = organizationToBePatched.getParent().getId();
-                // Clear the children cache for the currentParentId.
-                if (log.isDebugEnabled()) {
-                    log.debug("Removing entry for Organization: " + currentParentId + " from cache.");
-                }
-                clearOrganizationCache(tenantId, currentParentId);
-            }
-        }
-        organizationMgtDao.patchOrganization(organizationId, operation);
-    }
-
-    @Override
-    public void patchOrganizationMultipleAttributes(String organizationId, List<Operation> operations) throws OrganizationManagementException {
+    public void patchOrganization(String organizationId, List<Operation> operations) throws OrganizationManagementException {
 
         for (Operation operation : operations) {
             String path = operation.getPath();
@@ -228,7 +200,7 @@ public class CacheBackedOrganizationMgtDAO implements OrganizationMgtDao {
                 }
             }
         }
-        organizationMgtDao.patchOrganizationMultipleAttributes(organizationId, operations);
+        organizationMgtDao.patchOrganization(organizationId, operations);
     }
 
     @Override

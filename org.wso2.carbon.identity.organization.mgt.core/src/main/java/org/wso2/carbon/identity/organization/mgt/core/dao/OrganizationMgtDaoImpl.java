@@ -501,60 +501,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
-    public void patchOrganization(String organizationId, Operation operation) throws OrganizationManagementException {
-
-        String path = operation.getPath();
-        JdbcTemplate jdbcTemplate = getNewTemplate();
-        if (path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
-            // Patch an attribute
-            String attributeKey = path.replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim();
-            operation.setPath(attributeKey);
-            try {
-                patchAttribute(jdbcTemplate, organizationId, operation);
-            } catch (DataAccessException e) {
-                throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
-                        "Error while patching attribute : " + attributeKey + ", value : " + operation.getValue()
-                                + ", op : " + operation.getOp() + ", org : " + organizationId, e);
-            }
-        } else {
-            // Updating a primary field
-            StringBuilder sb = new StringBuilder();
-            sb.append(PATCH_ORGANIZATION);
-            if (path.equals(PATCH_PATH_ORG_NAME)) {
-                sb.append(VIEW_NAME_COLUMN);
-            } else if (path.equals(PATCH_PATH_ORG_DISPLAY_NAME)) {
-                sb.append(VIEW_DISPLAY_NAME_COLUMN);
-            } else if (path.equals(PATCH_PATH_ORG_DESCRIPTION)) {
-                sb.append(VIEW_DESCRIPTION_COLUMN);
-            } else if (path.equals(PATCH_PATH_ORG_STATUS)) {
-                sb.append(VIEW_STATUS_COLUMN);
-            } else if (path.equals(PATCH_PATH_ORG_PARENT_ID)) {
-                sb.append(VIEW_PARENT_ID_COLUMN);
-            }
-            sb.append(PATCH_ORGANIZATION_CONCLUDE);
-            String query = sb.toString();
-            if (log.isDebugEnabled()) {
-                log.debug("Organization patch query : " + query);
-            }
-            try {
-                jdbcTemplate.executeUpdate(query, preparedStatement -> {
-                    int parameterIndex = 0;
-                    preparedStatement.setString(++parameterIndex,
-                            operation.getOp().equals(PATCH_OP_REMOVE) ? null : operation.getValue());
-                    preparedStatement.setString(++parameterIndex, organizationId);
-                });
-            } catch (DataAccessException e) {
-                throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
-                        "Error while updating the primary field : " + path + ", value : " + operation.getValue()
-                                + ", org : " + organizationId, e);
-            }
-        }
-    }
-
-    // TODO Transaction Handling
-    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
-    @Override
-    public void patchOrganizationMultipleAttributes(String organizationId, List<Operation> operations) throws OrganizationManagementException {
+    public void patchOrganization(String organizationId, List<Operation> operations) throws OrganizationManagementException {
 
         try {
             //creating a new jdbc template
