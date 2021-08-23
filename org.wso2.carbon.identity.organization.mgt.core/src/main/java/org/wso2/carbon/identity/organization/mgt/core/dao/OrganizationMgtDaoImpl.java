@@ -194,8 +194,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
     public List<Organization> getOrganizations(Condition condition, int tenantId, int offset, int limit, String sortBy,
-                                               String sortOrder, List<String> requestedAttributes, String userId,
-                                               boolean includePermissions, boolean listAsAdmin)
+            String sortOrder, List<String> requestedAttributes, String userId, boolean includePermissions,
+            boolean listAsAdmin)
             throws OrganizationManagementException {
 
         PlaceholderSQL placeholderSQL = buildQuery(condition, offset, limit, sortBy, sortOrder, listAsAdmin);
@@ -257,7 +257,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                                 preparedStatement.setString(++parameterIndex, data);
                             }
                         }
-                    });
+                        });
         } catch (DataAccessException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_GET_ERROR, "Error while retrieving organization IDs.",
                     e);
@@ -425,11 +425,11 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     query,
                     (resultSet, rowNumber) -> resultSet.getString(VIEW_ID_COLUMN),
                     preparedStatement -> {
-                        int parameterIndex = 0;
-                        preparedStatement.setString(++parameterIndex, organizationId);
-                        if (!isInternalCall) {
-                            preparedStatement.setString(++parameterIndex, userId);
-                        }
+                               int parameterIndex = 0;
+                                preparedStatement.setString(++parameterIndex, organizationId);
+                                if (!isInternalCall) {
+                                    preparedStatement.setString(++parameterIndex, userId);
+                                }
                     });
             return childOrganizationIds;
         } catch (DataAccessException e) {
@@ -501,7 +501,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
 
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     @Override
-    public void patchOrganization(String organizationId, List<Operation> operations) throws OrganizationManagementException {
+    public void patchOrganization(String organizationId, List<Operation> operations)
+            throws OrganizationManagementException {
 
         try {
             //creating a new jdbc template
