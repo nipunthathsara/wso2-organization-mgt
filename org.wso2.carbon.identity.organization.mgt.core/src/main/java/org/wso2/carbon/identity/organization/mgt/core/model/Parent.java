@@ -18,6 +18,8 @@
 
 package org.wso2.carbon.identity.organization.mgt.core.model;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * This class represent the parent organization of an organization.
  */
@@ -59,4 +61,5 @@ public class Parent {
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
+
 }

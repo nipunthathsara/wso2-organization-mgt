@@ -84,6 +84,7 @@ import static org.wso2.carbon.identity.organization.mgt.core.constant.Organizati
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_UPDATE_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_ROLE_MGT_VIEW_PERMISSION;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USER_STORE_DOMAIN;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.USE_VIEWS;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.SQLConstants.MAX_QUERY_LENGTH_IN_BYTES_SQL;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.DOMAIN_NAME;
 import static org.wso2.carbon.user.core.UserStoreConfigConstants.userSearchBase;
@@ -526,5 +527,10 @@ public class Utils {
             }
         }
         return matchingRealmConfig;
+    }
+
+    public static boolean isViewsInUse() {
+
+        return Boolean.parseBoolean(System.getProperty(USE_VIEWS));
     }
 }

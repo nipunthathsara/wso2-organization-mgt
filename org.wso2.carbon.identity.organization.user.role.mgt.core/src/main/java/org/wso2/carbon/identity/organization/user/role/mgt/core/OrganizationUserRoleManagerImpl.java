@@ -57,7 +57,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.INSERT_ROLES_WITH_STORED_PROCEDURE;
+import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.CASCADE_INSERT_USER_ORG_ROLES;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtConstants.PATCH_OP_REPLACE;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.DATA;
 import static org.wso2.carbon.identity.organization.mgt.core.constant.OrganizationMgtEventConstants.ORGANIZATION_ID;
@@ -133,11 +133,17 @@ public class OrganizationUserRoleManagerImpl implements OrganizationUserRoleMana
                     OrganizationUserRoleMgtConstants.ErrorMessages.ERROR_CODE_USER_STORE_OPERATIONS_ERROR,
                     " for tenant Id " + getTenantId());
         }
-        String isCascadeInsert = System.getProperty(INSERT_ROLES_WITH_STORED_PROCEDURE);
+        String isCascadeInsert = System.getProperty(CASCADE_INSERT_USER_ORG_ROLES);
         // Defaults to SP when property is not available.
         if (isCascadeInsert == null || Boolean.parseBoolean(isCascadeInsert)) {
-            organizationUserRoleMgtDAO.addOrganizationUserRoleMappingsWithSp(usersGetPermissionsForSubOrgs, roleId,
-                    hybridRoleId, getTenantId(), organizationId);
+            if (CollectionUtils.isNotEmpty(usersGetPermissionsForSubOrgs)) {
+                organizationUserRoleMgtDAO.addOrganizationUserRoleMappingsWithSp(usersGetPermissionsForSubOrgs, roleId,
+                        hybridRoleId, getTenantId(), organizationId);
+            }
+            if (CollectionUtils.isNotEmpty(usersGetPermissionOnlyToOneOrg)) {
+                organizationUserRoleMgtDAO.addOrganizationUserRoleMappingsWithSp(usersGetPermissionOnlyToOneOrg, roleId,
+                        hybridRoleId, getTenantId(), organizationId);
+            }
         } else {
             List<OrganizationUserRoleMapping> organizationUserRoleMappings = new ArrayList<>();
             // Get child organizations and add role mappings.
