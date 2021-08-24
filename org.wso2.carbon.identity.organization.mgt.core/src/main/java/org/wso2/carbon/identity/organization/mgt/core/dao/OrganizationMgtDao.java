@@ -25,12 +25,11 @@ import org.wso2.carbon.identity.organization.mgt.core.model.Organization;
 import org.wso2.carbon.identity.organization.mgt.core.model.UserStoreConfig;
 import org.wso2.carbon.identity.organization.mgt.core.search.Condition;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Interface to perform CRUD operations on {@link Organization}
+ * Interface to perform CRUD operations on {@link Organization}.
  */
 public interface OrganizationMgtDao {
 
@@ -143,13 +142,13 @@ public interface OrganizationMgtDao {
     List<String> getAllCascadedChildOrganizationIds(String organizationId) throws OrganizationManagementException;
 
     /**
-     * Add, remove or replace organization field, attribute or user store configuration.
+     * Add, remove or replace multiple organization fields, attributes or user store configurations.
      *
      * @param organizationId
-     * @param operation
+     * @param operations
      * @throws OrganizationManagementException
      */
-    void patchOrganization(String organizationId, Operation operation) throws OrganizationManagementException;
+    void patchOrganization(String organizationId, List<Operation> operations) throws OrganizationManagementException;
 
     /**
      * Patch user store configurations of the organization identified by the provided ID.
@@ -180,7 +179,7 @@ public interface OrganizationMgtDao {
     void modifyOrganizationMetadata(String organizationId, Metadata metadata) throws OrganizationManagementException;
 
     /**
-     * Check if the RDN is already taken for a given parent (or ROOT)
+     * Check if the RDN is already taken for a given parent (or ROOT).
      *
      * @param rdn
      * @param parentId
