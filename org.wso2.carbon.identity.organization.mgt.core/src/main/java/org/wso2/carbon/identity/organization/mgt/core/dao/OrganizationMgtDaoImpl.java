@@ -539,48 +539,20 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             // Create a new jdbc template.
             JdbcTemplate jdbcTemplate = getNewTemplate();
             // Create a HashMap for primary fields.
-            HashMap<String, Operation> primaryFieldsOperationsMap = new HashMap<>();
+            Map<String, Operation> primaryFieldsOperationsMap = new HashMap<>();
             // Classify the attributes according to add, replace and remove and process using Lists.
-            List<Operation> addOrReplaceOperationsList = new ArrayList<>();
-            List<Operation> removeOperationsList = new ArrayList<>();
+            List<Operation> addOrReplaceAttributeOperations = new ArrayList<>();
+            List<Operation> removeAttributeOperations = new ArrayList<>();
 
-            // Iterate and add to respective lists/map.
-            for (Operation operation : operations) {
-                String path = operation.getPath();
-                if (path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
-                    if (operation.getOp().equals(PATCH_OP_ADD) || operation.getOp().equals(PATCH_OP_REPLACE)) {
-                        addOrReplaceOperationsList.add(operation);
-                    } else {
-                        removeOperationsList.add(operation);
-                    }
-                } else {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(PATCH_ORGANIZATION);
-                    if (path.equals(PATCH_PATH_ORG_NAME)) {
-                        sb.append(VIEW_NAME_COLUMN);
-                    } else if (path.equals(PATCH_PATH_ORG_DISPLAY_NAME)) {
-                        sb.append(VIEW_DISPLAY_NAME_COLUMN);
-                    } else if (path.equals(PATCH_PATH_ORG_DESCRIPTION)) {
-                        sb.append(VIEW_DESCRIPTION_COLUMN);
-                    } else if (path.equals(PATCH_PATH_ORG_STATUS)) {
-                        sb.append(VIEW_STATUS_COLUMN);
-                    } else if (path.equals(PATCH_PATH_ORG_PARENT_ID)) {
-                        sb.append(VIEW_PARENT_ID_COLUMN);
-                    }
-                    sb.append(PATCH_ORGANIZATION_CONCLUDE);
-                    String query = sb.toString();
-                    if (log.isDebugEnabled()) {
-                        log.debug("Organization primary field patch query : " + query);
-                    }
-                    primaryFieldsOperationsMap.put(query, operation);
-                }
-            }
+            // Assign operations to respective lists/map.
+            assignOperations(operations, addOrReplaceAttributeOperations, removeAttributeOperations,
+                    primaryFieldsOperationsMap);
 
             // Create a transaction.
             jdbcTemplate.withTransaction(template -> {
-                if (CollectionUtils.isNotEmpty(addOrReplaceOperationsList)) {
+                if (CollectionUtils.isNotEmpty(addOrReplaceAttributeOperations)) {
                     template.executeBatchInsert(INSERT_OR_UPDATE_ATTRIBUTE, preparedStatement -> {
-                        for (Operation operation : addOrReplaceOperationsList) {
+                        for (Operation operation : addOrReplaceAttributeOperations) {
                             String attributeKey = operation.getPath().replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim();
                             int parameterIndex = 0;
                             preparedStatement.setString(++parameterIndex, generateUniqueID());
@@ -594,8 +566,8 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         }
                     }, new Attribute());
                 }
-                if (CollectionUtils.isNotEmpty(removeOperationsList)) {
-                    for (Operation operation : removeOperationsList) {
+                if (CollectionUtils.isNotEmpty(removeAttributeOperations)) {
+                    for (Operation operation : removeAttributeOperations) {
                         template.executeUpdate(REMOVE_ATTRIBUTE, preparedStatement -> {
                             int parameterIndex = 0;
                             preparedStatement.setString(++parameterIndex, organizationId);
@@ -606,26 +578,25 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                         }
                     }
                 }
-                if (primaryFieldsOperationsMap.size() != 0) {
-                    for (Map.Entry<String, Operation> entry : primaryFieldsOperationsMap.entrySet()) {
-                        String query = entry.getKey();
-                        Operation operation = entry.getValue();
-                        template.executeUpdate(query, preparedStatement -> {
-                            int parameterIndex = 0;
-                            preparedStatement.setString(++parameterIndex,
-                                    operation.getOp().equals(PATCH_OP_REMOVE) ? null : operation.getValue());
-                            preparedStatement.setString(++parameterIndex, organizationId);
-                        });
-                        if (log.isDebugEnabled()) {
-                            log.debug("Organization operation : " + operation.getValue());
-                        }
+
+                for (Map.Entry<String, Operation> entry : primaryFieldsOperationsMap.entrySet()) {
+                    String query = entry.getKey();
+                    Operation operation = entry.getValue();
+                    template.executeUpdate(query, preparedStatement -> {
+                        int parameterIndex = 0;
+                        preparedStatement.setString(++parameterIndex,
+                                operation.getOp().equals(PATCH_OP_REMOVE) ? null : operation.getValue());
+                        preparedStatement.setString(++parameterIndex, organizationId);
+                    });
+                    if (log.isDebugEnabled()) {
+                        log.debug("Organization operation : " + operation.getValue());
                     }
                 }
                 return null;
             });
         } catch (TransactionException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
-                    "Error while patching multiple attributes", e);
+                    "Error while patching the organization", e);
         }
     }
 
@@ -1013,5 +984,41 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                     "Error obtaining authorized list of roles for the permission : " + permission, e);
         }
         return roleIds;
+    }
+
+    private void assignOperations(List<Operation> operations, List<Operation> addOrReplaceAttributeOperations,
+                                  List<Operation> removeAttributeOperations,
+                                  Map<String, Operation> primaryFieldsOperationsMap) {
+        // Iterate and add to respective lists/map.
+        for (Operation operation : operations) {
+            String path = operation.getPath();
+            if (path.startsWith(PATCH_PATH_ORG_ATTRIBUTES)) {
+                if (operation.getOp().equals(PATCH_OP_ADD) || operation.getOp().equals(PATCH_OP_REPLACE)) {
+                    addOrReplaceAttributeOperations.add(operation);
+                } else {
+                    removeAttributeOperations.add(operation);
+                }
+            } else {
+                StringBuilder sb = new StringBuilder();
+                sb.append(PATCH_ORGANIZATION);
+                if (path.equals(PATCH_PATH_ORG_NAME)) {
+                    sb.append(VIEW_NAME_COLUMN);
+                } else if (path.equals(PATCH_PATH_ORG_DISPLAY_NAME)) {
+                    sb.append(VIEW_DISPLAY_NAME_COLUMN);
+                } else if (path.equals(PATCH_PATH_ORG_DESCRIPTION)) {
+                    sb.append(VIEW_DESCRIPTION_COLUMN);
+                } else if (path.equals(PATCH_PATH_ORG_STATUS)) {
+                    sb.append(VIEW_STATUS_COLUMN);
+                } else if (path.equals(PATCH_PATH_ORG_PARENT_ID)) {
+                    sb.append(VIEW_PARENT_ID_COLUMN);
+                }
+                sb.append(PATCH_ORGANIZATION_CONCLUDE);
+                String query = sb.toString();
+                if (log.isDebugEnabled()) {
+                    log.debug("Organization primary field patch query : " + query);
+                }
+                primaryFieldsOperationsMap.put(query, operation);
+            }
+        }
     }
 }
