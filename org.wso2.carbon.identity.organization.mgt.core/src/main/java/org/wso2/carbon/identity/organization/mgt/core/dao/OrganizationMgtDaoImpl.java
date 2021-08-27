@@ -568,10 +568,11 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 }
                 if (CollectionUtils.isNotEmpty(removeAttributeOperations)) {
                     for (Operation operation : removeAttributeOperations) {
+                        String attributeKey = operation.getPath().replace(PATCH_PATH_ORG_ATTRIBUTES, "").trim();
                         template.executeUpdate(REMOVE_ATTRIBUTE, preparedStatement -> {
                             int parameterIndex = 0;
                             preparedStatement.setString(++parameterIndex, organizationId);
-                            preparedStatement.setString(++parameterIndex, operation.getPath());
+                            preparedStatement.setString(++parameterIndex, attributeKey);
                         });
                         if (log.isDebugEnabled()) {
                             log.debug("Organization operation : " + operation.getValue());
@@ -594,6 +595,7 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
                 }
                 return null;
             });
+            validateHasAttributesField(jdbcTemplate, organizationId);
         } catch (TransactionException e) {
             throw handleServerException(ERROR_CODE_ORGANIZATION_PATCH_ERROR,
                     "Error while patching the organization", e);
