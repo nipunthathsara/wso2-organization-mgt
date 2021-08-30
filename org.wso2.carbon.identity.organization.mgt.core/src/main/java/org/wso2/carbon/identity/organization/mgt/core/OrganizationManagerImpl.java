@@ -342,8 +342,11 @@ public class OrganizationManagerImpl implements OrganizationManager {
         validateOrganizationPatchOperations(operations, organizationId);
         cacheBackedOrganizationMgtDAO.patchOrganization(organizationId, operations);
 
-        // Fire post-event (bulk)
-        fireEvent(POST_PATCH_ORGANIZATION, organizationId, operations, Status.SUCCESS);
+        // TODO: can use the bulk operation, but written as individual operations for the sake of listeners
+        for(Operation operation: operations) {
+            // Fire post-event
+            fireEvent(POST_PATCH_ORGANIZATION, organizationId, operation, Status.SUCCESS);
+        }
 
         // Update metadata
         Metadata metadata = new Metadata();
