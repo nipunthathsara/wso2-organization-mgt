@@ -897,11 +897,16 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
             }
             throw handleClientException(LIST_REQUEST_INVALID_FILTER_PARAMETER, null);
         }
-        StringBuilder authorizedQueryBuilder;
         StringBuilder queryBuilder = new StringBuilder();
         // Base query with tenant id search condition
         queryBuilder.append(GET_ALL_ORGANIZATION_IDS)
                 .append(DEFAULT_CONDITION);
+
+        // Check organization permissions for non admin users
+        if (!listAsAdmin) {
+            queryBuilder.insert(0, WITH_FILTERED_ORG_INFO_AS);
+            queryBuilder.append(GET_ALL_AUTHORIZATION_ORGANIZATION_IDS_WITH_JOIN);
+        }
         // Append generated search conditions
         if (searchReq) {
             queryBuilder.append("\n").append(INTERSECT).append("\n");
@@ -913,20 +918,9 @@ public class OrganizationMgtDaoImpl implements OrganizationMgtDao {
         if (paginationReq) {
             queryBuilder.append(String.format(PAGINATION, offset, limit));
         }
-        // Check organization permissions for non admin users
-        if (!listAsAdmin) {
-            authorizedQueryBuilder = new StringBuilder(WITH_FILTERED_ORG_INFO_AS);
-            authorizedQueryBuilder.append(queryBuilder);
-            authorizedQueryBuilder.append(GET_ALL_AUTHORIZATION_ORGANIZATION_IDS_WITH_JOIN);
-            placeholderSQL.setQuery(authorizedQueryBuilder.toString());
-            if (log.isDebugEnabled()) {
-                log.debug("Built query : " + placeholderSQL.getQuery());
-            }
-        } else {
-            placeholderSQL.setQuery(queryBuilder.toString());
-            if (log.isDebugEnabled()) {
-                log.debug("Built query : " + placeholderSQL.getQuery());
-            }
+        placeholderSQL.setQuery(queryBuilder.toString());
+        if (log.isDebugEnabled()) {
+            log.debug("Built query : " + placeholderSQL.getQuery());
         }
         return placeholderSQL;
     }
