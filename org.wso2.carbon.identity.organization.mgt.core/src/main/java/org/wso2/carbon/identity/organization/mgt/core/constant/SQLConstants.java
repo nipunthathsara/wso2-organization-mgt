@@ -260,25 +260,34 @@ public class SQLConstants {
     public static final String INTERSECT = "INTERSECT";
     public static final String WITH_FILTERED_ORG_INFO_AS = "WITH FILTERED_ORG_INFO AS (";
     public static final String GET_ALL_AUTHORIZATION_ORGANIZATION_IDS_WITH_JOIN =
-            ")\n" +
-            "SELECT DISTINCT\n" +
-            "    ID,\n" +
-            "    NAME,\n" +
-            "    DISPLAY_NAME,\n" +
-            "    DESCRIPTION,\n" +
-            "    CREATED_TIME,\n" +
-            "    LAST_MODIFIED,\n" +
-            "    CREATED_BY,\n" +
-            "    LAST_MODIFIED_BY,\n" +
-            "    STATUS,\n" +
-            "    PARENT_NAME,\n" +
-            "    PARENT_DISPLAY_NAME\n" +
-            "FROM\n" +
-            "    FILTERED_ORG_INFO LEFT\n" +
-            "    JOIN UM_USER_ROLE_ORG ON ( FILTERED_ORG_INFO.ID = UM_USER_ROLE_ORG.ORG_ID )\n" +
-            "WHERE\n" +
-            "    UM_USER_ID = ?\n" +
-            "    AND UM_ROLE_ID IN (#)";
+            "), \n" +
+            "FILTERED_UM_USER_ROLE_ORG_INFO AS (\n" +
+            "  SELECT \n" +
+            "    UM_ID, \n" +
+            "    ORG_ID \n" +
+            "  FROM \n" +
+            "    UM_USER_ROLE_ORG \n" +
+            "  WHERE \n" +
+            "    UM_USER_ID = ? \n" +
+            "    AND UM_ROLE_ID IN (#)\n" +
+            ") \n" +
+            "SELECT \n" +
+            "  DISTINCT ID, \n" +
+            "  NAME, \n" +
+            "  DISPLAY_NAME, \n" +
+            "  DESCRIPTION, \n" +
+            "  CREATED_TIME, \n" +
+            "  LAST_MODIFIED, \n" +
+            "  CREATED_BY, \n" +
+            "  LAST_MODIFIED_BY, \n" +
+            "  STATUS, \n" +
+            "  PARENT_NAME, \n" +
+            "  PARENT_DISPLAY_NAME \n" +
+            "FROM \n" +
+            "  FILTERED_UM_USER_ROLE_ORG_INFO\n" +
+            "  LEFT JOIN FILTERED_ORG_INFO ON (\n" +
+            "    FILTERED_ORG_INFO.ID = FILTERED_UM_USER_ROLE_ORG_INFO.ORG_ID\n" +
+            "  )";
     public static final String ORDER_BY =
             "SELECT" +
             "%n    ID, NAME, DISPLAY_NAME, DESCRIPTION, CREATED_TIME, LAST_MODIFIED, CREATED_BY, " +
