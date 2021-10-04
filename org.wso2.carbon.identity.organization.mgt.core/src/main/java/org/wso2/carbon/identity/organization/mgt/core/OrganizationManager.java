@@ -34,7 +34,7 @@ import java.util.Map;
 public interface OrganizationManager {
 
     /**
-     * Add a new organization
+     * Add a new organization.
      *
      * @param organizationAdd
      * @param isImport        'true' if you don't want to create an OU in the underlying user store.

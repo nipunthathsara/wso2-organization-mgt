@@ -329,7 +329,7 @@ public class OrganizationManagerImpl implements OrganizationManager {
     public void patchOrganization(String organizationId, List<Operation> operations)
             throws OrganizationManagementException {
 
-        // Fire pre-event
+        // Fire pre-event (bulk)
         fireEvent(PRE_PATCH_ORGANIZATION, organizationId, operations, Status.FAILURE);
         if (StringUtils.isBlank(organizationId)) {
             throw handleClientException(PATCH_REQUEST_ORGANIZATION_ID_UNDEFINED,
@@ -340,11 +340,14 @@ public class OrganizationManagerImpl implements OrganizationManager {
             throw handleClientException(PATCH_REQUEST_INVALID_ORGANIZATION, null);
         }
         validateOrganizationPatchOperations(operations, organizationId);
-        for (Operation operation : operations) {
-            cacheBackedOrganizationMgtDAO.patchOrganization(organizationId, operation);
+        cacheBackedOrganizationMgtDAO.patchOrganization(organizationId, operations);
+
+        // TODO: can use the bulk operation, but written as individual operations for the sake of listeners
+        for(Operation operation: operations) {
             // Fire post-event
             fireEvent(POST_PATCH_ORGANIZATION, organizationId, operation, Status.SUCCESS);
         }
+
         // Update metadata
         Metadata metadata = new Metadata();
         metadata.setLastModifiedBy(new MetaUser());
