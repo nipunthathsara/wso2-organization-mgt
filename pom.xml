@@ -60,7 +60,7 @@
         <carbon.identity.framework.version>5.17.5</carbon.identity.framework.version>
         <axiom.wso2.version>1.2.11-wso2v16</axiom.wso2.version>
         <maven.surefire.plugin.version>2.22.0</maven.surefire.plugin.version>
-        <org.apache.cxf.version>3.3.1</org.apache.cxf.version>
+        <org.apache.cxf.version>3.4.10</org.apache.cxf.version>
         <com.fasterxml.jackson.jaxrs-json-provider-version>2.9.7</com.fasterxml.jackson.jaxrs-json-provider-version>
         <com.fasterxml.jackson.version>2.9.7</com.fasterxml.jackson.version>
         <com.fasterxml.jackson.annotation.version>2.9.8</com.fasterxml.jackson.annotation.version>
